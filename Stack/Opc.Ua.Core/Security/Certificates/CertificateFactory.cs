@@ -421,6 +421,7 @@ public class CertificateFactory
         while (certificate == null &&
             flagsRetryCounter < storageFlags.Length)
         {
+            Console.WriteLine($"CreateCertificateFromPKCS12(): flagsRetryCounter {flagsRetryCounter}...");
             try
             {
                 // merge first cert with private key into X509Certificate2
@@ -429,7 +430,8 @@ public class CertificateFactory
                     (password == null) ? String.Empty : password,
                     storageFlags[flagsRetryCounter]);
                 // can we really access the private key?
-                using (RSA rsa = certificate.GetRSAPrivateKey()) { }
+                if (!certificate.HasPrivateKey)
+                    certificate = null;
             }
             catch (Exception e)
             {
@@ -442,6 +444,10 @@ public class CertificateFactory
         if (certificate == null)
         {
             throw new NotSupportedException("Creating X509Certificate from PKCS #12 store failed", ex);
+        }
+        if (!certificate.HasPrivateKey)
+        {
+            throw new NotSupportedException("Created X509Certificate has no private key!", ex);
         }
 
         return certificate;
@@ -655,7 +661,7 @@ public class CertificateFactory
     /// </summary>
     public static X509Certificate2 CreateCertificateWithPEMPrivateKey(
         X509Certificate2 certificate,
-        byte [] pemDataBlob,
+        byte[] pemDataBlob,
         string password = null)
     {
         AsymmetricKeyParameter privateKey = null;
@@ -685,7 +691,7 @@ public class CertificateFactory
 
                     AsymmetricCipherKeyPair keypair = pemObject as AsymmetricCipherKeyPair;
                     if (keypair != null)
-                    { 
+                    {
                         privateKey = keypair.Private;
                         break;
                     }
@@ -764,9 +770,9 @@ public class CertificateFactory
         }
         return true;
     }
-#endregion
+    #endregion
 
-#region Private Methods
+    #region Private Methods
     /// <summary>
     /// Sets the parameters to suitable defaults.
     /// </summary>
@@ -1020,8 +1026,8 @@ public class CertificateFactory
     /// Get the certificate by issuer and serial number.
     /// </summary>
     private static async Task<X509Certificate2> FindIssuerCABySerialNumberAsync(
-        ICertificateStore store, 
-        string issuer, 
+        ICertificateStore store,
+        string issuer,
         string serialnumber)
     {
         X509Certificate2Collection certificates = await store.Enumerate();
@@ -1070,10 +1076,14 @@ public class CertificateFactory
         AsymmetricKeyParameter privateKey,
         SecureRandom random)
     {
+        Console.WriteLine($"CreateCertificateWithPrivateKey...");
         // create pkcs12 store for cert and private key
         using (MemoryStream pfxData = new MemoryStream())
         {
-            Pkcs12Store pkcsStore = new Pkcs12StoreBuilder().Build();
+            Pkcs12StoreBuilder builder = new Pkcs12StoreBuilder();
+            builder.SetUseDerEncoding(true);
+            Pkcs12Store pkcsStore = builder.Build();
+
             X509CertificateEntry[] chain = new X509CertificateEntry[1];
             string passcode = Guid.NewGuid().ToString();
             chain[0] = new X509CertificateEntry(certificate);
@@ -1106,8 +1116,8 @@ public class CertificateFactory
     /// Verify RSA key pair of two certificates.
     /// </summary>
     private static bool VerifyRSAKeyPair(
-        X509Certificate2 certWithPublicKey, 
-        X509Certificate2 certWithPrivateKey, 
+        X509Certificate2 certWithPublicKey,
+        X509Certificate2 certWithPrivateKey,
         bool throwOnError = false)
     {
         bool result = false;
@@ -1139,7 +1149,7 @@ public class CertificateFactory
             }
         }
         finally
-        { 
+        {
             if (!result && throwOnError)
             {
                 throw new CryptographicException("The public/private key pair in the certficates do not match.");
@@ -1147,7 +1157,7 @@ public class CertificateFactory
         }
         return result;
     }
-#endregion
+    #endregion
 
     private static Dictionary<string, X509Certificate2> m_certificates = new Dictionary<string, X509Certificate2>();
     private static List<X509Certificate2> m_temporaryKeyContainers = new List<X509Certificate2>();

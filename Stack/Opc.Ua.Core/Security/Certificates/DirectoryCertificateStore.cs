@@ -34,7 +34,7 @@ namespace Opc.Ua
             m_certificates = new Dictionary<string, Entry>();
         }
         #endregion
-        
+
         #region IDisposable Members
         /// <summary>
         /// May be called by the application to clean up resources.
@@ -106,7 +106,7 @@ namespace Opc.Ua
         {
             lock (m_lock)
             {
-                IDictionary<string,Entry> certificatesInStore = Load(null);
+                IDictionary<string, Entry> certificatesInStore = Load(null);
                 X509Certificate2Collection certificates = new X509Certificate2Collection();
 
                 foreach (Entry entry in certificatesInStore.Values)
@@ -129,7 +129,7 @@ namespace Opc.Ua
         public Task Add(X509Certificate2 certificate, string password = null)
         {
             if (certificate == null) throw new ArgumentNullException("certificate");
-         
+
             lock (m_lock)
             {
                 byte[] data = null;
@@ -593,7 +593,7 @@ namespace Opc.Ua
                 }
 
                 // check if cache is still good.
-                if ((m_certificateSubdir.LastWriteTimeUtc < m_lastDirectoryCheck) && 
+                if ((m_certificateSubdir.LastWriteTimeUtc < m_lastDirectoryCheck) &&
                     (NoPrivateKeys || !m_privateKeySubdir.Exists || m_privateKeySubdir.LastWriteTimeUtc < m_lastDirectoryCheck))
                 {
                     return m_certificates;
@@ -747,6 +747,7 @@ namespace Opc.Ua
         /// </summary>
         private void WriteFile(byte[] data, string fileName, bool includePrivateKey)
         {
+            Console.WriteLine($"DirectoryCertificateStore.WriteFile({fileName},{includePrivateKey})...");
             StringBuilder filePath = new StringBuilder();
 
             if (!m_directory.Exists)
@@ -781,6 +782,7 @@ namespace Opc.Ua
             if (!fileInfo.Directory.Exists)
             {
                 fileInfo.Directory.Create();
+                Console.WriteLine($"DirectoryCertificateStore.WriteFile.Directory.Create({fileInfo.FullName},{fileInfo.Directory.FullName})...");
             }
 
             // write file.
@@ -799,9 +801,9 @@ namespace Opc.Ua
             m_certificateSubdir.Refresh();
             m_privateKeySubdir.Refresh();
         }
-#endregion
+        #endregion
 
-#region Private Fields
+        #region Private Fields
         private class Entry
         {
             public FileInfo CertificateFile;
@@ -809,15 +811,15 @@ namespace Opc.Ua
             public FileInfo PrivateKeyFile;
             public X509Certificate2 CertificateWithPrivateKey;
         }
-#endregion
+        #endregion
 
-#region Private Fields
+        #region Private Fields
         private object m_lock = new object();
         private DirectoryInfo m_directory;
         private DirectoryInfo m_certificateSubdir;
         private DirectoryInfo m_privateKeySubdir;
         private Dictionary<string, Entry> m_certificates;
         private DateTime m_lastDirectoryCheck;
-#endregion
+        #endregion
     }
 }

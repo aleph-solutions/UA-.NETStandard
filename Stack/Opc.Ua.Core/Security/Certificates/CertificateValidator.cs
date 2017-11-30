@@ -196,68 +196,77 @@ namespace Opc.Ua
             }
             catch (AggregateException ae)
             {
-                foreach (ServiceResultException e in ae.InnerExceptions)
+                foreach (var ie in ae.InnerExceptions)
+                //foreach (ServiceResultException e in ae.InnerExceptions)
                 {
-                    // check for errors that may be suppressed.
-                    switch (e.StatusCode)
+                    ServiceResultException e = ie as ServiceResultException;
+                    if (e == null)
                     {
-                        case StatusCodes.BadCertificateHostNameInvalid:
-                        case StatusCodes.BadCertificateIssuerRevocationUnknown:
-                        case StatusCodes.BadCertificateIssuerTimeInvalid:
-                        case StatusCodes.BadCertificateIssuerUseNotAllowed:
-                        case StatusCodes.BadCertificateRevocationUnknown:
-                        case StatusCodes.BadCertificateTimeInvalid:
-                        case StatusCodes.BadCertificateUriInvalid:
-                        case StatusCodes.BadCertificateUseNotAllowed:
-                        case StatusCodes.BadCertificateUntrusted:
-                            {
-                                Utils.Trace("Cert Validate failed: {0}", (StatusCode)e.StatusCode);
-                                break;
-                            }
-
-                        default:
-                            {
-                                throw new ServiceResultException(e, StatusCodes.BadCertificateInvalid);
-                            }
+                        throw new Exception("Cert Validate failed", ie);
                     }
-
-                    // invoke callback.
-                    bool accept = false;
-
-                    lock (m_callbackLock)
+                    else
                     {
-                        if (m_CertificateValidation != null)
+                        // check for errors that may be suppressed.
+                        switch (e.StatusCode)
                         {
-                            CertificateValidationEventArgs args = new CertificateValidationEventArgs(new ServiceResult(e), certificate);
-                            m_CertificateValidation(this, args);
-                            accept = args.Accept;
-                        }
-                    }
+                            case StatusCodes.BadCertificateHostNameInvalid:
+                            case StatusCodes.BadCertificateIssuerRevocationUnknown:
+                            case StatusCodes.BadCertificateIssuerTimeInvalid:
+                            case StatusCodes.BadCertificateIssuerUseNotAllowed:
+                            case StatusCodes.BadCertificateRevocationUnknown:
+                            case StatusCodes.BadCertificateTimeInvalid:
+                            case StatusCodes.BadCertificateUriInvalid:
+                            case StatusCodes.BadCertificateUseNotAllowed:
+                            case StatusCodes.BadCertificateUntrusted:
+                                {
+                                    Utils.Trace("Cert Validate failed: {0}", (StatusCode)e.StatusCode);
+                                    break;
+                                }
 
-                    // throw if rejected.
-                    if (!accept)
-                    {
-                        // write the invalid certificate to a directory if specified.
+                            default:
+                                {
+                                    throw new ServiceResultException(e, StatusCodes.BadCertificateInvalid);
+                                }
+                        }
+
+                        // invoke callback.
+                        bool accept = false;
+
+                        lock (m_callbackLock)
+                        {
+                            if (m_CertificateValidation != null)
+                            {
+                                CertificateValidationEventArgs args = new CertificateValidationEventArgs(new ServiceResult(e), certificate);
+                                m_CertificateValidation(this, args);
+                                accept = args.Accept;
+                            }
+                        }
+
+                        // throw if rejected.
+                        if (!accept)
+                        {
+                            // write the invalid certificate to a directory if specified.
+                            lock (m_lock)
+                            {
+                                Utils.Trace((int)Utils.TraceMasks.Error, "Certificate '{0}' rejected. Reason={1}", certificate.Subject, (StatusCode)e.StatusCode);
+
+                                if (m_rejectedCertificateStore != null)
+                                {
+                                    Utils.Trace((int)Utils.TraceMasks.Error, "Writing rejected certificate to directory: {0}", m_rejectedCertificateStore);
+                                    SaveCertificate(certificate);
+                                }
+                            }
+
+                            throw new ServiceResultException(e, StatusCodes.BadCertificateInvalid);
+                        }
+
+                        // add to list of peers.
                         lock (m_lock)
                         {
-                            Utils.Trace((int)Utils.TraceMasks.Error, "Certificate '{0}' rejected. Reason={1}", certificate.Subject, (StatusCode)e.StatusCode);
-
-                            if (m_rejectedCertificateStore != null)
-                            {
-                                Utils.Trace((int)Utils.TraceMasks.Error, "Writing rejected certificate to directory: {0}", m_rejectedCertificateStore);
-                                SaveCertificate(certificate);
-                            }
+                            m_validatedCertificates[certificate.Thumbprint] = certificate;
                         }
-
-                        throw new ServiceResultException(e, StatusCodes.BadCertificateInvalid);
+                        break;
                     }
-
-                    // add to list of peers.
-                    lock (m_lock)
-                    {
-                        m_validatedCertificates[certificate.Thumbprint] = certificate;
-                    }
-                    break;
                 }
             }
         }
@@ -664,12 +673,17 @@ namespace Opc.Ua
                 throw new ServiceResultException(StatusCodes.BadSecurityChecksFailed, "SHA1 signed certificates are not trusted");
             }
 
-            using (RSA rsa = certificate.GetRSAPublicKey())
+            //using (RSA rsa = certificate.GetRSAPublicKey())
+            //{
+            //    if (rsa.KeySize < m_minimumCertificateKeySize)
+            //    {
+            //        throw new ServiceResultException(StatusCodes.BadSecurityChecksFailed, "Certificate doesn't meet minimum key length requirement");
+            //    }
+            //}
+            RSA rsa = certificate.GetRSAPublicKey();
+            if (rsa.KeySize < m_minimumCertificateKeySize)
             {
-                if (rsa.KeySize < m_minimumCertificateKeySize)
-                {
-                    throw new ServiceResultException(StatusCodes.BadSecurityChecksFailed, "Certificate doesn't meet minimum key length requirement");
-                }
+                throw new ServiceResultException(StatusCodes.BadSecurityChecksFailed, "Certificate doesn't meet minimum key length requirement");
             }
 
             CertificateIdentifier trustedCertificate = await GetTrustedCertificate(certificate);
