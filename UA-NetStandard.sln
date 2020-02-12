@@ -8,6 +8,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UA Sample Client", "SampleApplications\Samples\Client.Net4\UA Sample Client.csproj", "{D7601329-530D-4537-B9B9-D9D53D5F81F6}"
 	ProjectSection(ProjectDependencies) = postProject
 		{6C449A1E-244E-4515-9949-A7E22012537C} = {6C449A1E-244E-4515-9949-A7E22012537C}
+		{15100583-BFEF-431B-A1EA-1E5A843A39B1} = {15100583-BFEF-431B-A1EA-1E5A843A39B1}
+		{BCB915B6-B5C3-45BC-9C8B-F43008DF0C14} = {BCB915B6-B5C3-45BC-9C8B-F43008DF0C14}
+		{A39614CA-8EBE-4408-A9D2-38C7E5AE2A1D} = {A39614CA-8EBE-4408-A9D2-38C7E5AE2A1D}
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UA Client Controls", "SampleApplications\Samples\ClientControls.Net4\UA Client Controls.csproj", "{A247D2EE-14FC-463D-A9BA-6CFF1EF22B7A}"
@@ -34,6 +37,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.travis.yml = .travis.yml
 		appveyor.yml = appveyor.yml
 		NuGet.Config = NuGet.Config
+		nuget\Opc.Ua.Client.ComplexTypes.nuspec = nuget\Opc.Ua.Client.ComplexTypes.nuspec
+		nuget\Opc.Ua.Client.ComplexTypes.Symbols.nuspec = nuget\Opc.Ua.Client.ComplexTypes.Symbols.nuspec
 		nuget\Opc.Ua.nuspec = nuget\Opc.Ua.nuspec
 		nuget\Opc.Ua.Symbols.nuspec = nuget\Opc.Ua.Symbols.nuspec
 		README.md = README.md
@@ -50,6 +55,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCoreConsoleClient", "SampleApplications\Samples\NetCoreConsoleClient\NetCoreConsoleClient.csproj", "{7AD6D1A2-2643-409B-B401-73BCB9DBD8D8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCoreConsoleServer", "SampleApplications\Samples\NetCoreConsoleServer\NetCoreConsoleServer.csproj", "{F7880521-6662-43A0-B28E-219AA8D28A49}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Opc.Ua.Client.ComplexTypes", "SampleApplications\SDK\Opc.Ua.Client.ComplexTypes\Opc.Ua.Client.ComplexTypes.csproj", "{FE9EEB39-0698-4A19-B770-E66836CE0002}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCoreComplexClient", "SampleApplications\Samples\NetCoreComplexClient\NetCoreComplexClient.csproj", "{5D4F1065-F75E-478A-9FEA-3A3276500FF8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -206,6 +215,30 @@ Global
 		{F7880521-6662-43A0-B28E-219AA8D28A49}.Release|x64.Build.0 = Release|Any CPU
 		{F7880521-6662-43A0-B28E-219AA8D28A49}.Release|x86.ActiveCfg = Release|Any CPU
 		{F7880521-6662-43A0-B28E-219AA8D28A49}.Release|x86.Build.0 = Release|Any CPU
+		{FE9EEB39-0698-4A19-B770-E66836CE0002}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE9EEB39-0698-4A19-B770-E66836CE0002}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE9EEB39-0698-4A19-B770-E66836CE0002}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FE9EEB39-0698-4A19-B770-E66836CE0002}.Debug|x64.Build.0 = Debug|Any CPU
+		{FE9EEB39-0698-4A19-B770-E66836CE0002}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FE9EEB39-0698-4A19-B770-E66836CE0002}.Debug|x86.Build.0 = Debug|Any CPU
+		{FE9EEB39-0698-4A19-B770-E66836CE0002}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE9EEB39-0698-4A19-B770-E66836CE0002}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE9EEB39-0698-4A19-B770-E66836CE0002}.Release|x64.ActiveCfg = Release|Any CPU
+		{FE9EEB39-0698-4A19-B770-E66836CE0002}.Release|x64.Build.0 = Release|Any CPU
+		{FE9EEB39-0698-4A19-B770-E66836CE0002}.Release|x86.ActiveCfg = Release|Any CPU
+		{FE9EEB39-0698-4A19-B770-E66836CE0002}.Release|x86.Build.0 = Release|Any CPU
+		{5D4F1065-F75E-478A-9FEA-3A3276500FF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D4F1065-F75E-478A-9FEA-3A3276500FF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D4F1065-F75E-478A-9FEA-3A3276500FF8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5D4F1065-F75E-478A-9FEA-3A3276500FF8}.Debug|x64.Build.0 = Debug|Any CPU
+		{5D4F1065-F75E-478A-9FEA-3A3276500FF8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5D4F1065-F75E-478A-9FEA-3A3276500FF8}.Debug|x86.Build.0 = Debug|Any CPU
+		{5D4F1065-F75E-478A-9FEA-3A3276500FF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D4F1065-F75E-478A-9FEA-3A3276500FF8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D4F1065-F75E-478A-9FEA-3A3276500FF8}.Release|x64.ActiveCfg = Release|Any CPU
+		{5D4F1065-F75E-478A-9FEA-3A3276500FF8}.Release|x64.Build.0 = Release|Any CPU
+		{5D4F1065-F75E-478A-9FEA-3A3276500FF8}.Release|x86.ActiveCfg = Release|Any CPU
+		{5D4F1065-F75E-478A-9FEA-3A3276500FF8}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

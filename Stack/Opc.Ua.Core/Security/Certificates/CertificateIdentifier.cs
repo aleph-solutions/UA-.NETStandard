@@ -1,4 +1,4 @@
-/* Copyright (c) 1996-2016, OPC Foundation. All rights reserved.
+/* Copyright (c) 1996-2019 The OPC Foundation. All rights reserved.
    The source code in this file is covered under a dual-license scenario:
      - RCL: for OPC Foundation members in good-standing
      - GPL V2: everybody else
@@ -641,7 +641,7 @@ namespace Opc.Ua
         /// <param name="certificate">The certificate.</param>
         public async Task Add(X509Certificate2 certificate, string password = null)
         {
-            if (certificate == null) throw new ArgumentNullException("certificate");
+            if (certificate == null) throw new ArgumentNullException(nameof(certificate));
 
             for (int ii = 0; ii < this.Count; ii++)
             {

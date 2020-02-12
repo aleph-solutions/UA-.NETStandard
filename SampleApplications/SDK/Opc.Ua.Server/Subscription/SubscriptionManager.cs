@@ -1,5 +1,5 @@
 /* ========================================================================
- * Copyright (c) 2005-2016 The OPC Foundation, Inc. All rights reserved.
+ * Copyright (c) 2005-2019 The OPC Foundation, Inc. All rights reserved.
  *
  * OPC Foundation MIT License 1.00
  * 
@@ -49,8 +49,8 @@ namespace Opc.Ua.Server
             IServerInternal          server,
             ApplicationConfiguration configuration)
         {
-            if (server == null)        throw new ArgumentNullException("server");
-            if (configuration == null) throw new ArgumentNullException("configuration");
+            if (server == null)        throw new ArgumentNullException(nameof(server));
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             
             m_server = server;
             

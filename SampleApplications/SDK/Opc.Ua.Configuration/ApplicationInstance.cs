@@ -1,5 +1,5 @@
 /* ========================================================================
- * Copyright (c) 2005-2016 The OPC Foundation, Inc. All rights reserved.
+ * Copyright (c) 2005-2019 The OPC Foundation, Inc. All rights reserved.
  *
  * OPC Foundation MIT License 1.00
  * 
@@ -152,7 +152,7 @@ namespace Opc.Ua.Configuration
         /// </summary>
         public InstalledApplication LoadInstallConfigFromFile(string filePath)
         {
-            if (filePath == null) throw new ArgumentNullException("filePath");
+            if (filePath == null) throw new ArgumentNullException(nameof(filePath));
             
             Stream istrm = null;
 
@@ -173,7 +173,7 @@ namespace Opc.Ua.Configuration
         /// </summary>
         public InstalledApplication LoadInstallConfigFromResource(string resourcePath, Assembly assembly)
         {
-            if (resourcePath == null) throw new ArgumentNullException("resourcePath");
+            if (resourcePath == null) throw new ArgumentNullException(nameof(resourcePath));
 
             Stream istrm = assembly.GetManifestResourceStream(resourcePath);
 
@@ -1070,8 +1070,29 @@ namespace Opc.Ua.Configuration
 
             Utils.Trace(Utils.TraceMasks.Information, "Checking application instance certificate. {0}", certificate.Subject);
 
-            // validate certificate.
-            configuration.CertificateValidator.Validate(certificate);
+            try
+            {
+                // validate certificate.
+                configuration.CertificateValidator.Validate(certificate);
+            }
+            catch (Exception ex)
+            {
+                string message = Utils.Format(
+                    "Error validating certificate. Exception: {0}. Use certificate anyway?", ex.Message);
+                if (!silent && MessageDlg != null)
+                {
+                    MessageDlg.Message(message, true);
+                    if (!await MessageDlg.ShowAsync())
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    Utils.Trace(message);
+                    return false;
+                }
+            }
 
             // check key size.
             if (minimumKeySize > certificate.GetRSAPublicKey().KeySize)
@@ -1340,7 +1361,7 @@ namespace Opc.Ua.Configuration
         /// <param name="certificate">The certificate to register.</param>
         private static async Task AddToTrustedStore(ApplicationConfiguration configuration, X509Certificate2 certificate)
         {
-            if (certificate == null) throw new ArgumentNullException("certificate");
+            if (certificate == null) throw new ArgumentNullException(nameof(certificate));
 
             string storePath = null;
 

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net46;netstandard1.3;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net46;netstandard2.0</TargetFrameworks>
     <DefineConstants>$(DefineConstants);NET_STANDARD</DefineConstants>
     <LangVersion>6</LangVersion>
     <AssemblyName>Opc.Ua.Core</AssemblyName>
@@ -14,11 +14,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Stack\Generated\Opc.Ua.PredefinedNodes.uanodes;Types\Utils\LocalizedData.txt;Schema\ServerCapabilities.csv" />
+    <None Remove="Schema\Opc.Ua.Types.bsd" />
+    <None Remove="Types\Schemas\BuiltInTypes.bsd" />
+    <None Remove="Types\Schemas\StandardTypes.bsd" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Portable.BouncyCastle" Version="1.8.1.3" />
+    <EmbeddedResource Include="Schema\Opc.Ua.Types.bsd" />
+    <EmbeddedResource Include="Stack\Generated\Opc.Ua.PredefinedNodes.uanodes;Types\Utils\LocalizedData.txt;Schema\ServerCapabilities.csv" />
+    <EmbeddedResource Include="Types\Schemas\BuiltInTypes.bsd" />
+    <EmbeddedResource Include="Types\Schemas\StandardTypes.bsd" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Portable.BouncyCastle" Version="1.8.4" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
   </ItemGroup>
 
@@ -80,8 +89,8 @@
     <PackageReference Include="System.Net.Websockets.Client" Version="4.3.2" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' AND $(DefineConstants.Contains('NO_HTTPS'))=='false'">
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Https" Version="2.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Https" Version="2.2.0" />
   </ItemGroup>
   
   <ItemGroup>

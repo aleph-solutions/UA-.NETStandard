@@ -1,4 +1,4 @@
-/* Copyright (c) 1996-2016, OPC Foundation. All rights reserved.
+/* Copyright (c) 1996-2019 The OPC Foundation. All rights reserved.
    The source code in this file is covered under a dual-license scenario:
      - RCL: for OPC Foundation members in good-standing
      - GPL V2: everybody else
@@ -31,7 +31,7 @@ namespace Opc.Ua.Security
         /// <returns>The security configuration.</returns>
         public SecuredApplication ReadConfiguration(string filePath)
         {
-            if (filePath == null) throw new ArgumentNullException("filePath");
+            if (filePath == null) throw new ArgumentNullException(nameof(filePath));
 
             string configFilePath = filePath;
             string exeFilePath = null;
@@ -232,7 +232,7 @@ namespace Opc.Ua.Security
         /// <param name="configuration">The configuration.</param>
         public void WriteConfiguration(string filePath, SecuredApplication configuration)
         {
-            if (configuration == null) throw new ArgumentNullException("configuration");
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
             // check for valid file.
             if (String.IsNullOrEmpty(filePath) || !File.Exists(filePath))

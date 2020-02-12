@@ -1,5 +1,5 @@
 /* ========================================================================
- * Copyright (c) 2005-2017 The OPC Foundation, Inc. All rights reserved.
+ * Copyright (c) 2005-2019 The OPC Foundation, Inc. All rights reserved.
  *
  * OPC Foundation MIT License 1.00
  * 
@@ -43,7 +43,7 @@ namespace Quickstarts
     /// This node manager is a base class used in multiple samples. It implements the INodeManager
     /// interface and allows sub-classes to override only the methods that they need. This example
     /// is not part of the SDK because most real implementations of a INodeManager will need to
-    /// modify the behavoir of the base class.
+    /// modify the behavior of the base class.
     /// </remarks>
     public class QuickstartNodeManager : INodeManager, INodeIdFactory, IDisposable
     {

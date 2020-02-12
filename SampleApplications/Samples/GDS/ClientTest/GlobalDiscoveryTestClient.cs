@@ -1,5 +1,5 @@
-﻿/* ========================================================================
- * Copyright (c) 2005-2017 The OPC Foundation, Inc. All rights reserved.
+/* ========================================================================
+ * Copyright (c) 2005-2019 The OPC Foundation, Inc. All rights reserved.
  *
  * OPC Foundation MIT License 1.00
  * 
@@ -64,7 +64,7 @@ namespace Opc.Ua.Gds.Test
             Config = await application.LoadApplicationConfiguration(false);
 
             // check the application certificate.
-            bool haveAppCertificate = await application.CheckApplicationInstanceCertificate(false, 0);
+            bool haveAppCertificate = await application.CheckApplicationInstanceCertificate(true, 0);
             if (!haveAppCertificate)
             {
                 throw new Exception("Application instance certificate invalid!");

@@ -1,4 +1,4 @@
-/* Copyright (c) 1996-2016, OPC Foundation. All rights reserved.
+/* Copyright (c) 1996-2019 The OPC Foundation. All rights reserved.
    The source code in this file is covered under a dual-license scenario:
      - RCL: for OPC Foundation members in good-standing
      - GPL V2: everybody else
@@ -406,6 +406,29 @@ namespace Opc.Ua
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Returns true if a 'null' value exists for the built-in type
+        /// in all data encodings.
+        /// </summary>
+        /// <param name="builtInType">The built in type to check.</param>
+        /// <returns>
+        /// True if the built-in type is a type that is nullable.
+        /// </returns>
+        public static bool IsEncodingNullableType(BuiltInType builtInType)
+        {
+            if (builtInType >= BuiltInType.Boolean && builtInType <= BuiltInType.Double)
+            {
+                return false;
+            }
+
+            if (builtInType == BuiltInType.DataValue || builtInType == BuiltInType.DiagnosticInfo)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -2171,6 +2194,11 @@ namespace Opc.Ua
                     return ((StatusCode)value).Code.ToString();
                 }
 
+                case BuiltInType.ExtensionObject:
+                {
+                    return ((ExtensionObject)value).ToString();
+                }
+
                 case BuiltInType.Null:
                 {
                     return null; 
@@ -2656,15 +2684,15 @@ namespace Opc.Ua
 
             return output;
         }
-        #endregion
+#endregion
         
-        #region Private Fields
+#region Private Fields
         private BuiltInType m_builtInType;
         private int m_valueRank;
         private static readonly TypeInfo s_Unknown = new TypeInfo();
-        #endregion
+#endregion
         
-        #region Scalars Class
+#region Scalars Class
         /// <summary>
         /// Constants for scalar types.
         /// </summary>
@@ -2796,9 +2824,9 @@ namespace Opc.Ua
             /// </summary>
             public static readonly TypeInfo DiagnosticInfo = new TypeInfo(BuiltInType.DiagnosticInfo, ValueRanks.Scalar);
         }
-        #endregion
+#endregion
 
-        #region Arrays Class
+#region Arrays Class
         /// <summary>
         /// Constants for one dimensional array types.
         /// </summary>
@@ -2930,9 +2958,9 @@ namespace Opc.Ua
             /// </summary>
             public static readonly TypeInfo DiagnosticInfo = new TypeInfo(BuiltInType.DiagnosticInfo, ValueRanks.OneDimension);
         }
-        #endregion
+#endregion
 
-        #region IFormattable Members
+#region IFormattable Members
         /// <summary>
         /// Formats the type information as a string.
         /// </summary>
@@ -2968,6 +2996,6 @@ namespace Opc.Ua
         
             throw new FormatException(Utils.Format("Invalid format string: '{0}'.", format));
         }
-        #endregion
+#endregion
     }
 }

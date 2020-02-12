@@ -1,12 +1,12 @@
 language: csharp
 mono: 5.4.0
-dotnet: 2.0.0
+dotnet: 2.2.100
 os:
   - linux
   - osx
 sudo: false
-dist: trusty
-osx_image: xcode9.1
+dist: xenial
+osx_image: xcode9.4.1
 
 addons:
   apt:
@@ -24,8 +24,10 @@ script:
   - dotnet build -c Debug /p:NoHttps=true SampleApplications/Samples/NetCoreConsoleServer/NetCoreConsoleServer.csproj
   - dotnet build -c Release /p:NoHttps=true SampleApplications/Samples/NetCoreConsoleServer/NetCoreConsoleServer.csproj
   - dotnet build -c Debug SampleApplications/Samples/NetCoreConsoleClient/NetCoreConsoleClient.csproj
+  - dotnet build -c Debug SampleApplications/Samples/NetCoreComplexClient/NetCoreComplexClient.csproj
   - dotnet build -c Debug SampleApplications/Samples/NetCoreConsoleServer/NetCoreConsoleServer.csproj
   - dotnet build -c Release SampleApplications/Samples/NetCoreConsoleClient/NetCoreConsoleClient.csproj
+  - dotnet build -c Release SampleApplications/Samples/NetCoreComplexClient/NetCoreComplexClient.csproj
   - dotnet build -c Release SampleApplications/Samples/NetCoreConsoleServer/NetCoreConsoleServer.csproj
   - dotnet build -c Debug SampleApplications/Workshop/Aggregation/ConsoleAggregationServer
   - dotnet build -c Release SampleApplications/Workshop/Aggregation/ConsoleAggregationServer
@@ -35,10 +37,19 @@ script:
   - dotnet build -c Release SampleApplications/Samples/GDS/ConsoleServer
   - dotnet build -c Debug SampleApplications/Samples/GDS/ClientTest
   - dotnet build -c Release SampleApplications/Samples/GDS/ClientTest
-  - dotnet test -c Debug --filter TestCategory!="GDSPush" SampleApplications/Samples/GDS/ClientTest
-  - dotnet test -c Release --filter TestCategory!="GDSPush" SampleApplications/Samples/GDS/ClientTest
-  - dotnet test -c Debug --filter TestCategory="GDSPush" SampleApplications/Samples/GDS/ClientTest
-  - dotnet test -c Release --filter TestCategory="GDSPush" SampleApplications/Samples/GDS/ClientTest
+  - dotnet build -c Debug Stack/Opc.Ua.Core.Tests
+  - dotnet build -c Release Stack/Opc.Ua.Core.Tests
+  - dotnet build -c Debug SampleApplications/SDK/Opc.Ua.Client.ComplexTypes.Tests
+  - dotnet build -c Release SampleApplications/SDK/Opc.Ua.Client.ComplexTypes.Tests
+  - dotnet test --no-build -v n -c Debug --filter TestCategory="GDSRegistrationAndPull" SampleApplications/Samples/GDS/ClientTest
+  - dotnet test --no-build -v n -c Release --filter TestCategory="GDSRegistrationAndPull" SampleApplications/Samples/GDS/ClientTest
+  - dotnet test --no-build -v n -c Debug --filter TestCategory="GDSPush" SampleApplications/Samples/GDS/ClientTest
+  - dotnet test --no-build -v n -c Release --filter TestCategory="GDSPush" SampleApplications/Samples/GDS/ClientTest
+  - dotnet test --no-build -v m -c Debug --filter TestCategory!="CertificateValidator" Stack/Opc.Ua.Core.Tests
+  - dotnet test --no-build -v m -c Release --filter TestCategory!="CertificateValidator" Stack/Opc.Ua.Core.Tests
+  - dotnet test --no-build -v n -c Release --filter TestCategory="CertificateValidator" Stack/Opc.Ua.Core.Tests
+  - dotnet test --no-build -v m -c Debug SampleApplications/SDK/Opc.Ua.Client.ComplexTypes.Tests
+  - dotnet test --no-build -v m -c Release SampleApplications/SDK/Opc.Ua.Client.ComplexTypes.Tests
   - echo "========== run .Net Core samples ============"
   - cd SampleApplications/Samples/NetCoreConsoleServer/bin/Debug/netcoreapp2.0
   - dotnet NetCoreConsoleServer.dll -t 10 -a

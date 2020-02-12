@@ -1,5 +1,5 @@
 /* ========================================================================
- * Copyright (c) 2005-2016 The OPC Foundation, Inc. All rights reserved.
+ * Copyright (c) 2005-2019 The OPC Foundation, Inc. All rights reserved.
  *
  * OPC Foundation MIT License 1.00
  * 
@@ -45,7 +45,7 @@ namespace Opc.Ua.Client
         /// </summary>
         public NodeCache(Session session)
         {
-            if (session == null) throw new ArgumentNullException("session");
+            if (session == null) throw new ArgumentNullException(nameof(session));
 
             m_session  = session;
             m_typeTree = new TypeTable(m_session.NamespaceUris);

@@ -1,5 +1,5 @@
 /* ========================================================================
- * Copyright (c) 2005-2013 The OPC Foundation, Inc. All rights reserved.
+ * Copyright (c) 2005-2019 The OPC Foundation, Inc. All rights reserved.
  *
  * OPC Foundation MIT License 1.00
  * 
@@ -28,6 +28,7 @@
  * ======================================================================*/
 
 using Opc.Ua.Client;
+using Opc.Ua.Client.ComplexTypes;
 using Opc.Ua.Client.Controls;
 using System;
 using System.Collections.Generic;
@@ -257,6 +258,9 @@ namespace Opc.Ua.Sample.Controls
 
                 // open the session.
                 session.Open(sessionName, (uint)session.SessionTimeout, identity, preferredLocales, checkDomain ?? true);
+
+                var typeSystemLoader = new ComplexTypeSystem(session);
+                typeSystemLoader.Load().Wait();
 
                 OpenComplete(null);
             }

@@ -1,5 +1,5 @@
 /* ========================================================================
- * Copyright (c) 2005-2013 The OPC Foundation, Inc. All rights reserved.
+ * Copyright (c) 2005-2019 The OPC Foundation, Inc. All rights reserved.
  *
  * OPC Foundation MIT License 1.00
  * 
@@ -33,6 +33,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Threading.Tasks;
+using Opc.Ua.Client.ComplexTypes;
 
 namespace Opc.Ua.Client.Controls
 {
@@ -306,6 +307,9 @@ namespace Opc.Ua.Client.Controls
 
             // raise an event.
             DoConnectComplete(null);
+
+            var typeSystemLoader = new ComplexTypeSystem(m_session);
+            await typeSystemLoader.Load();
 
             // return the new session.
             return m_session;

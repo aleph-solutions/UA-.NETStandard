@@ -1,4 +1,4 @@
-/* Copyright (c) 1996-2016, OPC Foundation. All rights reserved.
+/* Copyright (c) 1996-2019 The OPC Foundation. All rights reserved.
    The source code in this file is covered under a dual-license scenario:
      - RCL: for OPC Foundation members in good-standing
      - GPL V2: everybody else
@@ -79,14 +79,8 @@ namespace Opc.Ua.Bindings
             m_args.SetBuffer(buffer, offset, count);
         }
 
-        public bool IsSocketError
-        {
-            get { return m_args.SocketError != SocketError.Success; }
-        }
-        public string SocketErrorString
-        {
-            get { return m_args.SocketError.ToString(); }
-        }
+        public bool IsSocketError => m_args.SocketError != SocketError.Success;
+        public string SocketErrorString => m_args.SocketError.ToString();
 
         public event EventHandler<IMessageSocketAsyncEventArgs> Completed
         {
@@ -104,19 +98,17 @@ namespace Opc.Ua.Bindings
 
         protected void OnComplete(object sender, SocketAsyncEventArgs e)
         {
-            if (e.UserToken == null) return;
+            if (e.UserToken == null)
+            {
+                return;
+            }
+
             m_internalComplete(this, e.UserToken as IMessageSocketAsyncEventArgs);
         }
 
-        public int BytesTransferred
-        {
-            get { return m_args.BytesTransferred; }
-        }
+        public int BytesTransferred => m_args.BytesTransferred;
 
-        public byte[] Buffer
-        {
-            get { return m_args.Buffer; }
-        }
+        public byte[] Buffer => m_args.Buffer;
 
         public BufferCollection BufferList
         {
@@ -159,15 +151,9 @@ namespace Opc.Ua.Bindings
             throw new NotImplementedException();
         }
 
-        public bool IsSocketError
-        {
-            get { return m_socketError != SocketError.Success; }
-        }
+        public bool IsSocketError => m_socketError != SocketError.Success;
 
-        public string SocketErrorString
-        {
-            get { return m_socketError.ToString(); }
-        }
+        public string SocketErrorString => m_socketError.ToString();
 
         public event EventHandler<IMessageSocketAsyncEventArgs> Completed
         {
@@ -181,15 +167,9 @@ namespace Opc.Ua.Bindings
             }
         }
 
-        public int BytesTransferred
-        {
-            get { return 0; }
-        }
+        public int BytesTransferred => 0;
 
-        public byte[] Buffer
-        {
-            get { return null; }
-        }
+        public byte[] Buffer => null;
 
         public BufferCollection BufferList
         {
@@ -227,7 +207,7 @@ namespace Opc.Ua.Bindings
         /// Gets the implementation description.
         /// </summary>
         /// <value>The implementation string.</value>
-        public string Implementation { get { return "UA-TCP"; } }
+        public string Implementation => "UA-TCP";
 
     }
 
@@ -246,7 +226,10 @@ namespace Opc.Ua.Bindings
             BufferManager bufferManager,
             int receiveBufferSize)
         {
-            if (bufferManager == null) throw new ArgumentNullException("bufferManager");
+            if (bufferManager == null)
+            {
+                throw new ArgumentNullException(nameof(bufferManager));
+            }
 
             m_sink = sink;
             m_socket = null;
@@ -265,8 +248,15 @@ namespace Opc.Ua.Bindings
             BufferManager bufferManager,
             int receiveBufferSize)
         {
-            if (socket == null) throw new ArgumentNullException("socket");
-            if (bufferManager == null) throw new ArgumentNullException("bufferManager");
+            if (socket == null)
+            {
+                throw new ArgumentNullException(nameof(socket));
+            }
+
+            if (bufferManager == null)
+            {
+                throw new ArgumentNullException(nameof(bufferManager));
+            }
 
             m_sink = sink;
             m_socket = socket;
@@ -321,7 +311,10 @@ namespace Opc.Ua.Bindings
         /// </summary>
         public async Task<bool> BeginConnect(Uri endpointUrl, EventHandler<IMessageSocketAsyncEventArgs> callback, object state)
         {
-            if (endpointUrl == null) throw new ArgumentNullException(nameof(endpointUrl));
+            if (endpointUrl == null)
+            {
+                throw new ArgumentNullException(nameof(endpointUrl));
+            }
 
             if (m_socket != null)
             {
@@ -367,11 +360,19 @@ namespace Opc.Ua.Bindings
                 lock (m_socketLock)
                 {
                     if (addressesV6.Length > arrayV6Index)
+                    {
                         m_socketResponses++;
+                    }
+
                     if (addressesV4.Length > arrayV4Index)
+                    {
                         m_socketResponses++;
+                    }
+
                     if (m_tcs.Task.IsCompleted)
+                    {
                         m_tcs = new TaskCompletionSource<SocketError>();
+                    }
                 }
 
                 if (addressesV6.Length > arrayV6Index && m_socket == null)
@@ -414,7 +415,7 @@ namespace Opc.Ua.Bindings
                 }
             } while (moreAddresses);
 
-         ErrorExit:
+            ErrorExit:
             doCallback(error);
 
             return false;
@@ -459,6 +460,15 @@ namespace Opc.Ua.Bindings
         /// </summary>
         public void ReadNextMessage()
         {
+            var args = InternalReadNextMessage();
+            if (args != null)
+            {
+                m_ReadComplete(null, args);
+            }
+        }
+
+        private SocketAsyncEventArgs InternalReadNextMessage()
+        {
             lock (m_readLock)
             {
                 // allocate a buffer large enough to a message chunk.
@@ -472,7 +482,7 @@ namespace Opc.Ua.Bindings
                 m_bytesToReceive = TcpMessageLimits.MessageTypeAndSize;
                 m_incomingMessageSize = -1;
 
-                ReadNextBlock();
+                return ReadNextBlock();
             }
         }
 
@@ -499,6 +509,50 @@ namespace Opc.Ua.Bindings
                 try
                 {
                     error = DoReadComplete(e);
+
+                    while (ServiceResult.IsGood(error) && e != null)
+                    {
+                        e.Dispose();
+
+                        // check if more data left to read.
+                        if (m_bytesReceived < m_bytesToReceive)
+                        {
+                            e = ReadNextBlock();
+                        }
+                        // start reading the message body.
+                        else if (m_incomingMessageSize < 0)
+                        {
+                            m_incomingMessageSize = BitConverter.ToInt32(m_receiveBuffer, 4);
+
+                            if (m_incomingMessageSize <= 0 || m_incomingMessageSize > m_receiveBufferSize)
+                            {
+                                Utils.Trace(
+                                    "BadTcpMessageTooLarge: BufferSize={0}; MessageSize={1}",
+                                    m_receiveBufferSize,
+                                    m_incomingMessageSize);
+
+                                error = ServiceResult.Create(
+                                    StatusCodes.BadTcpMessageTooLarge,
+                                    "Messages size {1} bytes is too large for buffer of size {0}.",
+                                    m_receiveBufferSize,
+                                    m_incomingMessageSize);
+                            }
+
+                            // set up buffer for reading the message body.
+                            m_bytesToReceive = m_incomingMessageSize;
+
+                            e = ReadNextBlock();
+                        }
+                        else
+                        {
+                            e = InternalReadNextMessage();
+                        }
+
+                        if(e != null)
+                        {
+                            error = DoReadComplete(e);
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -507,7 +561,7 @@ namespace Opc.Ua.Bindings
                 }
                 finally
                 {
-                    e.Dispose();
+                    e?.Dispose();
                 }
 
                 if (ServiceResult.IsBad(error))
@@ -560,35 +614,12 @@ namespace Opc.Ua.Bindings
             // check if more data left to read.
             if (m_bytesReceived < m_bytesToReceive)
             {
-                ReadNextBlock();
-
                 return ServiceResult.Good;
             }
 
             // start reading the message body.
             if (m_incomingMessageSize < 0)
             {
-                m_incomingMessageSize = BitConverter.ToInt32(m_receiveBuffer, 4);
-
-                if (m_incomingMessageSize <= 0 || m_incomingMessageSize > m_receiveBufferSize)
-                {
-                    Utils.Trace(
-                        "BadTcpMessageTooLarge: BufferSize={0}; MessageSize={1}",
-                        m_receiveBufferSize,
-                        m_incomingMessageSize);
-
-                    return ServiceResult.Create(
-                        StatusCodes.BadTcpMessageTooLarge,
-                        "Messages size {1} bytes is too large for buffer of size {0}.",
-                        m_receiveBufferSize,
-                        m_incomingMessageSize);
-                }
-
-                // set up buffer for reading the message body.
-                m_bytesToReceive = m_incomingMessageSize;
-
-                ReadNextBlock();
-
                 return ServiceResult.Good;
             }
 
@@ -618,16 +649,13 @@ namespace Opc.Ua.Bindings
                 m_receiveBuffer = null;
             }
 
-            // start receiving next message.
-            ReadNextMessage();
-
             return ServiceResult.Good;
         }
 
         /// <summary>
         /// Reads the next block of data from the socket.
         /// </summary>
-        private void ReadNextBlock()
+        private SocketAsyncEventArgs ReadNextBlock()
         {
             Socket socket = null;
 
@@ -642,7 +670,7 @@ namespace Opc.Ua.Bindings
                         m_receiveBuffer = null;
                     }
 
-                    return;
+                    return null;
                 }
 
                 socket = m_socket;
@@ -650,7 +678,7 @@ namespace Opc.Ua.Bindings
                 // avoid stale ServiceException when socket is disconnected
                 if (!socket.Connected)
                 {
-                    return;
+                    return null;
                 }
 
             }
@@ -672,15 +700,17 @@ namespace Opc.Ua.Bindings
                     }
                     else
                     {
-                        m_ReadComplete(null, args);
+                        return args;
+                        //Root of the problem
+                        //m_ReadComplete(null, args);
                     }
                 }
             }
-            catch (ServiceResultException sre)
+            catch (ServiceResultException)
             {
                 args.Dispose();
                 BufferManager.UnlockBuffer(m_receiveBuffer);
-                throw sre;
+                throw;
             }
             catch (Exception ex)
             {
@@ -688,6 +718,8 @@ namespace Opc.Ua.Bindings
                 BufferManager.UnlockBuffer(m_receiveBuffer);
                 throw ServiceResultException.Create(StatusCodes.BadTcpInternalError, ex, "BeginReceive failed.");
             }
+
+            return null;
         }
 
         /// <summary>
@@ -781,7 +813,7 @@ namespace Opc.Ua.Bindings
             TcpMessageSocketAsyncEventArgs eventArgs = args as TcpMessageSocketAsyncEventArgs;
             if (eventArgs == null)
             {
-                throw new ArgumentNullException("args");
+                throw new ArgumentNullException(nameof(args));
             }
             if (m_socket == null)
             {

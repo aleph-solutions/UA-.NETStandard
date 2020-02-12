@@ -1,5 +1,5 @@
 /* ========================================================================
- * Copyright (c) 2005-2016 The OPC Foundation, Inc. All rights reserved.
+ * Copyright (c) 2005-2019 The OPC Foundation, Inc. All rights reserved.
  *
  * OPC Foundation MIT License 1.00
  * 
@@ -78,8 +78,8 @@ namespace Opc.Ua.Server
             int                     maxBrowseContinuationPoints,
             int                     maxHistoryContinuationPoints)
         {
-            if (context == null) throw new ArgumentNullException("context");
-            if (server == null)  throw new ArgumentNullException("server");
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            if (server == null)  throw new ArgumentNullException(nameof(server));
             
             // verify that a secure channel was specified.
             if (context.ChannelContext == null)
@@ -435,7 +435,7 @@ namespace Opc.Ua.Server
         /// </summary>
         public virtual void ValidateRequest(RequestHeader requestHeader, RequestType requestType)
         {
-            if (requestHeader == null) throw new ArgumentNullException("requestHeader");
+            if (requestHeader == null) throw new ArgumentNullException(nameof(requestHeader));
             
             lock (m_lock)
             {
@@ -487,7 +487,7 @@ namespace Opc.Ua.Server
         /// <returns>true if the new locale ids are different from the old locale ids.</returns>
         public bool UpdateLocaleIds(StringCollection localeIds)
         {
-            if (localeIds == null) throw new ArgumentNullException("localeIds");
+            if (localeIds == null) throw new ArgumentNullException(nameof(localeIds));
                         
             lock (m_lock)
             {                
@@ -543,8 +543,13 @@ namespace Opc.Ua.Server
                 // verify the client signature.
                 if (m_clientCertificate != null)
                 {
+                    if (m_endpoint.SecurityPolicyUri != SecurityPolicies.None && clientSignature != null && clientSignature.Signature == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadApplicationSignatureInvalid);
+                    }
+
                     byte[] dataToSign = Utils.Append(m_serverCertificate.RawData, m_serverNonce);
-                    
+
                     if (!SecurityPolicies.Verify(m_clientCertificate, m_endpoint.SecurityPolicyUri, dataToSign, clientSignature))
                     {
                         // verify for certificate chain in endpoint.
@@ -699,7 +704,7 @@ namespace Opc.Ua.Server
         /// </remarks>
         public void SaveContinuationPoint(ContinuationPoint continuationPoint)
         {
-            if (continuationPoint == null) throw new ArgumentNullException("continuationPoint");
+            if (continuationPoint == null) throw new ArgumentNullException(nameof(continuationPoint));
 
             lock (m_lock)
             {
@@ -768,7 +773,7 @@ namespace Opc.Ua.Server
         /// </remarks>
         public void SaveHistoryContinuationPoint(Guid id, object continuationPoint)
         {
-            if (continuationPoint == null) throw new ArgumentNullException("continuationPoint");
+            if (continuationPoint == null) throw new ArgumentNullException(nameof(continuationPoint));
 
             lock (m_lock)
             {
@@ -1035,7 +1040,7 @@ namespace Opc.Ua.Server
                 {
                     if (e is ServiceResultException)
                     {
-                        throw e;
+                        throw;
                     }
 
                     throw ServiceResultException.Create(StatusCodes.BadIdentityTokenInvalid, e, "Could not decrypt identity token.");
@@ -1090,7 +1095,7 @@ namespace Opc.Ua.Server
             IUserIdentity     identity, 
             IUserIdentity     effectiveIdentity)
         {
-            if (identityToken == null) throw new ArgumentNullException("identityToken");
+            if (identityToken == null) throw new ArgumentNullException(nameof(identityToken));
 
             lock (m_lock)
             {
