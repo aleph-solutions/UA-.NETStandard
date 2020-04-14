@@ -70,8 +70,8 @@ namespace Opc.Ua.Sample
                 Task task3 = application.Start(new PubSubSampleServer());
                 task3.Wait();
 
-                // run the application interactively.
-                Application.Run(new ServerForm(application));
+                Console.Write("Press <Enter> to exit... ");
+                while (Console.ReadKey().Key != ConsoleKey.Enter) { }
             }
             catch (Exception e)
             {

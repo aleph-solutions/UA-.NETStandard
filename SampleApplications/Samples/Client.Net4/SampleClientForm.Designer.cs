@@ -61,11 +61,12 @@ namespace Opc.Ua.Sample
             // 
             // SessionsCTRL
             // 
-            this.SessionsCTRL.Size = new System.Drawing.Size(295, 320);
+            this.SessionsCTRL.Size = new System.Drawing.Size(295, 259);
             // 
             // BrowseCTRL
             // 
-            this.BrowseCTRL.Size = new System.Drawing.Size(709, 320);
+            this.BrowseCTRL.Size = new System.Drawing.Size(709, 259);
+            this.BrowseCTRL.Load += new System.EventHandler(this.BrowseCTRL_Load);
             // 
             // SampleClientForm
             // 

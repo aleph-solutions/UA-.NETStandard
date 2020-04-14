@@ -104,9 +104,9 @@ namespace Opc.Ua.Sample
             // create the custom node managers.
               _PublisherNodeManager = new global::Opc.Ua.Sample.PubSub.PublisherNodeManager(server, configuration);
             nodeManagers.Add(_PublisherNodeManager);
-            nodeManagers.Add(new global::TestData.TestDataNodeManager(server, configuration));
-            nodeManagers.Add(new global::MemoryBuffer.MemoryBufferNodeManager(server, configuration));
-            nodeManagers.Add(new global::Boiler.BoilerNodeManager(server, configuration));
+            //nodeManagers.Add(new global::TestData.TestDataNodeManager(server, configuration));
+            //nodeManagers.Add(new global::MemoryBuffer.MemoryBufferNodeManager(server, configuration));
+            //nodeManagers.Add(new global::Boiler.BoilerNodeManager(server, configuration));
 
             // create master node manager.
             return new MasterNodeManager(server, configuration, null, nodeManagers.ToArray());

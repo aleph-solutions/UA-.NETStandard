@@ -74,5 +74,10 @@ namespace Opc.Ua.Sample
 				GuiUtils.HandleException(this.Text, MethodBase.GetCurrentMethod(), exception);
             }
         }
+
+        private void BrowseCTRL_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }

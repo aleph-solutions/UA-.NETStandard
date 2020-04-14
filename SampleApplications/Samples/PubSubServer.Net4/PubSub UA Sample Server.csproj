@@ -8,7 +8,7 @@
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{35DFBCC1-1B10-413A-9FF6-6DE118608E2F}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Opc.Ua.PubSub.Sample</RootNamespace>
     <AssemblyName>Opc.Ua.PubSub.SampleServer</AssemblyName>
@@ -66,6 +66,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConfigurationClient\InternalClient.cs" />
     <Compile Include="Properties\AssemblyVersionInfo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -75,14 +76,6 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ServerDiagnosticsCtrl.resx">
-      <DependentUpon>ServerDiagnosticsCtrl.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ServerForm.resx">
-      <DependentUpon>ServerForm.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <Compile Include="Properties\Resources.Designer.cs">
@@ -105,18 +98,6 @@
     <Compile Include="PubSub\PubSubSampleServer.cs" />
     <Compile Include="PubSub\PubSubSampleServer.UserAuthentication.cs" />
     <Compile Include="SecurityKeyManager.cs" />
-    <Compile Include="ServerDiagnosticsCtrl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="ServerDiagnosticsCtrl.Designer.cs">
-      <DependentUpon>ServerDiagnosticsCtrl.cs</DependentUpon>
-    </Compile>
-    <Compile Include="ServerForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ServerForm.Designer.cs">
-      <DependentUpon>ServerForm.cs</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\AMQPTransportDataSource\AMQPTransportDataSource.csproj">
@@ -171,6 +152,10 @@
     <ProjectReference Include="..\Opc.Ua.Sample\Opc.Ua.Sample.csproj">
       <Project>{bcb915b6-b5c3-45bc-9c8b-f43008df0c14}</Project>
       <Name>Opc.Ua.Sample</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PubSub Configuration Tool\PubSubBase\PubSubBase.csproj">
+      <Project>{5FBB5D20-5D60-4B08-B077-15BF57005D99}</Project>
+      <Name>PubSubBase</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServerControls.Net4\UA Server Controls.csproj">
       <Project>{80056988-44e7-4ef4-9f59-50bcf215cb03}</Project>

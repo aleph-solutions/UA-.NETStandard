@@ -38,7 +38,7 @@ namespace MQTTTransportDataSource
 
                 string[] addressarray = address.Split(':');
 
-                string Address = addressarray[1].Replace("/", string.Empty);
+                string Address = addressarray[0].Replace("/", string.Empty);
                 if (Address.ToLower() == "localhost")
                 {
                     Address = "127.0.0.1";
@@ -58,7 +58,7 @@ namespace MQTTTransportDataSource
                 client.MqttMsgPublishReceived += Client_MqttMsgPublishReceived;
                 client.MqttMsgPublished += Client_MqttMsgPublished;
                 client.MqttMsgSubscribed += Client_MqttMsgSubscribed;
-                client.Connect(Guid.NewGuid().ToString());
+                client.Connect(Guid.NewGuid().ToString(), "aleph", "A13phQ");
                 return true;
             }
             catch (Exception ex)
@@ -71,14 +71,26 @@ namespace MQTTTransportDataSource
         {
             //string ReceivedMessage = Encoding.UTF8.GetString(e.Message);
             OnDataReceived(e.Message);
-
         }
 
         public override bool SendData(byte[] data, Dictionary<string, object> settings)
         {
-            string topic = Convert.ToString(settings["topic"]);
-            client.Publish(topic, data, MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE, true);
-            return true;
+            try
+            {
+                string topic = Convert.ToString(settings["topic"]);
+                if (String.IsNullOrEmpty(topic))
+                {
+                    topic = "test";
+                }
+
+                client.Publish(topic, data, MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE, true);
+                return true;
+            }
+            catch(Exception ex)
+            {
+                return false;
+            }
+           
         }
 
         public override bool ReceiveData(string queueName)
