@@ -1,0 +1,40 @@
+﻿using Opc.Ua;
+using Opc.Ua.Client;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Opc.Ua.CommonFunctions
+{
+    public static class CommonFunctions
+    {
+        public static NodeId GetChildrenId(Session session, NodeId parentNode, string childrenName)
+        {
+            var browseDescrColl = new BrowseDescriptionCollection()
+            {
+                new BrowseDescription()
+                {
+                    NodeId = parentNode,
+                    BrowseDirection = BrowseDirection.Forward,
+                    ReferenceTypeId = ReferenceTypeIds.Aggregates,
+                    IncludeSubtypes = true,
+                    NodeClassMask = (uint)(NodeClass.Object | NodeClass.Variable | NodeClass.Method),
+                    ResultMask = (uint)BrowseResultMask.All
+                }
+            };
+
+
+            var browseResp = session.Browse(new RequestHeader(), null, 1000, browseDescrColl, out BrowseResultCollection results, out DiagnosticInfoCollection diagnosticInfos);
+            
+            if(results != null && results.First().References.Count > 0)
+            {
+                var child = results[0].References.FirstOrDefault(x => x.BrowseName.Name == childrenName);
+                if(child != null) return ExpandedNodeId.ToNodeId(child.NodeId, session.NamespaceUris);
+            }
+
+            return null;
+        }
+    }
+}

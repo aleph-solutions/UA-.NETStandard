@@ -18,12 +18,13 @@ namespace Opc.Ua.Publisher
 
         public void AddConnection(PubSubConnectionState pubSubConnectionState, IDataSource dataSource)
         {
-
+            Console.WriteLine($"UAPublisher...Add connection");
             IUAPublisherDataSource m_UAPublisherDataSource = null ;
             
             m_UAPublisherDataSource = new UAPublisherDataSource(m_servercertificate);
             DicUAPublisherDataSource[pubSubConnectionState.NodeId] = m_UAPublisherDataSource;
             m_UAPublisherDataSource.Initialize(pubSubConnectionState, dataSource);
+            Console.WriteLine($"UAPublisher...Add connection...completed");
         }
         public  void AddWriterGroup(WriterGroupState writerGroupState,ref List<MonitoredItem> lstMonitoredItems)
         {

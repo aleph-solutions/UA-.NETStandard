@@ -19,10 +19,12 @@ namespace Opc.Ua.Subscriber
         Dictionary<NodeId, IUASubscriberDataSource> DicUASubscriberDataSource = new Dictionary<NodeId, IUASubscriberDataSource>();
         public void AddConnection(PubSubConnectionState pubSubConnectionState, IDataSource dataSource)
         {
+            Console.WriteLine($"UASubscriber...Add connection");
             IUASubscriberDataSource m_UASubscriberDataSource = null;
             m_UASubscriberDataSource = new UASubscriberDataSource(m_servercertificate);
             DicUASubscriberDataSource[pubSubConnectionState.NodeId] = m_UASubscriberDataSource;
             m_UASubscriberDataSource.Initialize(pubSubConnectionState, dataSource);
+            Console.WriteLine($"UASubscriber...Add connection...completed");
         }
 
         public void AddDataSetReader(DataSetReaderState dataSetReaderState,Opc.Ua.Core.SubscriberDelegate subscriberDelegate)

@@ -32,6 +32,7 @@ namespace MQTTTransportDataSource
 
         public bool Initialize(string format, string address)
         {
+            Console.WriteLine($"MQTTTransportDataSource...Initialize...");
             try
             {
                 m_Format = format;
@@ -46,6 +47,7 @@ namespace MQTTTransportDataSource
                 // string BrokerHostName = "test.mosquitto.org";
                 System.Net.IPAddress IPAddress;
                 bool isvalidIP = System.Net.IPAddress.TryParse(Address, out IPAddress);
+                Console.WriteLine($"MQTTTransportDataSource...Initialize...Address: {Address} IPAddress: {IPAddress}");
                 if (isvalidIP)
                 {
                     client = new MqttClient(IPAddress);
@@ -58,7 +60,9 @@ namespace MQTTTransportDataSource
                 client.MqttMsgPublishReceived += Client_MqttMsgPublishReceived;
                 client.MqttMsgPublished += Client_MqttMsgPublished;
                 client.MqttMsgSubscribed += Client_MqttMsgSubscribed;
+                Console.WriteLine($"MQTTTransportDataSource...Initialize...Connecting");
                 client.Connect(Guid.NewGuid().ToString(), "aleph", "A13phQ");
+                Console.WriteLine($"MQTTTransportDataSource...Initialize...Connected");
                 return true;
             }
             catch (Exception ex)
