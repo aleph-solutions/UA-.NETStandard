@@ -30,6 +30,15 @@ namespace Opc.Ua.Sample.PubSub
         private List<MonitoredItem> LstMonitoredItems = new List<MonitoredItem>();
         private Session m_session;
         X509Certificate2 m_Servercertificate;
+
+        public ApplicationConfiguration Configuration
+        {
+            get
+            {
+                return m_configuration;
+            }
+        }
+
         public PubSubAdaptor(X509Certificate2 certificate)
         {
             DicUAPublisherSubscriber = new Dictionary<NodeId, PublishSubscribeMap>();
@@ -44,6 +53,7 @@ namespace Opc.Ua.Sample.PubSub
             var endpointConfiguration = EndpointConfiguration.Create(m_configuration);
             var endpoint = new ConfiguredEndpoint(null, selectedEndpoint, endpointConfiguration);
 
+            m_configuration.CertificateValidator.CertificateValidation += CertificateValidator_CertificateValidation;
 
             m_session = await Session.Create(m_configuration, endpoint, false, "OPC UA Sample Publisher" + new Random().Next(), 60000, new UserIdentity(new AnonymousIdentityToken()), null);
 

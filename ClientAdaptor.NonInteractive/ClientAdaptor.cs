@@ -1489,7 +1489,7 @@ namespace ClientAdaptor
 
                     NodeId writerGroupNodeId = null;
 
-                    writerGroupNodeId = CommonFunctions.GetChildrenId(Session, connection.ConnectionNodeId, "AddWriterGroup");
+                    writerGroupNodeId = CommonFunctions.GetChildId(Session, connection.ConnectionNodeId, "AddWriterGroup");
 
                     IList<object> lstResponse = Session.Call(connection.ConnectionNodeId,
                         writerGroupNodeId,
@@ -1766,7 +1766,7 @@ namespace ClientAdaptor
                 //    }
                 //}
 
-                addDataSetWriterNodeId = CommonFunctions.GetChildrenId(Session, dataSetWriterGroupNodeId, "AddDataSetWriter");
+                addDataSetWriterNodeId = CommonFunctions.GetChildId(Session, dataSetWriterGroupNodeId, "AddDataSetWriter");
 
                 IList<object> lstResponse = Session.Call(dataSetWriterGroupNodeId,
                     addDataSetWriterNodeId,

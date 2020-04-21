@@ -39,13 +39,23 @@ namespace Opc.Ua.Sample.PubSub
         }
         public async Task Start(ApplicationStartSettings settings)
         {
-            m_configuration = await CreateApplicationConfiguration(settings);
-            var selectedEndpoint = CoreClientUtils.SelectEndpoint(settings.EndpointUrl, false, settings.Timeout);
-            var endpointConfiguration = EndpointConfiguration.Create(m_configuration);
-            var endpoint = new ConfiguredEndpoint(null, selectedEndpoint, endpointConfiguration);
-            m_session = await Session.Create(m_configuration, endpoint, false, "OPC UA Sample Publisher" + new Random().Next(), 60000, new UserIdentity(new AnonymousIdentityToken()), null);
+            try
+            {
+                m_configuration = await CreateApplicationConfiguration(settings);
+                var selectedEndpoint = CoreClientUtils.SelectEndpoint(settings.EndpointUrl, false, settings.Timeout);
+                var endpointConfiguration = EndpointConfiguration.Create(m_configuration);
+                var endpoint = new ConfiguredEndpoint(null, selectedEndpoint, endpointConfiguration);
+                m_configuration.CertificateValidator.CertificateValidation += CertificateValidator_CertificateValidation;
+                m_session = await Session.Create(m_configuration, endpoint, false, "OPC UA Sample Publisher" + new Random().Next(), 60000, new UserIdentity(new AnonymousIdentityToken()), null);
+            }
+            catch (Exception ex)
+            {
+
+            }
 
         }
+
+   
         private async Task<ApplicationConfiguration> CreateApplicationConfiguration(ApplicationStartSettings settings)
         {
             CertificateIdentifier applicationCertificate = new CertificateIdentifier

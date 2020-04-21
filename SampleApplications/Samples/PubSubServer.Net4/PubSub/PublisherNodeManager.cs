@@ -329,7 +329,8 @@ namespace Opc.Ua.Sample.PubSub
                 break;
             }
             ApplicationStartSettings settings = new ApplicationStartSettings();
-            settings.EndpointUrl = address;// "opc.tcp://localhost:48011/UA/PubSubSampleServer";
+            //settings.EndpointUrl = address;// "opc.tcp://localhost:48011/UA/PubSubSampleServer";
+            settings.EndpointUrl = "opc.tcp://ALBERTOPIOVAN:48030/";
             m_PubSubAdaptor.Start(settings).Wait();
         }
         #region Handlers

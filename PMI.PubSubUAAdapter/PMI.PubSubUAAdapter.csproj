@@ -83,6 +83,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConfigurationClient\ConfigurationClient.cs" />
+    <Compile Include="ConfigurationClient\ConfiguratonBuilder.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="PubSub\PublisherNodeManager.cs" />
     <Compile Include="PubSub\PubSubAdaptor.cs" />
