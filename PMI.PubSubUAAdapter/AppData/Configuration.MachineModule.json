@@ -1,0 +1,18 @@
+{
+  "Id": 123,
+  "PusblishInterval": 1000, //ms
+  "Fields": [
+    {
+      "FieldName": "LiveStatus.ControlMode",
+      "BrowseName": "ControlMode"
+    },
+    {
+      "FieldName": "LiveStatus.State",
+      "BrowseName": "State"
+    },
+    {
+      "FieldName": "Configuration.DataSetList",
+      "BrowseName": "DataSetList"
+    }
+  ]
+}

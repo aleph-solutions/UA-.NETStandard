@@ -49,11 +49,25 @@ namespace Opc.Ua.CommonFunctions
                     IncludeSubtypes = true,
                     NodeClassMask = (uint)(NodeClass.Object | NodeClass.Variable | NodeClass.Method),
                     ResultMask = (uint)BrowseResultMask.All
+                },
+                 new BrowseDescription()
+                {
+                    NodeId = nodeId,
+                    BrowseDirection = BrowseDirection.Forward,
+                    ReferenceTypeId = ReferenceTypeIds.Organizes,
+                    IncludeSubtypes = true,
+                    NodeClassMask = (uint)(NodeClass.Object | NodeClass.Variable | NodeClass.Method),
+                    ResultMask = (uint)BrowseResultMask.All
                 }
             };
 
             var browseResp = session.Browse(new RequestHeader(), null, 1000, browseDescrColl, out BrowseResultCollection results, out DiagnosticInfoCollection diagnosticInfos);
-            return results[0].References;
+            var res = results[0].References;
+            var orgRes = results[1].References.Where(x => !res.Exists(y => y.BrowseName.Name == x.BrowseName.Name));
+
+            res.AddRange(orgRes);
+
+            return res;
         }
 
         public static NodeId GetTypeDefinition(Session session, NodeId nodeId) 

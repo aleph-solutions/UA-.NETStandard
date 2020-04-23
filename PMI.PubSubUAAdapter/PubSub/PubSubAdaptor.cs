@@ -4,6 +4,7 @@ using MQTTTransportDataSource;
 using Opc.Ua.Client;
 using Opc.Ua.Publisher;
 using Opc.Ua.Subscriber;
+using PMI.PubSubUAAdapter.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -39,6 +40,13 @@ namespace Opc.Ua.Sample.PubSub
             }
         }
 
+        public Session Session {
+            get
+            {
+                return m_session;
+            }
+        }
+
         public PubSubAdaptor(X509Certificate2 certificate)
         {
             DicUAPublisherSubscriber = new Dictionary<NodeId, PublishSubscribeMap>();
@@ -55,7 +63,8 @@ namespace Opc.Ua.Sample.PubSub
 
             m_configuration.CertificateValidator.CertificateValidation += CertificateValidator_CertificateValidation;
 
-            m_session = await Session.Create(m_configuration, endpoint, false, "OPC UA Sample Publisher" + new Random().Next(), 60000, new UserIdentity(new AnonymousIdentityToken()), null);
+            m_session = await Session.Create(m_configuration, endpoint, false, "OPC UA Sample Publisher " + new Random().Next(), 60000, new UserIdentity(new AnonymousIdentityToken()), null);
+
 
         }
         private async Task<ApplicationConfiguration> CreateApplicationConfiguration(ApplicationStartSettings settings)
@@ -64,16 +73,16 @@ namespace Opc.Ua.Sample.PubSub
             {
                 StoreType = "Directory",
                 StorePath = "../../../../../pki/own",
-                SubjectName = "CN=" + "MQTT Sample Publisher" + ",DC=" + Environment.MachineName
+                SubjectName = "CN=" + "PMI.PubSubAdaptor Client" + ",DC=" + Environment.MachineName
             };
 
             Utils.SetTraceOutput(Utils.TraceOutput.DebugAndFile);
 
             var config = new ApplicationConfiguration()
             {
-                ApplicationName = "MQTT Sample Publisher",
+                ApplicationName = "PMI.PubSubAdaptor Client",
                 ApplicationType = ApplicationType.Client,
-                ApplicationUri = "urn:" + Utils.GetHostName() + ":OPCFoundation:MqttSamplePublisher",
+                ApplicationUri = "urn:" + Utils.GetHostName() + ":PMI:PubSubAdaptor",
                 SecurityConfiguration = new SecurityConfiguration
                 {
                     ApplicationCertificate = applicationCertificate,

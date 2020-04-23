@@ -1,4 +1,5 @@
-﻿using Opc.Ua.Client;
+﻿using Opc.Ua;
+using Opc.Ua.Client;
 using Opc.Ua.CommonFunctions;
 using Opc.Ua.Server;
 using PubSubBase.Definitions;
@@ -9,12 +10,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Opc.Ua.PubSub.Sample.ConfigurationClient
+namespace PMI.PubSubUAAdapter.Configuration
 {
     public class ConfigurationClient
     {
         private ClientAdaptor.OPCUAClientAdaptor m_clientAdaptor;
-        private Client.Session _pubSubSession;
+        private Opc.Ua.Client.Session _pubSubSession;
         private IServerInternal _pubSubServer;
 
         private Connection _mqttConnection;
@@ -37,16 +38,16 @@ namespace Opc.Ua.PubSub.Sample.ConfigurationClient
                 var endpointConfiguration = EndpointConfiguration.Create(m_clientAdaptor.Configuration);
                 var endpoint = new ConfiguredEndpoint(null, selectedEndpoint, endpointConfiguration);
 
-                var session = Client.Session.Create(m_clientAdaptor.Configuration, endpoint, false, "ConfigurationClient", 60000, new UserIdentity(new AnonymousIdentityToken()), null).Result;
+                var session = Opc.Ua.Client.Session.Create(m_clientAdaptor.Configuration, endpoint, false, "ConfigurationClient", 60000, new UserIdentity(new AnonymousIdentityToken()), null).Result;
                 m_clientAdaptor.Session = session;
                 _pubSubSession = session;
 
                 m_clientAdaptor.BrowserNodeControl = new ClientAdaptor.BrowseNodeControl(session);
-                
-                if(session != null)
-                {
-                    StartSample();
-                }
+
+                //if (session != null)
+                //{
+                //    StartSample();
+                //}
             }
             catch(Exception ex)
             {
@@ -94,7 +95,7 @@ namespace Opc.Ua.PubSub.Sample.ConfigurationClient
                 Children =  new System.Collections.ObjectModel.ObservableCollection<PubSubConfiguationBase>(),
                 AuthenticationProfileUri = String.Empty,
                 ResourceUri = String.Empty,
-                PublisherId = "1"
+                PublisherId = "Bay40"
             };
 
             var connectionRes = m_clientAdaptor.AddConnection(mqttConnection, out NodeId connectionNodeId);
@@ -118,7 +119,7 @@ namespace Opc.Ua.PubSub.Sample.ConfigurationClient
                 Name = groupName,
                 GroupName = groupName,
                 ParentNode = parent,
-                JsonNetworkMessageContentMask = 3, //Include DatasetMessage and Network message header,
+                JsonNetworkMessageContentMask = 14, //Include DatasetMessage and Network message header,
                 MaxNetworkMessageSize = 1500,
                 MessageSecurityMode = 1,
                 MessageSetting = 1,
@@ -126,7 +127,7 @@ namespace Opc.Ua.PubSub.Sample.ConfigurationClient
                 QueueName = queueName,
                 TransportSetting = 1,
                 WriterGroupId = 1,
-                SecurityGroupId = "0"
+                SecurityGroupId = "0",
             };
 
             var resGroup = m_clientAdaptor.AddWriterGroup(datasetWriterGroup, out NodeId groupId);
@@ -150,24 +151,45 @@ namespace Opc.Ua.PubSub.Sample.ConfigurationClient
         /// <param name="publishedDataSet">The publishedDataSet instance</param>
         public void AddPublishedDataSet(Dictionary<string, NodeId> itemList, string datasetName, out PublishedDataSetBase publishedDataSet)
         {
-            var datasetItems = new ObservableCollection<PublishedDataSetItemDefinition>();
+            AddPublishedDataSet(itemList, new Dictionary<string, uint>(), datasetName, out publishedDataSet);
+        }
 
-            foreach(var item in itemList)
+        public void AddPublishedDataSet(Dictionary<string, NodeId> itemList, Dictionary<string, uint> attributesList, string datasetName, out PublishedDataSetBase publishedDataSet)
+        {
+            Console.WriteLine($"ConfigurationClient AddPublishedDataSet {datasetName}...");
+            try
             {
-                datasetItems.Add(new PublishedDataSetItemDefinition(new PublishedDataSetBase())
+                var datasetItems = new ObservableCollection<PublishedDataSetItemDefinition>();
+
+                foreach (var item in itemList)
                 {
-                    Name = item.Key,
-                    Attribute = Attributes.Value,
-                    PublishVariableNodeId = item.Value,
-                });
+                    var attributeId = Attributes.Value;
+                    if(attributesList.Any(x => x.Key == item.Key))
+                    {
+                        attributeId = attributesList[item.Key];
+                    }
+
+                    datasetItems.Add(new PublishedDataSetItemDefinition(new PublishedDataSetBase())
+                    {
+                        Name = item.Key,
+                        Attribute = attributeId,
+                        PublishVariableNodeId = item.Value,
+                    });
+                }
+
+                publishedDataSet = m_clientAdaptor.AddPublishedDataSet(datasetName, datasetItems);
+
+                if (publishedDataSet != null)
+                {
+                    if (_datasets == null) _datasets = new List<PublishedDataSetBase>();
+                    _datasets.Add(publishedDataSet);
+                }
+                Console.WriteLine($"ConfigurationClient AddPublishedDataSet {datasetName}...completed");
             }
-
-            publishedDataSet = m_clientAdaptor.AddPublishedDataSet(datasetName, datasetItems);
-
-            if (publishedDataSet != null)
+            catch (Exception ex)
             {
-                if (_datasets == null) _datasets = new List<PublishedDataSetBase>();
-                _datasets.Add(publishedDataSet);
+                publishedDataSet = null;
+                Console.WriteLine($"ConfigurationClient AddPublishedDataSet {datasetName}...Exception: {ex}");
             }
         }
 
@@ -195,7 +217,7 @@ namespace Opc.Ua.PubSub.Sample.ConfigurationClient
         /// <returns></returns>
         public NodeId AddWriter(DataSetWriterGroup parent, string writerName, string datasetName, string queueName, out DataSetWriterDefinition writer)
         {
-            var datasetId = CommonFunctions.CommonFunctions.GetChildId(m_clientAdaptor.Session, new NodeId(17371), datasetName);
+            var datasetId = CommonFunctions.GetChildId(m_clientAdaptor.Session, new NodeId(17371), datasetName);
             if(datasetId != null)
             {
                 writer = new DataSetWriterDefinition()
@@ -211,7 +233,7 @@ namespace Opc.Ua.PubSub.Sample.ConfigurationClient
                     PublisherDataSetNodeId = datasetId,
                     QueueName = queueName,
                     ResourceUri = String.Empty,
-                    TransportSetting = 1
+                    TransportSetting = 1,
                 };
 
 
@@ -247,10 +269,10 @@ namespace Opc.Ua.PubSub.Sample.ConfigurationClient
             if(group != null)
             {
                 //search for the StatusId
-                var statusId = CommonFunctions.CommonFunctions.GetChildId(_pubSubSession, group.GroupId, "Status");
+                var statusId = CommonFunctions.GetChildId(_pubSubSession, group.GroupId, "Status");
 
                 //search for the methodId
-                var methodId = CommonFunctions.CommonFunctions.GetChildId(_pubSubSession, statusId, "Enable");
+                var methodId = CommonFunctions.GetChildId(_pubSubSession, statusId, "Enable");
                 m_clientAdaptor.EnablePubSubState(new MonitorNode() {
                     ParentNodeId = statusId,
                     EnableNodeId = methodId
@@ -270,10 +292,10 @@ namespace Opc.Ua.PubSub.Sample.ConfigurationClient
             if (writer != null)
             {
                 //search for the StatusId
-                var statusId = CommonFunctions.CommonFunctions.GetChildId(_pubSubSession, writer.WriterNodeId, "Status");
+                var statusId = CommonFunctions.GetChildId(_pubSubSession, writer.WriterNodeId, "Status");
 
                 //search for the methodId
-                var methodId = CommonFunctions.CommonFunctions.GetChildId(_pubSubSession, statusId, "Enable");
+                var methodId = CommonFunctions.GetChildId(_pubSubSession, statusId, "Enable");
                 m_clientAdaptor.EnablePubSubState(new MonitorNode()
                 {
                     ParentNodeId = statusId,

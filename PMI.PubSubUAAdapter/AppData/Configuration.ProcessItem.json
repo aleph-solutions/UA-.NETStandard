@@ -1,0 +1,30 @@
+{
+  "Id": 123,
+  "PusblishInterval": 1000,  //ms
+  "Fields": [
+    {
+      "FieldName": "AnalogMeasurement"
+    },
+    {
+      "FieldName": "DisplayFormat"
+    },
+    {
+      "FieldName": "EffectivePrecision"
+    },
+    {
+      "FieldName": "EngineeringUnits"
+    },
+    {
+      "FieldName": "H"
+    },
+    {
+      "FieldName": "HH"
+    },
+    {
+      "FieldName": "LL"
+    },
+    {
+      "FieldName": "L"
+    }
+  ]
+}

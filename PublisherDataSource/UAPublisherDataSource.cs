@@ -346,7 +346,7 @@ namespace PublisherDataSource
             {
                 var field = ((writerState.Handle as PublishedDataItemsState).DataSetMetaData.Value as DataSetMetaDataType).Fields[ii];
                 var source = ((writerState.Handle as PublishedDataItemsState).PublishedData.Value[ii]);
-                MonitoredItem monitoredItem = LstMonitoredItems.Where(i => i.ResolvedNodeId == source.PublishedVariable).FirstOrDefault();
+                MonitoredItem monitoredItem = LstMonitoredItems.Where(i => i.ResolvedNodeId == source.PublishedVariable && i.AttributeId == source.AttributeId).FirstOrDefault();
 
                 if (monitoredItem == null)
                 {
@@ -410,7 +410,7 @@ namespace PublisherDataSource
                     networkMessage.MessageContentMask = (groupState.MessageSettings as JsonWriterGroupMessageState).NetworkMessageContentMask.Value;
                     networkMessage.Messages = new List<Opc.Ua.JsonDataSetMessage>();
 
-                    message.Payload = new Dictionary<string, DataValue>();
+                    //message.Payload = new Dictionary<string, DataValue>();
                     networkMessage.Messages.Add(message);
 
                 }

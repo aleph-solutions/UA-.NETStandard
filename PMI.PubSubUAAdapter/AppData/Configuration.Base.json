@@ -1,0 +1,28 @@
+{
+  "Id": 123,
+  "PusblishInterval": 1000, //ms
+  "Fields": [
+    {
+      "FieldName": "instanceId",
+      "Attribute": 1, //NodeID
+      "BrowseName": "_this"
+    },
+    {
+      "FieldName": "typeId",
+      "Attribute": 1, //NodeID
+      "BrowseName": "_type"
+    },
+    {
+      "FieldName": "instanceName",
+      "Attribute": 4, //DisplayName
+      "BrowseName": "_this"
+    },
+    {
+      "FieldName": "description",
+      "Attribute": 5, //Description
+      "BrowseName": "_this"
+    }
+
+  ]
+}
+

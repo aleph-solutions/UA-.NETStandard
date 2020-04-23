@@ -16,13 +16,14 @@
 
 using Opc.Ua.PubSub;
 using Opc.Ua.Server;
-
+using PMI.PubSubUAAdapter.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Opc.Ua.Sample.PubSub
 {
@@ -332,6 +333,9 @@ namespace Opc.Ua.Sample.PubSub
             //settings.EndpointUrl = address;// "opc.tcp://localhost:48011/UA/PubSubSampleServer";
             settings.EndpointUrl = "opc.tcp://localhost:48030";// "opc.tcp://localhost:48011/UA/PubSubSampleServer";
             m_PubSubAdaptor.Start(settings).Wait();
+
+            var configurationBuilder = new ConfigurationBuilder(m_PubSubAdaptor.Session, Server);
+            var tConfigurationClient = Task.Run(() => configurationBuilder.Start());
         }
         #region Handlers
         #region PublishedDataSet Handlers
@@ -1439,6 +1443,17 @@ namespace Opc.Ua.Sample.PubSub
         }
         #endregion
 
+        #region Public Fields
+        public PubSubAdaptor PubSubAdaptor
+        {
+            get
+            {
+                return m_PubSubAdaptor;
+            }
+        }
+        #endregion
+
+
         #region Private Fields
         private ushort m_namespaceIndex;
         private ushort m_typeNamespaceIndex;
@@ -1477,6 +1492,8 @@ namespace Opc.Ua.Sample.PubSub
 
         #region Private Members 
         #endregion
+
+
     }
 
 }

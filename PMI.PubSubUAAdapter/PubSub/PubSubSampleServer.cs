@@ -16,8 +16,8 @@
 
 #define CUSTOM_NODE_MANAGER
 
-using Opc.Ua.PubSub.Sample.ConfigurationClient;
 using Opc.Ua.Server;
+using PMI.PubSubUAAdapter.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -70,10 +70,12 @@ namespace Opc.Ua.Sample
             }
 
             //Start the configuration client
-            Console.WriteLine($"Initialiazing client...");
-            var configurationClient = new ConfigurationClient(server);
-            var tConfigurationClient = Task.Run(() => configurationClient.InitializeClient());
-            Console.WriteLine($"Initialiazing client...execution continue");
+            //Console.WriteLine($"Initialiazing client...");
+            //var configurationClient = new ConfigurationClient(server);
+            //var tConfigurationClient = Task.Run(() => configurationClient.InitializeClient());
+            //Console.WriteLine($"Initialiazing client...execution continue");
+
+
 
         }
 

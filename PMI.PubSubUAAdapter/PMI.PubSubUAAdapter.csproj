@@ -55,6 +55,9 @@
     <Reference Include="M2MqttClientDotnetCore1.0.1, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\M2MqttClientDotnetCore.1.0.1\lib\netstandard1.3\M2MqttClientDotnetCore1.0.1.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.AppContext, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.AppContext.4.1.0\lib\net46\System.AppContext.dll</HintPath>
@@ -69,6 +72,7 @@
     </Reference>
     <Reference Include="System.Core" />
     <Reference Include="System.IdentityModel" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Threading.Thread, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Threading.Thread.4.0.0\lib\net46\System.Threading.Thread.dll</HintPath>
       <Private>True</Private>
@@ -83,13 +87,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConfigurationClient\ConfigurationClient.cs" />
-    <Compile Include="ConfigurationClient\ConfiguratonBuilder.cs" />
+    <Compile Include="ConfigurationClient\ConfigurationBuilder.cs" />
+    <Compile Include="Identifiers\TMCIdentifiers.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="PubSub\PublisherNodeManager.cs" />
     <Compile Include="PubSub\PubSubAdaptor.cs" />
     <Compile Include="PubSub\PubSubSampleServer.cs" />
     <Compile Include="PubSub\PubSubSampleServer.UserAuthentication.cs" />
     <Compile Include="SecurityKeyManager.cs" />
+    <Compile Include="Identifiers\TMCPlusIdentifiers.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="App.ico">
@@ -108,6 +114,15 @@
   <ItemGroup>
     <Content Include="App.config" />
     <None Include="app.manifest" />
+    <None Include="AppData\Configuration.Base.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="AppData\Configuration.MachineModule.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="AppData\Configuration.ProcessItem.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
