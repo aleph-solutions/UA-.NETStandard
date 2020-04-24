@@ -286,6 +286,21 @@ namespace PMI.PubSubUAAdapter.Configuration
             {
                 var fieldId = objectId;
                 if (field.BrowseName == "_type") fieldId = objectTypeId;
+                else if(field.BrowseName == "_this") fieldId = objectId;
+                else if(field.FieldName.Split('.').Length == 2)
+                {
+                    var subObjectId = GetChildId(objectId, field.BrowseName);
+                    if(subObjectId != null)
+                    {
+                        var subObjectNodes = Browse(subObjectId);
+                        var node = subObjectNodes.FirstOrDefault(x => x.BrowseName.Name == field.BrowseName);
+                        if(node != null)
+                        {
+                            fieldId = ExpandedNodeId.ToNodeId(node.NodeId, _browseSession.NamespaceUris);
+                        }
+                    }
+
+                }
 
                 fieldList.Add(field.FieldName, fieldId);
                 attributesList.Add(field.FieldName, field.Attribute);

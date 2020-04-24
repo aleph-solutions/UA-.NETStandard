@@ -21,8 +21,27 @@
       "FieldName": "description",
       "Attribute": 5, //Description
       "BrowseName": "_this"
+    },
+    {
+      "FieldName": "UIInfo.PositionX",
+      "BrowseName": "PositionX"
+    },
+    {
+      "FieldName": "UIInfo.PositionY",
+      "BrowseName": "PositionY"
+    },
+    {
+      "FieldName": "UIInfo.PositionZ",
+      "BrowseName": "PositionZ"
+    },
+    {
+      "FieldName": "UIInfo.Resizable",
+      "BrowseName": "Resizable"
+    },
+    {
+      "FieldName": "UIInfo.Width",
+      "BrowseName": "Width"
     }
-
   ]
 }
 

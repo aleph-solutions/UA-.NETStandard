@@ -114,19 +114,20 @@ namespace PMI.PubSubUAAdapter.Configuration
         /// <returns>The NodeId of the writer group node</returns>
         public NodeId AddWriterGroup(Connection parent, string groupName, string queueName, out DataSetWriterGroup datasetWriterGroup)
         {
+            Console.WriteLine($"Configuration Client...AddWriterGroup...Name: {groupName}");
             datasetWriterGroup = new DataSetWriterGroup()
             {
                 Name = groupName,
                 GroupName = groupName,
                 ParentNode = parent,
-                JsonNetworkMessageContentMask = 14, //Include DatasetMessage and Network message header,
+                JsonNetworkMessageContentMask = 11, //Include DatasetMessage and Network message header,
                 MaxNetworkMessageSize = 1500,
                 MessageSecurityMode = 1,
                 MessageSetting = 1,
                 PublishingInterval = 1000,
                 QueueName = queueName,
                 TransportSetting = 1,
-                WriterGroupId = 1,
+                WriterGroupId = _writerGroups == null ? 1 : _writerGroups.Count + 1,
                 SecurityGroupId = "0",
             };
 
@@ -234,6 +235,7 @@ namespace PMI.PubSubUAAdapter.Configuration
                     QueueName = queueName,
                     ResourceUri = String.Empty,
                     TransportSetting = 1,
+                    DataSetWriterId = Convert.ToUInt16(_writers == null ? 1 : _writers.Count + 1),
                 };
 
 

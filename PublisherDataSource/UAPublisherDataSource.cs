@@ -111,18 +111,20 @@ namespace PublisherDataSource
                         }
                         else
                         {
-                            foreach (DataSetWriterState writerState in LstDataSetWriterState.ToList())
-                            {
+                            //foreach (DataSetWriterState writerState in LstDataSetWriterState.ToList())
+                            //{
 
-                                if (writerState.Status.State.Value == PubSubState.Operational)
-                                {
-                                    if (writerState.Parent.NodeId == groupState.NodeId)
-                                    {
-                                        PublishJsonData(writerState, groupState);
-                                    }
-                                }
+                            //    if (writerState.Status.State.Value == PubSubState.Operational)
+                            //    {
+                            //        if (writerState.Parent.NodeId == groupState.NodeId)
+                            //        {
+                            //            PublishJsonData(writerState, groupState);
+                            //        }
+                            //    }
 
-                            }
+                            //}
+
+                            PublishJsonData(groupState);
                         }
                     }
 
@@ -161,7 +163,151 @@ namespace PublisherDataSource
             PublishUADPData(groupState, activeDataSetWriters);
           
         }
-       private void PublishUADPData(WriterGroupState groupState, List<DataSetWriterState> activeDataSetWriters)
+
+        private void PublishJsonData(WriterGroupState groupState)
+        {
+            List<DataSetWriterState> activeDataSetWriters = new List<DataSetWriterState>();
+            foreach (DataSetWriterState writerState in LstDataSetWriterState.ToList())
+            {
+
+                if (writerState.Status.State.Value == PubSubState.Operational)
+                {
+                    if (writerState.Parent.NodeId == groupState.NodeId)
+                    {
+                        activeDataSetWriters.Add(writerState);
+                    }
+                }
+
+            }
+            if (activeDataSetWriters.Count <= 0)
+            {
+                return;
+            }
+            PublishJsonData(groupState, activeDataSetWriters);
+        }
+
+        private void PublishJsonData(WriterGroupState groupState, List<DataSetWriterState> activeDataSetWriters)
+        {
+            Opc.Ua.JsonNetworkMessage networkMessage = new Opc.Ua.JsonNetworkMessage();
+            networkMessage.MessageId = Guid.NewGuid().ToString();
+            networkMessage.MessageType = "ua-data";
+            networkMessage.PublisherId = m_PubSubConnectionState.PublisherId.Value.ToString();
+            networkMessage.MessageContentMask = (groupState.MessageSettings as JsonWriterGroupMessageState).NetworkMessageContentMask.Value;
+            networkMessage.Messages = new List<Opc.Ua.JsonDataSetMessage>();
+
+            if (networkMessage.DataSetClassId == null)
+            {
+                var dataSetClassIdEquals = true;
+                var dataSetClassCandidate = ((activeDataSetWriters.First()?.Handle as PublishedDataItemsState).DataSetMetaData.Value as DataSetMetaDataType).DataSetClassId.GuidString;
+                foreach (var writer in activeDataSetWriters)
+                {
+                    var dataSetClass = ((writer.Handle as PublishedDataItemsState).DataSetMetaData.Value as DataSetMetaDataType).DataSetClassId.GuidString;
+                    if (dataSetClass != dataSetClassCandidate) dataSetClassIdEquals = false;
+                }
+
+                if (dataSetClassIdEquals) networkMessage.DataSetClassId = dataSetClassCandidate;
+            }
+
+            foreach(var writerState in activeDataSetWriters)
+            {
+                var message = GetJsonDataSetMessage(writerState, groupState);
+                networkMessage.Messages.Add(message);
+
+
+                if ((networkMessage.MessageContentMask & (uint)JsonNetworkMessageContentMask.SingleDataSetMessage) != 0)
+                {
+                    PublishJsonMessage((writerState.TransportSettings as BrokerDataSetWriterTransportState).QueueName.Value, networkMessage);
+
+                    networkMessage = new Opc.Ua.JsonNetworkMessage();
+
+                    networkMessage.MessageId = Guid.NewGuid().ToString();
+                    networkMessage.MessageType = "ua-data";
+                    networkMessage.PublisherId = m_PubSubConnectionState.PublisherId.Value.ToString();
+                    networkMessage.MessageContentMask = (groupState.MessageSettings as JsonWriterGroupMessageState).NetworkMessageContentMask.Value;
+                    networkMessage.Messages = new List<Opc.Ua.JsonDataSetMessage>();
+
+                }
+                
+            }
+
+            if ((networkMessage.MessageContentMask & (uint)JsonNetworkMessageContentMask.SingleDataSetMessage) == 0)
+            {
+                PublishJsonMessage((groupState.TransportSettings as BrokerWriterGroupTransportState).QueueName.Value, networkMessage);
+            }
+        }
+        private JsonDataSetMessage GetJsonDataSetMessage(DataSetWriterState writerState, WriterGroupState groupState)
+        {
+            Opc.Ua.JsonDataSetMessage message = new Opc.Ua.JsonDataSetMessage();
+
+            message.DataSetWriterId = writerState.DataSetWriterId.Value.ToString();
+            message.MetaDataVersion = ((writerState.Handle as PublishedDataItemsState).DataSetMetaData.Value as DataSetMetaDataType).ConfigurationVersion;
+            message.FieldContentMask = writerState.DataSetFieldContentMask.Value;
+            message.SequenceNumber = (ushort)(Utils.IncrementIdentifier(ref SequenceNumber) % UInt16.MaxValue);
+            message.Status = StatusCodes.Good;
+            message.Timestamp = DateTime.UtcNow;
+            message.Payload = new Dictionary<string, DataValue>();
+
+            int count = (writerState.Handle as PublishedDataItemsState).PublishedData.Value.Count();
+
+            for (int ii = 0; ii < count; ii++)
+            {
+                var field = ((writerState.Handle as PublishedDataItemsState).DataSetMetaData.Value as DataSetMetaDataType).Fields[ii];
+                var source = ((writerState.Handle as PublishedDataItemsState).PublishedData.Value[ii]);
+                MonitoredItem monitoredItem = LstMonitoredItems.Where(i => i.ResolvedNodeId == source.PublishedVariable && i.AttributeId == source.AttributeId).FirstOrDefault();
+
+                if (monitoredItem == null)
+                {
+                    var substituteValue = source.SubstituteValue;
+
+                    if (substituteValue != Variant.Null)
+                    {
+                        var qname = substituteValue.Value as QualifiedName;
+
+                        if (((writerState.Handle as PublishedDataItemsState).ExtensionFields) != null && qname != null)
+                        {
+                            //foreach (var extensionField in (writerState.Handle as PublishedDataItemsState).ExtensionFields.GetChildren)
+                            //{
+                            //    if (extensionField.Key == qname)
+                            //    {
+                            //        substituteValue = extensionField.Value;
+                            //        break;
+                            //    }
+                            //}
+                        }
+
+                        message.Payload.Add(field.Name, new DataValue(substituteValue, StatusCodes.Good, DateTime.UtcNow, DateTime.UtcNow));
+                    }
+
+                    continue;
+                }
+                var notification = monitoredItem.LastValue as MonitoredItemNotification;
+
+                if (ServiceResult.IsBad(monitoredItem.Status.Error) || notification == null || ServiceResult.IsBad(notification.Value.StatusCode))
+                {
+                    if (source.SubstituteValue != Variant.Null)
+                    {
+                        message.Payload.Add(field.Name, new DataValue(source.SubstituteValue, StatusCodes.UncertainSubstituteValue, DateTime.UtcNow, DateTime.UtcNow));
+                        continue;
+                    }
+                }
+
+                if (ServiceResult.IsBad(monitoredItem.Status.Error))
+                {
+                    message.Payload.Add(field.Name, new DataValue(monitoredItem.Status.Error.Code, DateTime.UtcNow));
+                    continue;
+                }
+
+                if (notification != null)
+                {
+                    message.Payload.Add(field.Name, notification.Value);
+                }
+
+            }
+
+            return message;
+        }
+
+        private void PublishUADPData(WriterGroupState groupState, List<DataSetWriterState> activeDataSetWriters)
         {
             
             UadpNetworkMessage uadpNetworkMessage = new UadpNetworkMessage(new ServiceMessageContext());
@@ -315,6 +461,9 @@ namespace PublisherDataSource
                 PublishUADPMessage("", uadpNetworkMessage);
             }
         }
+        
+        
+        
         private void PublishJsonData(DataSetWriterState writerState, WriterGroupState groupState)
         {
             Opc.Ua.JsonNetworkMessage networkMessage = new Opc.Ua.JsonNetworkMessage();
@@ -337,7 +486,7 @@ namespace PublisherDataSource
             message.Status = StatusCodes.Good;
             message.Timestamp = DateTime.UtcNow;
             message.Payload = new Dictionary<string, DataValue>();
-
+            
             networkMessage.Messages.Add(message);
 
             int count = (writerState.Handle as PublishedDataItemsState).PublishedData.Value.Count();

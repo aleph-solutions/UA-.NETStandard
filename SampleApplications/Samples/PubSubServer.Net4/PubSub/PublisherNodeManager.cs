@@ -409,9 +409,13 @@ namespace Opc.Ua.Sample.PubSub
             dataSetNodeId = _AddPublishedDataItemsMethodState.NodeId;
             configurationVersion = _AddPublishedDataItemsMethodState.ConfigurationVersion.Value;
 
-            method.Parent.AddChild(_AddPublishedDataItemsMethodState);
-            AddPredefinedNode(context, _AddPublishedDataItemsMethodState);
+            _AddPublishedDataItemsMethodState.ExtensionFields = new ExtensionFieldsState(_AddPublishedDataItemsMethodState);
+            _AddPublishedDataItemsMethodState.ExtensionFields.Create(context, new NodeId(_AddPublishedDataItemsMethodState.NodeId.Identifier + ".ExtensionFields", 2), new QualifiedName("ExtensionFields"), new LocalizedText("ExtensionFields"), false);
+
             m_PubSubAdaptor.AddPublishedDataItems(_AddPublishedDataItemsMethodState);
+
+            _AddPublishedDataItemsMethodState.AddChild(_AddPublishedDataItemsMethodState.ExtensionFields);
+            AddPredefinedNode(context, _AddPublishedDataItemsMethodState.ExtensionFields);
             return ServiceResult.Good;
         }
 
@@ -1128,7 +1132,7 @@ namespace Opc.Ua.Sample.PubSub
                 dataSetFolderState.GetChildren(context, LstChildren);
                 foreach(BaseInstanceState state in LstChildren)
                 {
-                    if(state.DisplayName.Text== configuration.DataSetName)
+                    if(state.DisplayName.Text == configuration.DataSetName)
                     {
                         _WriterState.AddReference(ReferenceTypeIds.DataSetToWriter, true, state.NodeId);
                         _WriterState.Handle = state as PublishedDataItemsState;

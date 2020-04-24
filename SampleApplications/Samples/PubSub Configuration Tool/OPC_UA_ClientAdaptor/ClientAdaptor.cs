@@ -2525,7 +2525,7 @@ namespace ClientAdaptor
                         MetaDataProperties = publishedDataSetItemDefinition.FieldMetaDataProperties,
                         PublishedVariable = publishedDataSetItemDefinition.PublishVariableNodeId,
                         SamplingIntervalHint = publishedDataSetItemDefinition.SamplingInterval,
-                        SubstituteValue = publishedDataSetItemDefinition.SubstituteValue
+                        SubstituteValue = publishedDataSetItemDefinition.SubstituteValue,
                     };
 
                     variablesToAdd.Add(publishedVariableDataType);

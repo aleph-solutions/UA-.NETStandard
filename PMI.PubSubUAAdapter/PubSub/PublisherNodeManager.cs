@@ -413,11 +413,43 @@ namespace Opc.Ua.Sample.PubSub
             dataSetNodeId = _AddPublishedDataItemsMethodState.NodeId;
             configurationVersion = _AddPublishedDataItemsMethodState.ConfigurationVersion.Value;
 
+            _AddPublishedDataItemsMethodState.ExtensionFields = new ExtensionFieldsState(_AddPublishedDataItemsMethodState);
+            _AddPublishedDataItemsMethodState.ExtensionFields.Create(context, new NodeId(_AddPublishedDataItemsMethodState.NodeId.Identifier + ".ExtensionFields", 2), new QualifiedName("ExtensionFields"), new LocalizedText("ExtensionFields"), false);
+
+            _AddPublishedDataItemsMethodState.ExtensionFields.AddExtensionField = new AddExtensionFieldMethodState(_AddPublishedDataItemsMethodState.ExtensionFields);
+            _AddPublishedDataItemsMethodState.ExtensionFields.AddExtensionField.Create(context, new NodeId(_AddPublishedDataItemsMethodState.ExtensionFields.NodeId.Identifier + ".AddExtensionField", 2), new QualifiedName("AddExtensionField"), new LocalizedText("AddExtensionField"), false);
+            _AddPublishedDataItemsMethodState.ExtensionFields.AddExtensionField.OnCall = AddExtensionFieldMethodStateMethodCallHandler;
+
             method.Parent.AddChild(_AddPublishedDataItemsMethodState);
             AddPredefinedNode(context, _AddPublishedDataItemsMethodState);
             m_PubSubAdaptor.AddPublishedDataItems(_AddPublishedDataItemsMethodState);
             return ServiceResult.Good;
         }
+
+        ServiceResult AddExtensionFieldMethodStateMethodCallHandler(ISystemContext context,
+        MethodState method,
+        NodeId objectId,
+        QualifiedName fieldName,
+        object fieldValue,
+        ref NodeId fieldId)
+        {
+            
+            var extensionField = new PropertyState(method.Parent);
+
+            if (fieldValue is string) { extensionField = new PropertyState<string>(method.Parent); }
+            else if (fieldValue is int) extensionField = new PropertyState<int>(method.Parent);
+            else if (fieldValue is double) extensionField = new PropertyState<double>(method.Parent);
+            else return new ServiceResult(StatusCodes.BadRequestTypeInvalid);
+
+            extensionField.Value = fieldValue;
+            fieldId = new NodeId(objectId.Identifier + $".{fieldName}", 2);
+            extensionField.Create(context, fieldId, fieldName, new LocalizedText(fieldName.Name), false);
+
+
+            return ServiceResult.Good;
+        }
+
+
 
         #endregion
         #region Connection Handlers
