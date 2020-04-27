@@ -186,6 +186,8 @@ namespace PMI.PubSubUAAdapter.Configuration
                     _datasets.Add(publishedDataSet);
                 }
                 Console.WriteLine($"ConfigurationClient AddPublishedDataSet {datasetName}...completed");
+
+                //m_clientAdaptor.AddExtensionField(publishedDataSet, "Test", 123);
             }
             catch (Exception ex)
             {
@@ -224,7 +226,7 @@ namespace PMI.PubSubUAAdapter.Configuration
                 writer = new DataSetWriterDefinition()
                 {
                     AuthenticationProfileUri = String.Empty,
-                    DataSetContentMask = 7,
+                    DataSetContentMask = 31,
                     DataSetName = datasetName,
                     DataSetWriterName = writerName,
                     MessageSetting = 31,
@@ -305,6 +307,11 @@ namespace PMI.PubSubUAAdapter.Configuration
                 });
             }
 
+        }
+
+        public NodeId AddExtensionField(PublishedDataSetBase publishedDataSet, string fieldName, object fieldValue)
+        {
+            return m_clientAdaptor.AddExtensionField(publishedDataSet, fieldName, fieldValue);
         }
     }
 }

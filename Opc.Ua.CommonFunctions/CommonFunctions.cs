@@ -70,6 +70,11 @@ namespace Opc.Ua.CommonFunctions
             return res;
         }
 
+        public static List<ReferenceDescription> Browse(Session session, ExpandedNodeId nodeId)
+        {
+            return Browse(session, ExpandedNodeId.ToNodeId(nodeId, session.NamespaceUris));
+        }
+
         public static NodeId GetTypeDefinition(Session session, NodeId nodeId) 
         {
             var browseDescrColl = new BrowseDescriptionCollection()

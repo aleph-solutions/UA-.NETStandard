@@ -304,6 +304,31 @@ namespace PublisherDataSource
 
             }
 
+            if (((writerState.Handle as PublishedDataItemsState).ExtensionFields) != null )
+            {
+                var extensionFields = new List<BaseInstanceState>();
+                (writerState.Handle as PublishedDataItemsState).ExtensionFields.GetChildren(new SystemContext(), extensionFields);
+
+                foreach (var extensionField in extensionFields.Where(x => x.NodeClass == NodeClass.Variable))
+                {
+                    var propExtensionField = extensionField as PropertyState;
+
+                    if(propExtensionField != null)
+                    {
+                        message.Payload.Add(propExtensionField.BrowseName.Name, new DataValue(new Variant(propExtensionField.Value)));
+                    }
+                }
+
+                //foreach (var extensionField in (writerState.Handle as PublishedDataItemsState).ExtensionFields.GetChildren())
+                //{
+                //    if (extensionField.Key == qname)
+                //    {
+                //        substituteValue = extensionField.Value;
+                //        break;
+                //    }
+                //}
+            }
+
             return message;
         }
 

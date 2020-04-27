@@ -136,6 +136,7 @@ namespace PMI.PubSubUAAdapter.Configuration
 
             //Add the dataset
             _configurationClient.AddPublishedDataSet(datasetItems, $"{machineName}", out PublishedDataSetBase publishedDataSet);
+            _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", publishedDataSet.Name);
 
             //Prepare the writer
             _configurationClient.AddWriter(writerGroup, $"{machineName}", publishedDataSet.Name, $"{writerGroup.QueueName}", out DataSetWriterDefinition writer);
@@ -258,6 +259,7 @@ namespace PMI.PubSubUAAdapter.Configuration
 
                     //Add the dataset
                     _configurationClient.AddPublishedDataSet(datasetItems, datasetAttributes, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
+                    _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", publishedDataSet.Name);
 
                     //Prepare the writer
                     _configurationClient.AddWriter(writerGroup, $"{machineName}.ProcessItems.{objItem.BrowseName.Name}", publishedDataSet.Name, $"{writerGroup.QueueName}/{objItem.BrowseName.Name}", out DataSetWriterDefinition writer);

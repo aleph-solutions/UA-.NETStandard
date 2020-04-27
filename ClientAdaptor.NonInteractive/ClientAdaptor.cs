@@ -2549,6 +2549,33 @@ namespace ClientAdaptor
             return _PublishedDataSetBase;
         }
 
+        public NodeId AddExtensionField(PublishedDataSetBase publishedDataSet, string fieldName, object fieldValue)
+        {
+            var datasetFolderId = Constants.PublishedDataSetsNodeId;
+            var datasetId = CommonFunctions.GetChildId(Session, datasetFolderId, publishedDataSet.Name);
+
+            if (datasetId != null)
+            {
+                var extensionFieldsId = CommonFunctions.GetChildId(Session, datasetId, "ExtensionFields");
+
+                if (extensionFieldsId != null)
+                {
+                    var methodsIds = CommonFunctions.Browse(Session, extensionFieldsId);
+                    var addExtensionFieldMethodId = CommonFunctions.GetChildId(Session, extensionFieldsId, "AddExtensionField");
+
+                    if(addExtensionFieldMethodId != null)
+                    {
+                        IList<object> lstResponse = Session.Call(extensionFieldsId,
+                    addExtensionFieldMethodId, new QualifiedName(fieldName, 2), fieldValue );
+
+                        if(lstResponse.Count == 1) return lstResponse[0] as NodeId;
+                    }
+                }
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// Method to add variable to selected publisher.
         /// </summary>

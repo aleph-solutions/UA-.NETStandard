@@ -20,6 +20,7 @@ using PMI.PubSubUAAdapter.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -433,18 +434,24 @@ namespace Opc.Ua.Sample.PubSub
         object fieldValue,
         ref NodeId fieldId)
         {
-            
+            //If the extension field already exists, do nothing
+            var objChildren = new List<BaseInstanceState>();
+            method.Parent.GetChildren(context, objChildren);
+            if (objChildren.Any(x => x.BrowseName.Equals(fieldName))) return ServiceResult.Good;
+
             var extensionField = new PropertyState(method.Parent);
 
             if (fieldValue is string) { extensionField = new PropertyState<string>(method.Parent); }
-            else if (fieldValue is int) extensionField = new PropertyState<int>(method.Parent);
-            else if (fieldValue is double) extensionField = new PropertyState<double>(method.Parent);
-            else return new ServiceResult(StatusCodes.BadRequestTypeInvalid);
+            else if (fieldValue is int) { extensionField = new PropertyState<int>(method.Parent); }
+            else if (fieldValue is double) { extensionField = new PropertyState<double>(method.Parent); }
+            //else return new ServiceResult(StatusCodes.BadRequestTypeInvalid);
 
-            extensionField.Value = fieldValue;
-            fieldId = new NodeId(objectId.Identifier + $".{fieldName}", 2);
+
+            fieldId = new NodeId(objectId.Identifier + $".{fieldName.Name}", 2);
             extensionField.Create(context, fieldId, fieldName, new LocalizedText(fieldName.Name), false);
-
+            method.Parent.AddChild(extensionField);
+            AddPredefinedNode(context, extensionField);
+            extensionField.Value = fieldValue;
 
             return ServiceResult.Good;
         }
