@@ -13,6 +13,46 @@
     {
       "FieldName": "Configuration.DataSetList",
       "BrowseName": "DataSetList"
+    },
+    {
+      "FieldName": "Configuration.LastChangeDate",
+      "BrowseName": "LastChangeDate"
+    },
+    {
+      "FieldName": "Configuration.LocationName",
+      "BrowseName": "LocationName"
+    },
+    {
+      "FieldName": "Configuration.LongestMicroStopDuration",
+      "BrowseName": "LongestMicroStopDuration"
+    },
+    {
+      "FieldName": "Configuration.RootCauseGroupList",
+      "BrowseName": "RootCauseGroupList"
+    },
+    {
+      "FieldName": "Configuration.StopReasonList",
+      "BrowseName": "StopReasonList"
+    },
+    {
+      "FieldName": "Configuration.UserMachineName",
+      "BrowseName": "UserMachineName"
+    },
+    {
+      "FieldName": "Production.ProductionOrder",
+      "BrowseName": "ProductionOrder"
+    },
+    {
+      "FieldName": "Production.ProductionStatus",
+      "BrowseName": "ProductionStatus"
+    },
+    {
+      "FieldName": "SetUp.BoM",
+      "BrowseName": "BoM"
+    },
+    {
+      "FieldName": "SetUp.DataSet",
+      "BrowseName": "DataSet"
     }
   ]
 }

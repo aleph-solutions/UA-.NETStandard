@@ -1,0 +1,33 @@
+{
+  "Id": 123,
+  "PusblishInterval": 1000,  //ms
+  "Fields": [
+    {
+      "FieldName": "ID"
+    },
+    {
+      "FieldName": "LoadingRate",
+      "ComplexVariableType":  "MaterialRate"
+    },
+    {
+      "FieldName": "MES_ID"
+    },
+    {
+      "FieldName": "NonMixing"
+    },
+    {
+      "FieldName": "StorageLogic"
+    },
+    {
+      "FieldName": "StoredLot",
+      "ComplexVariableType": "MaterialLot"
+    },
+    {
+      "FieldName": "TotalStorageCapacity"
+    },
+    {
+      "FieldName": "UnloadingRate",
+      "ComplexVariableType": "MaterialRate"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "Id": 123,
+  "PusblishInterval": 1000,  //ms
+  "Fields": [
+    {
+      "FieldName": "DisplayFormat"
+    },
+    {
+      "FieldName": "EngineeringUnits"
+    },
+    {
+      "FieldName": "QuantityInLUoM"
+    },
+    {
+      "FieldName": "QuantityInLUoM.DisplayFormat",
+      "BrowseName": "DisplayFormat"
+    },
+    {
+      "FieldName": "QuantityInLUoM.EngineeringUnits",
+      "BrowseName": "EngineeringUnits"
+    }
+  ]
+}

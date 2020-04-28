@@ -95,7 +95,7 @@ namespace PMI.PubSubUAAdapter.Configuration
                 Children =  new System.Collections.ObjectModel.ObservableCollection<PubSubConfiguationBase>(),
                 AuthenticationProfileUri = String.Empty,
                 ResourceUri = String.Empty,
-                PublisherId = "Bay40"
+                PublisherId = "RTCRGF40"
             };
 
             var connectionRes = m_clientAdaptor.AddConnection(mqttConnection, out NodeId connectionNodeId);
@@ -121,7 +121,7 @@ namespace PMI.PubSubUAAdapter.Configuration
                 GroupName = groupName,
                 ParentNode = parent,
                 JsonNetworkMessageContentMask = 11, //Include DatasetMessage and Network message header,
-                MaxNetworkMessageSize = 1500,
+                MaxNetworkMessageSize = 15000,
                 MessageSecurityMode = 1,
                 MessageSetting = 1,
                 PublishingInterval = 1000,

@@ -3,22 +3,27 @@
   "PusblishInterval": 1000, //ms
   "Fields": [
     {
-      "FieldName": "instanceId",
+      "FieldName": "InstanceId",
       "Attribute": 1, //NodeID
       "BrowseName": "_this"
     },
     {
-      "FieldName": "typeId",
+      "FieldName": "TypeId",
       "Attribute": 1, //NodeID
       "BrowseName": "_type"
     },
     {
-      "FieldName": "instanceName",
+      "FieldName": "TypeName",
+      "Attribute": 4, //NodeID
+      "BrowseName": "_type"
+    },
+    {
+      "FieldName": "InstanceName",
       "Attribute": 4, //DisplayName
       "BrowseName": "_this"
     },
     {
-      "FieldName": "description",
+      "FieldName": "Description",
       "Attribute": 5, //Description
       "BrowseName": "_this"
     },

@@ -96,6 +96,8 @@
     <Compile Include="PubSub\PubSubSampleServer.UserAuthentication.cs" />
     <Compile Include="SecurityKeyManager.cs" />
     <Compile Include="Identifiers\TMCPlusIdentifiers.cs" />
+    <Compile Include="Types\TMCPlusTypes.cs" />
+    <Compile Include="Types\TMCTypes.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="App.ico">
@@ -118,6 +120,15 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="AppData\Configuration.MachineModule.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="AppData\Configuration.MaterialBuffer.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="AppData\Configuration.MaterialRate.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="AppData\Configuration.MaterialLot.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="AppData\Configuration.ProcessItem.json">

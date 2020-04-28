@@ -20,6 +20,7 @@ namespace PMI.PubSubUAAdapter.Configuration
         ConfigurationClient _configurationClient;
         Connection _mqttConnection;
         string _topicPrefix;
+        string _pathPrefix = "DeviceSet";
 
         public ConfigurationBuilder(Opc.Ua.Client.Session browseSession, IServerInternal pubSubServer)
         {
@@ -67,13 +68,6 @@ namespace PMI.PubSubUAAdapter.Configuration
 
         public void ConfigureMachineModule(NodeId machineModuleId, string machineName)
         {
-            //Search the NodeIds of the MachineModule sub object
-            var configurationId = GetChildId(machineModuleId, "Configuration");
-            var livestatusId = GetChildId(machineModuleId, "LiveStatus");
-            var productionId = GetChildId(machineModuleId, "Production");
-            var setupId = GetChildId(machineModuleId, "SetUp");
-            var specificationId = GetChildId(machineModuleId, "Specification");
-
             var defectSensorsFolderId = GetChildId(machineModuleId, "DefectDetectionSensors");
             var materialBuffersFolderId = GetChildId(machineModuleId, "MaterialBuffers");
             var materialLoadingPointsFolderId = GetChildId(machineModuleId, "MaterialLoadingPoints");
@@ -92,51 +86,20 @@ namespace PMI.PubSubUAAdapter.Configuration
             ConfigureProcessControlLoops(processControlLoopsFolderId, machineName);
             ConfigureProcessItems(processItemsFolderId, machineName);
 
-            //Load the json configuration
-            PubSubObjectConfiguration jsonConfig;
-            var jsonFilename = @"AppData/Configuration.MachineModule.json";
-            if (File.Exists(jsonFilename))
-            {
-                jsonConfig = JsonConvert.DeserializeObject<PubSubObjectConfiguration>(File.ReadAllText(jsonFilename));
-            }
-            else throw new FileNotFoundException($"JSON file {jsonFilename} not found.");
-
             //Prepare the Writer group
             _configurationClient.AddWriterGroup(_mqttConnection, $"{machineName}", $"{_topicPrefix}{machineName}", out DataSetWriterGroup writerGroup);
             _configurationClient.EnableWriterGroup(writerGroup.Name);
 
             //Prepare the dataset for the entire MachienModule
-            var datasetItems = new Dictionary<string, NodeId>();
+            var typeId = GetTypeDefinition(machineModuleId);
+            var datasetItems = InitializeItemList(machineModuleId, typeId, out Dictionary<string, uint> datasetAttributes);
+            LoadItemList(datasetItems, "MachineModule", machineModuleId);
+            EncodeableFactory.GlobalFactory.AddEncodeableType(typeof(TMCGroup.TMC.DataSetListType));
+            EncodeableFactory.GlobalFactory.AddEncodeableType(typeof(TMCGroup.TMC.DataDescriptionType));
 
-            #region LiveStatus
-            var fields = Browse(livestatusId);
-            foreach (var confField in jsonConfig.Fields.Where(x => x.FieldName.Split('.')[0] == "LiveStatus"))
-            {
-                var fieldNode = fields.FirstOrDefault(x => x.BrowseName.Name == confField.BrowseName);
-
-                var fieldId = ExpandedNodeId.ToNodeId(fieldNode.NodeId, _browseSession.NamespaceUris);
-                datasetItems.Add(confField.FieldName, fieldId);
-            }
-
-
-            #endregion
-
-            #region Configuration
-            fields = Browse(configurationId);
-            foreach (var confField in jsonConfig.Fields.Where(x => x.FieldName.Split('.')[0] == "Configuration"))
-            {
-                var fieldNode = fields.FirstOrDefault(x => x.BrowseName.Name == confField.BrowseName);
-
-                var fieldId = ExpandedNodeId.ToNodeId(fieldNode.NodeId, _browseSession.NamespaceUris);
-                datasetItems.Add(confField.FieldName, fieldId);
-            }
-
-
-            #endregion
-
-            //Add the dataset
+            //Add the dataset and the extensionFields
             _configurationClient.AddPublishedDataSet(datasetItems, $"{machineName}", out PublishedDataSetBase publishedDataSet);
-            _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", publishedDataSet.Name);
+            _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
 
             //Prepare the writer
             _configurationClient.AddWriter(writerGroup, $"{machineName}", publishedDataSet.Name, $"{writerGroup.QueueName}", out DataSetWriterDefinition writer);
@@ -160,6 +123,10 @@ namespace PMI.PubSubUAAdapter.Configuration
 
         private void ConfigureMaterialStorageBuffers(NodeId folderId, string machineName)
         {
+            //Prepare the Writer group
+            _configurationClient.AddWriterGroup(_mqttConnection, $"{machineName}.MaterialBuffers", $"{_topicPrefix}{machineName}/MaterialBuffers", out DataSetWriterGroup writerGroup);
+            _configurationClient.EnableWriterGroup(writerGroup.Name);
+
             var references = Browse(folderId);
 
             foreach (var objItem in references.Where(x => x.NodeClass == NodeClass.Object))
@@ -167,7 +134,19 @@ namespace PMI.PubSubUAAdapter.Configuration
                 var typeId = GetTypeDefinition(objItem.NodeId);
                 if (typeId.Equals(ExpandedNodeId.ToNodeId(TMCPlus.ObjectTypeIds.PMI_MaterialStorageBufferType, _browseSession.NamespaceUris)))
                 {
-                    //Do things
+                    var objectId = ExpandedNodeId.ToNodeId(objItem.NodeId, _browseSession.NamespaceUris);
+
+                    //Prepare the Dataset
+                    var datasetItems = InitializeItemList(objectId, typeId, out Dictionary<string, uint> datasetAttributes);
+                    LoadItemList(datasetItems, "MaterialBuffer", objectId);
+
+                    //Add the dataset
+                    _configurationClient.AddPublishedDataSet(datasetItems, datasetAttributes, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
+                    _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
+
+                    //Prepare the writer
+                    _configurationClient.AddWriter(writerGroup, $"{machineName}.MaterialBuffers.{objItem.BrowseName.Name}", publishedDataSet.Name, $"{writerGroup.QueueName}/{objItem.BrowseName.Name}", out DataSetWriterDefinition writer);
+                    _configurationClient.EnableWriter(writer.Name);
                 }
             }
         }
@@ -221,15 +200,7 @@ namespace PMI.PubSubUAAdapter.Configuration
         }
 
         private void ConfigureProcessItems(NodeId folderId, string machineName)
-        {
-            PubSubObjectConfiguration jsonConfig;
-            var jsonFilename = @"AppData/Configuration.ProcessItem.json";
-            if (File.Exists(jsonFilename))
-            {
-                jsonConfig = JsonConvert.DeserializeObject<PubSubObjectConfiguration>(File.ReadAllText(jsonFilename));
-            }
-            else throw new FileNotFoundException($"JSON file {jsonFilename} not found.");
-
+        { 
             //Prepare the Writer group
             _configurationClient.AddWriterGroup(_mqttConnection, $"{machineName}.ProcessItems", $"{_topicPrefix}{machineName}/ProcessItems", out DataSetWriterGroup writerGroup);
             _configurationClient.EnableWriterGroup(writerGroup.Name);
@@ -246,20 +217,11 @@ namespace PMI.PubSubUAAdapter.Configuration
 
                     //Prepare the Dataset
                     var datasetItems = InitializeItemList(objectId, typeId, out Dictionary<string, uint> datasetAttributes);
-
-                    var fields = Browse(objItem.NodeId);
-                    foreach (var confField in jsonConfig.Fields)
-                    {
-                        var fieldNode = fields.FirstOrDefault(x => x.BrowseName.Name == confField.BrowseName);
-
-                        var fieldName = $"{objItem.BrowseName.Name}.{fieldNode.BrowseName.Name}";
-                        var fieldId = ExpandedNodeId.ToNodeId(fieldNode.NodeId, _browseSession.NamespaceUris);
-                        datasetItems.Add(fieldName, fieldId);
-                    }
+                    LoadItemList(datasetItems, "ProcessItem", objectId);
 
                     //Add the dataset
                     _configurationClient.AddPublishedDataSet(datasetItems, datasetAttributes, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
-                    _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", publishedDataSet.Name);
+                    _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
 
                     //Prepare the writer
                     _configurationClient.AddWriter(writerGroup, $"{machineName}.ProcessItems.{objItem.BrowseName.Name}", publishedDataSet.Name, $"{writerGroup.QueueName}/{objItem.BrowseName.Name}", out DataSetWriterDefinition writer);
@@ -276,15 +238,9 @@ namespace PMI.PubSubUAAdapter.Configuration
             var fieldList = new Dictionary<string, NodeId>();
             attributesList = new Dictionary<string, uint>();
 
-            PubSubObjectConfiguration jsonConfig;
-            var jsonFilename = @"AppData/Configuration.Base.json";
-            if (File.Exists(jsonFilename))
-            {
-                jsonConfig = JsonConvert.DeserializeObject<PubSubObjectConfiguration>(File.ReadAllText(jsonFilename));
-            }
-            else throw new FileNotFoundException($"JSON file {jsonFilename} not found.");
+            var jsonConfig = LoadJsonConfiguration("Base");
 
-            foreach(var field in jsonConfig.Fields)
+            foreach (var field in jsonConfig.Fields)
             {
                 var fieldId = objectId;
                 if (field.BrowseName == "_type") fieldId = objectTypeId;
@@ -312,6 +268,122 @@ namespace PMI.PubSubUAAdapter.Configuration
             return fieldList;
         }
 
+        private void LoadItemList(Dictionary<string, NodeId> itemList, PubSubObjectConfiguration config, NodeId objectNodeId)
+        {
+            var subObjectReferences = new Dictionary<string, List<ReferenceDescription>>();
+            var subNodes = Browse(objectNodeId);
+
+            if(config != null)
+            {
+                foreach(var field in config.Fields)
+                {
+                    var fieldName = field.FieldName;
+                    NodeId fieldId;
+                    if (field.FieldName.Split('.').Length == 2)
+                    {
+                        var subObjectName = field.FieldName.Split('.')[0];
+                        var subObjectId = subNodes.FirstOrDefault(x => x.BrowseName.Name == subObjectName).NodeId;
+
+                        List<ReferenceDescription> references;
+                        if (!subObjectReferences.ContainsKey(subObjectName))
+                        {
+                            references = Browse(subObjectId);
+                            subObjectReferences.Add(subObjectName, references);
+                        }
+                        else
+                        {
+                            references = subObjectReferences[subObjectName];
+                        }
+
+                        var fieldReference = references.FirstOrDefault(x => x.BrowseName.Name == field.BrowseName);
+
+                        fieldId = ExpandedNodeId.ToNodeId(fieldReference.NodeId, _browseSession.NamespaceUris);
+                        itemList.Add(fieldName, fieldId);
+                        
+                    }
+                    else
+                    {
+                        var fieldExpId = subNodes.FirstOrDefault(x => x.BrowseName.Name == field.BrowseName).NodeId;
+                        fieldId = ExpandedNodeId.ToNodeId(fieldExpId, _browseSession.NamespaceUris);
+                        itemList.Add(fieldName, fieldId);
+                    }
+
+                    if (!String.IsNullOrEmpty(field.ComplexVariableType))
+                    {
+                        LoadComplexVariableItemList(itemList, field.ComplexVariableType, fieldId, fieldName);
+                    }
+                }
+            }
+        }
+
+        private void LoadComplexVariableItemList(Dictionary<string, NodeId> itemList, string variableTypeName, NodeId variableNodeId, string variableName)
+        {
+            try
+            {
+                var config = LoadJsonConfiguration(variableTypeName);
+
+                var subObjectReferences = new Dictionary<string, List<ReferenceDescription>>();
+                var subNodes = Browse(variableNodeId);
+
+                if (config != null)
+                {
+                    foreach (var field in config.Fields)
+                    {
+                        var fieldName = $"{variableName}.{field.FieldName}";
+
+                        if (field.FieldName.Split('.').Length == 2)
+                        {
+                            var subObjectName = field.FieldName.Split('.')[0];
+                            var subObjectId = subNodes.FirstOrDefault(x => x.BrowseName.Name == subObjectName).NodeId;
+
+                            List<ReferenceDescription> references;
+                            if (!subObjectReferences.ContainsKey(subObjectName))
+                            {
+                                references = Browse(subObjectId);
+                                subObjectReferences.Add(subObjectName, references);
+                            }
+                            else
+                            {
+                                references = subObjectReferences[subObjectName];
+                            }
+
+                            var fieldReference = references.FirstOrDefault(x => x.BrowseName.Name == field.BrowseName);
+
+                            var fieldId = ExpandedNodeId.ToNodeId(fieldReference.NodeId, _browseSession.NamespaceUris);
+                            itemList.Add(fieldName, fieldId);
+                        }
+                        else
+                        {
+                            var fieldExpId = subNodes.FirstOrDefault(x => x.BrowseName.Name == field.BrowseName).NodeId;
+                            var fieldId = ExpandedNodeId.ToNodeId(fieldExpId, _browseSession.NamespaceUris);
+                            itemList.Add(fieldName, fieldId);
+                        }
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"ConfigurationBuilder LoadComplexVariableItemList...Error loading configuration. Type: {variableTypeName} Exception: {ex}");
+            }
+
+        }
+
+        private void LoadItemList(Dictionary<string, NodeId> itemList, string objectTypeName, NodeId objectNodeId)
+        {
+            var jsonConfig = LoadJsonConfiguration(objectTypeName);
+            LoadItemList(itemList, jsonConfig, objectNodeId);
+        }
+
+        private PubSubObjectConfiguration LoadJsonConfiguration(string typeName)
+        {
+            var jsonFilename = $@"AppData/Configuration.{typeName}.json";
+            if (File.Exists(jsonFilename))
+            {
+                return JsonConvert.DeserializeObject<PubSubObjectConfiguration>(File.ReadAllText(jsonFilename));
+            }
+            else throw new FileNotFoundException($"JSON file {jsonFilename} not found.");
+        }
+
         private NodeId GetChildId(NodeId startNodeId, string childName)
         {
             return CommonFunctions.GetChildId(_browseSession, startNodeId, childName);
@@ -327,9 +399,14 @@ namespace PMI.PubSubUAAdapter.Configuration
             return CommonFunctions.Browse(_browseSession, startNodeId);
         }
 
+        private NodeId GetTypeDefinition(NodeId nodeId)
+        {
+            return CommonFunctions.GetTypeDefinition(_browseSession, nodeId);
+        }
+
         private NodeId GetTypeDefinition(ExpandedNodeId nodeId)
         {
-            return CommonFunctions.GetTypeDefinition(_browseSession, ExpandedNodeId.ToNodeId(nodeId, _browseSession.NamespaceUris));
+            return GetTypeDefinition(ExpandedNodeId.ToNodeId(nodeId, _browseSession.NamespaceUris));
         }
         #endregion
     }
@@ -380,5 +457,10 @@ namespace PMI.PubSubUAAdapter.Configuration
             } 
         }
         private string _browseName;
+
+        [DataMember]
+        public string ComplexVariableType { get; set; }
     }
+
+
 }

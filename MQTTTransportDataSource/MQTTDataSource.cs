@@ -87,6 +87,8 @@ namespace MQTTTransportDataSource
                     topic = "test";
                 }
 
+
+                //var dataStr = Encoding.UTF8.GetString(data);
                 client.Publish(topic, data, MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE, true);
                 return true;
             }
