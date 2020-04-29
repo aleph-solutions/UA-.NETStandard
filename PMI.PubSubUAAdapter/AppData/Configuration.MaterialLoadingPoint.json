@@ -1,0 +1,37 @@
+{
+  "Id": 123,
+  "PublishInterval": 1000,  //ms
+  "ParentType": "Device",
+  "Fields": [
+    {
+      "FieldName": "ActualConsumptionRate",
+      "ComplexVariableType": "MaterialRate"
+    },
+    {
+      "FieldName": "ExpectedMaterial"
+    },
+    {
+      "FieldName": "LoadingPoint"
+    },
+    {
+      "FieldName": "MaterialIntegrityAgent"
+    },
+    {
+      "FieldName": "NominalConsumptionRate",
+      "ComplexVariableType": "MaterialRate"
+    },
+    {
+      "FieldName": "TotalLoadedLot",
+      "ComplexVariableType": "MaterialLot"
+    },
+    {
+      "FieldName": "MaterialAttributes"
+    },
+    {
+      "FieldName": "MaterialLotAttributes"
+    },
+    {
+      "FieldName": "UpstreamHold"
+    }
+  ]
+}

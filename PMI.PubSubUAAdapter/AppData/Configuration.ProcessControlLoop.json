@@ -1,0 +1,18 @@
+{
+  "Id": 123,
+  "PublishInterval": 1000,  //ms
+  "Fields": [
+    {
+      "FieldName": "ProcessValue",
+      "ComplexVariableType": "ProcessItem"
+    },
+    {
+      "FieldName": "ControlValue",
+      "ComplexVariableType": "ProcessItem"
+    },
+    {
+      "FieldName": "SetPoint",
+      "ComplexVariableType": "ProcessItem"
+    }
+  ]
+}

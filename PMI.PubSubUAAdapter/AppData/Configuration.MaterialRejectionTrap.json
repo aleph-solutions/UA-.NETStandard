@@ -1,0 +1,39 @@
+{
+  "Id": 123,
+  "PublishInterval": 1000,  //ms
+  "ParentType": "Device",
+  "Fields": [
+    {
+      "FieldName": "MaterialQuantityRejectedMasterTotal",
+      "ComplexVariableType": "MaterialLot"
+    },
+    {
+      "FieldName": "MaterialQuantityRejectedTotal",
+      "ComplexVariableType": "MaterialLot"
+    },
+    {
+      "FieldName": "MaterialRejected"
+    },
+    {
+      "FieldName": "MaterialRejectedRatio"
+    },
+    {
+      "FieldName": "RejectionCountMasterTotal"
+    },
+    {
+      "FieldName": "RejectionCountTotal"
+    },
+    {
+      "FieldName": "RejectionMode"
+    },
+    {
+      "FieldName": "RejectionsRatio"
+    },
+    {
+      "FieldName": "MaterialAttributes"
+    },
+    {
+      "FieldName": "MaterialLotAttributes"
+    }
+  ]
+}

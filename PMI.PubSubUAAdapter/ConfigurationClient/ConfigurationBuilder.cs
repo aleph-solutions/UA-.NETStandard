@@ -38,6 +38,9 @@ namespace PMI.PubSubUAAdapter.Configuration
         #region PubSub Configuration Methods
         public void Start()
         {
+            //Initialize the encodable types in order to be correctly serialized in the json
+            InitializeEncodableTypes();
+
             //Browse the Objects folder
             var objFolderNodes = Browse(ObjectIds.ObjectsFolder);
 
@@ -60,9 +63,9 @@ namespace PMI.PubSubUAAdapter.Configuration
             }
             else
             {
-                Console.WriteLine("COnfigurationBuilder Start...DeviceSet object not found");
+                Console.WriteLine("ConfigurationBuilder Start...DeviceSet object not found");
             }
-
+            _configurationClient.EnableAllWriters();
         }
 
 
@@ -89,13 +92,12 @@ namespace PMI.PubSubUAAdapter.Configuration
             //Prepare the Writer group
             _configurationClient.AddWriterGroup(_mqttConnection, $"{machineName}", $"{_topicPrefix}{machineName}", out DataSetWriterGroup writerGroup);
             _configurationClient.EnableWriterGroup(writerGroup.Name);
-
+          
             //Prepare the dataset for the entire MachienModule
             var typeId = GetTypeDefinition(machineModuleId);
             var datasetItems = InitializeItemList(machineModuleId, typeId, out Dictionary<string, uint> datasetAttributes);
             LoadItemList(datasetItems, "MachineModule", machineModuleId);
-            EncodeableFactory.GlobalFactory.AddEncodeableType(typeof(TMCGroup.TMC.DataSetListType));
-            EncodeableFactory.GlobalFactory.AddEncodeableType(typeof(TMCGroup.TMC.DataDescriptionType));
+
 
             //Add the dataset and the extensionFields
             _configurationClient.AddPublishedDataSet(datasetItems, $"{machineName}", out PublishedDataSetBase publishedDataSet);
@@ -103,12 +105,38 @@ namespace PMI.PubSubUAAdapter.Configuration
 
             //Prepare the writer
             _configurationClient.AddWriter(writerGroup, $"{machineName}", publishedDataSet.Name, $"{writerGroup.QueueName}", out DataSetWriterDefinition writer);
-            _configurationClient.EnableWriter(writer.Name);
+            //_configurationClient.EnableWriter(writer.Name);
+
+        }
+
+        private void InitializeEncodableTypes()
+        {
+            EncodeableFactory.GlobalFactory.AddEncodeableType(typeof(TMCGroup.TMC.DataSetListType));
+            EncodeableFactory.GlobalFactory.AddEncodeableType(typeof(TMCGroup.TMC.DataDescriptionType));
+            EncodeableFactory.GlobalFactory.AddEncodeableType(typeof(TMCGroup.TMC.RootCauseGroupType));
+            EncodeableFactory.GlobalFactory.AddEncodeableType(typeof(TMCGroup.TMC.RootCauseMessageType));
+            EncodeableFactory.GlobalFactory.AddEncodeableType(typeof(TMCGroup.TMC.MessageType));
+            EncodeableFactory.GlobalFactory.AddEncodeableType(typeof(TMCGroup.TMC.POType));
+            EncodeableFactory.GlobalFactory.AddEncodeableType(typeof(TMCPlus.PMI_BoMType));
+            EncodeableFactory.GlobalFactory.AddEncodeableType(typeof(TMCPlus.PMI_BoMEntryType));
+            EncodeableFactory.GlobalFactory.AddEncodeableType(typeof(TMCGroup.TMC.DataSetType));
+            EncodeableFactory.GlobalFactory.AddEncodeableType(typeof(TMCGroup.TMC.DataSetEntryType));
+            EncodeableFactory.GlobalFactory.AddEncodeableType(typeof(TMCGroup.TMC.LoadUnloadPointType));
+            EncodeableFactory.GlobalFactory.AddEncodeableType(typeof(TMCGroup.TMC.MaterialStorageBufferDataType));
+            EncodeableFactory.GlobalFactory.AddEncodeableType(typeof(TMCGroup.TMC.MaterialType));
+            EncodeableFactory.GlobalFactory.AddEncodeableType(typeof(TMCPlus.PMI_MaterialAttributesType));
+            EncodeableFactory.GlobalFactory.AddEncodeableType(typeof(TMCPlus.PMI_MaterialLotAttributesType));
+            EncodeableFactory.GlobalFactory.AddEncodeableType(typeof(TMCPlus.PMI_MaterialQualityType));
+            EncodeableFactory.GlobalFactory.AddEncodeableType(typeof(TMCPlus.PMI_MaterialStateEnumeration));
         }
 
 
         private void ConfigureDefectSensors(NodeId folderId, string machineName)
         {
+            //Prepare the Writer group
+            _configurationClient.AddWriterGroup(_mqttConnection, $"{machineName}.DefectDetectionSensors", $"{_topicPrefix}{machineName}/DefectDetectionSensors", out DataSetWriterGroup writerGroup);
+            _configurationClient.EnableWriterGroup(writerGroup.Name);
+
             var references = Browse(folderId);
 
             foreach(var objItem in references.Where(x => x.NodeClass == NodeClass.Object))
@@ -146,7 +174,7 @@ namespace PMI.PubSubUAAdapter.Configuration
 
                     //Prepare the writer
                     _configurationClient.AddWriter(writerGroup, $"{machineName}.MaterialBuffers.{objItem.BrowseName.Name}", publishedDataSet.Name, $"{writerGroup.QueueName}/{objItem.BrowseName.Name}", out DataSetWriterDefinition writer);
-                    _configurationClient.EnableWriter(writer.Name);
+                    //_configurationClient.EnableWriter(writer.Name);
                 }
             }
         }
@@ -154,11 +182,40 @@ namespace PMI.PubSubUAAdapter.Configuration
         private void ConfigureMaterialLoadingPoints(NodeId folderId, string machineName)
         {
 
-           
+            //Prepare the Writer group
+            _configurationClient.AddWriterGroup(_mqttConnection, $"{machineName}.MaterialLoadingPoints", $"{_topicPrefix}{machineName}/MaterialLoadingPoints", out DataSetWriterGroup writerGroup);
+            _configurationClient.EnableWriterGroup(writerGroup.Name);
+
+            var references = Browse(folderId);
+
+            foreach (var objItem in references.Where(x => x.NodeClass == NodeClass.Object))
+            {
+                var typeId = GetTypeDefinition(objItem.NodeId);
+                if (typeId.Equals(ExpandedNodeId.ToNodeId(TMCPlus.ObjectTypeIds.PMI_MaterialLoadingPointType, _browseSession.NamespaceUris)))
+                {
+                    var objectId = ExpandedNodeId.ToNodeId(objItem.NodeId, _browseSession.NamespaceUris);
+
+                    //Prepare the Dataset
+                    var datasetItems = InitializeItemList(objectId, typeId, out Dictionary<string, uint> datasetAttributes);
+                    LoadItemList(datasetItems, "MaterialLoadingPoint", objectId);
+
+                    //Add the dataset
+                    _configurationClient.AddPublishedDataSet(datasetItems, datasetAttributes, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
+                    _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
+
+                    //Prepare the writer
+                    _configurationClient.AddWriter(writerGroup, $"{machineName}.MaterialLoadingPoints.{objItem.BrowseName.Name}", publishedDataSet.Name, $"{writerGroup.QueueName}/{objItem.BrowseName.Name}", out DataSetWriterDefinition writer);
+                    //_configurationClient.EnableWriter(writer.Name);
+                }
+            }
         }
 
         private void ConfigureMaterialOutputs(NodeId folderId, string machineName)
         {
+            //Prepare the Writer group
+            _configurationClient.AddWriterGroup(_mqttConnection, $"{machineName}.MaterialOutputs", $"{_topicPrefix}{machineName}/MaterialOutputs", out DataSetWriterGroup writerGroup);
+            _configurationClient.EnableWriterGroup(writerGroup.Name);
+            
             var references = Browse(folderId);
 
             foreach (var objItem in references.Where(x => x.NodeClass == NodeClass.Object))
@@ -166,13 +223,29 @@ namespace PMI.PubSubUAAdapter.Configuration
                 var typeId = GetTypeDefinition(objItem.NodeId);
                 if (typeId.Equals(ExpandedNodeId.ToNodeId(TMCPlus.ObjectTypeIds.PMI_MaterialOutputType, _browseSession.NamespaceUris)))
                 {
-                    //Do things
+                    var objectId = ExpandedNodeId.ToNodeId(objItem.NodeId, _browseSession.NamespaceUris);
+
+                    //Prepare the Dataset
+                    var datasetItems = InitializeItemList(objectId, typeId, out Dictionary<string, uint> datasetAttributes);
+                    LoadItemList(datasetItems, "MaterialOutput", objectId);
+
+                    //Add the dataset
+                    _configurationClient.AddPublishedDataSet(datasetItems, datasetAttributes, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
+                    _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
+
+                    //Prepare the writer
+                    _configurationClient.AddWriter(writerGroup, $"{machineName}.MaterialOutputs.{objItem.BrowseName.Name}", publishedDataSet.Name, $"{writerGroup.QueueName}/{objItem.BrowseName.Name}", out DataSetWriterDefinition writer);
+                    //_configurationClient.EnableWriter(writer.Name);
                 }
             }
         }
 
         private void ConfigureMaterialRejectionTraps(NodeId folderId, string machineName)
         {
+            //Prepare the Writer group
+            _configurationClient.AddWriterGroup(_mqttConnection, $"{machineName}.MaterialRejectionTraps", $"{_topicPrefix}{machineName}/MaterialRejectionTraps", out DataSetWriterGroup writerGroup);
+            _configurationClient.EnableWriterGroup(writerGroup.Name);
+
             var references = Browse(folderId);
 
             foreach (var objItem in references.Where(x => x.NodeClass == NodeClass.Object))
@@ -180,21 +253,50 @@ namespace PMI.PubSubUAAdapter.Configuration
                 var typeId = GetTypeDefinition(objItem.NodeId);
                 if (typeId.Equals(ExpandedNodeId.ToNodeId(TMCPlus.ObjectTypeIds.PMI_MaterialRejectionTrapType, _browseSession.NamespaceUris)))
                 {
-                    //Do things
+                    var objectId = ExpandedNodeId.ToNodeId(objItem.NodeId, _browseSession.NamespaceUris);
+
+                    //Prepare the Dataset
+                    var datasetItems = InitializeItemList(objectId, typeId, out Dictionary<string, uint> datasetAttributes);
+                    LoadItemList(datasetItems, "MaterialRejectionTrap", objectId);
+
+                    //Add the dataset
+                    _configurationClient.AddPublishedDataSet(datasetItems, datasetAttributes, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
+                    _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
+
+                    //Prepare the writer
+                    _configurationClient.AddWriter(writerGroup, $"{machineName}.MaterialRejectionTraps.{objItem.BrowseName.Name}", publishedDataSet.Name, $"{writerGroup.QueueName}/{objItem.BrowseName.Name}", out DataSetWriterDefinition writer);
+                    //_configurationClient.EnableWriter(writer.Name);
                 }
             }
         }
 
         private void ConfigureProcessControlLoops(NodeId folderId, string machineName)
         {
+            //Prepare the Writer group
+            _configurationClient.AddWriterGroup(_mqttConnection, $"{machineName}.ProcessControlLoops", $"{_topicPrefix}{machineName}/ProcessControlLoops", out DataSetWriterGroup writerGroup);
+            _configurationClient.EnableWriterGroup(writerGroup.Name);
+
             var references = Browse(folderId);
 
             foreach (var objItem in references.Where(x => x.NodeClass == NodeClass.Object))
             {
+                Console.WriteLine($"Configuring processControlLoop {objItem.BrowseName.Name}");
                 var typeId = GetTypeDefinition(objItem.NodeId);
                 if (typeId.Equals(ExpandedNodeId.ToNodeId(TMCPlus.ObjectTypeIds.PMI_ProcessControlLoopType, _browseSession.NamespaceUris)))
                 {
-                    //Do things
+                    var objectId = ExpandedNodeId.ToNodeId(objItem.NodeId, _browseSession.NamespaceUris);
+
+                    //Prepare the Dataset
+                    var datasetItems = InitializeItemList(objectId, typeId, out Dictionary<string, uint> datasetAttributes);
+                    LoadItemList(datasetItems, "ProcessControlLoop", objectId);
+
+                    //Add the dataset
+                    _configurationClient.AddPublishedDataSet(datasetItems, datasetAttributes, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
+                    _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
+
+                    //Prepare the writer
+                    _configurationClient.AddWriter(writerGroup, $"{machineName}.ProcessControlLoops.{objItem.BrowseName.Name}", publishedDataSet.Name, $"{writerGroup.QueueName}/{objItem.BrowseName.Name}", out DataSetWriterDefinition writer);
+                    //_configurationClient.EnableWriter(writer.Name);
                 }
             }
         }
@@ -225,7 +327,7 @@ namespace PMI.PubSubUAAdapter.Configuration
 
                     //Prepare the writer
                     _configurationClient.AddWriter(writerGroup, $"{machineName}.ProcessItems.{objItem.BrowseName.Name}", publishedDataSet.Name, $"{writerGroup.QueueName}/{objItem.BrowseName.Name}", out DataSetWriterDefinition writer);
-                    _configurationClient.EnableWriter(writer.Name);
+                    //////_configurationClient.EnableWriter(writer.Name);
                 }
             }
         }
@@ -270,6 +372,9 @@ namespace PMI.PubSubUAAdapter.Configuration
 
         private void LoadItemList(Dictionary<string, NodeId> itemList, PubSubObjectConfiguration config, NodeId objectNodeId)
         {
+            //Load the parent type item list
+            if (config.ParentType != null) LoadItemList(itemList, config.ParentType, objectNodeId);
+            
             var subObjectReferences = new Dictionary<string, List<ReferenceDescription>>();
             var subNodes = Browse(objectNodeId);
 
@@ -278,7 +383,7 @@ namespace PMI.PubSubUAAdapter.Configuration
                 foreach(var field in config.Fields)
                 {
                     var fieldName = field.FieldName;
-                    NodeId fieldId;
+                    NodeId fieldId = null;
                     if (field.FieldName.Split('.').Length == 2)
                     {
                         var subObjectName = field.FieldName.Split('.')[0];
@@ -296,22 +401,34 @@ namespace PMI.PubSubUAAdapter.Configuration
                         }
 
                         var fieldReference = references.FirstOrDefault(x => x.BrowseName.Name == field.BrowseName);
-
-                        fieldId = ExpandedNodeId.ToNodeId(fieldReference.NodeId, _browseSession.NamespaceUris);
-                        itemList.Add(fieldName, fieldId);
-                        
+                        if(fieldReference != null)
+                        {
+                            fieldId = ExpandedNodeId.ToNodeId(fieldReference.NodeId, _browseSession.NamespaceUris);
+                            itemList.Add(fieldName, fieldId);
+                        }
                     }
                     else
                     {
-                        var fieldExpId = subNodes.FirstOrDefault(x => x.BrowseName.Name == field.BrowseName).NodeId;
-                        fieldId = ExpandedNodeId.ToNodeId(fieldExpId, _browseSession.NamespaceUris);
-                        itemList.Add(fieldName, fieldId);
+                        var fieldReference = subNodes.FirstOrDefault(x => x.BrowseName.Name == field.BrowseName);
+
+                        if(fieldReference != null)
+                        {
+                            fieldId = ExpandedNodeId.ToNodeId(fieldReference.NodeId, _browseSession.NamespaceUris);
+                            itemList.Add(fieldName, fieldId);
+                        }
+                       
                     }
 
+                    //If the field is a complex variable, include also the sub properties
                     if (!String.IsNullOrEmpty(field.ComplexVariableType))
                     {
-                        LoadComplexVariableItemList(itemList, field.ComplexVariableType, fieldId, fieldName);
+                        if(fieldId != null)
+                        {
+                            LoadComplexVariableItemList(itemList, field.ComplexVariableType, fieldId, fieldName);
+                        }
                     }
+
+                    if (fieldId == null) Console.WriteLine($"NodeId for the field {fieldName} of object with nodId {objectNodeId} not found");
                 }
             }
         }
@@ -330,6 +447,7 @@ namespace PMI.PubSubUAAdapter.Configuration
                     foreach (var field in config.Fields)
                     {
                         var fieldName = $"{variableName}.{field.FieldName}";
+                        Console.WriteLine($"Field: {fieldName}");
 
                         if (field.FieldName.Split('.').Length == 2)
                         {
@@ -363,7 +481,7 @@ namespace PMI.PubSubUAAdapter.Configuration
             }
             catch(Exception ex)
             {
-                Console.WriteLine($"ConfigurationBuilder LoadComplexVariableItemList...Error loading configuration. Type: {variableTypeName} Exception: {ex}");
+                Console.WriteLine($"ConfigurationBuilder LoadComplexVariableItemList...Error loading configuration. Type: {variableTypeName}; Variable name: {variableName}; Exception: {ex}");
             }
 
         }
@@ -418,7 +536,10 @@ namespace PMI.PubSubUAAdapter.Configuration
         public string Id { get; set; }
 
         [DataMember]
-        public int PusblishInterval { get; set; }
+        public int PublishInterval { get; set; }
+
+        [DataMember]
+        public string ParentType { get; set; }
         
         [DataMember]
         public IEnumerable<FieldDefinition> Fields { get; set; }

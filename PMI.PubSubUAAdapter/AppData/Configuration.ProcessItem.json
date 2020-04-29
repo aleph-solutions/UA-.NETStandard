@@ -1,6 +1,6 @@
 {
   "Id": 123,
-  "PusblishInterval": 1000,  //ms
+  "PublishInterval": 1000,  //ms
   "Fields": [
     {
       "FieldName": "AnalogMeasurement"

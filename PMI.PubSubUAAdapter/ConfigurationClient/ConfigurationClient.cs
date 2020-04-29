@@ -292,7 +292,11 @@ namespace PMI.PubSubUAAdapter.Configuration
         public void EnableWriter(string writerName)
         {
             var writer = _writers.FirstOrDefault(x => x.Name == writerName);
+            EnableWriter(writer);
+        }
 
+        public void EnableWriter(DataSetWriterDefinition writer)
+        {
             if (writer != null)
             {
                 //search for the StatusId
@@ -306,7 +310,14 @@ namespace PMI.PubSubUAAdapter.Configuration
                     EnableNodeId = methodId
                 });
             }
+        }
 
+        public void EnableAllWriters()
+        {
+            foreach(var writer in _writers)
+            {
+                EnableWriter(writer);
+            }
         }
 
         public NodeId AddExtensionField(PublishedDataSetBase publishedDataSet, string fieldName, object fieldValue)

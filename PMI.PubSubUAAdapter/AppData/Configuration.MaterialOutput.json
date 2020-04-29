@@ -1,0 +1,32 @@
+{
+  "Id": 123,
+  "PublishInterval": 1000,  //ms
+  "ParentType": "Device",
+  "Fields": [
+    {
+      "FieldName": "DownstreamHeld"
+    },
+    {
+      "FieldName": "MasterTotalOutput",
+      "ComplexVariableType": "MaterialLot"
+    },
+    {
+      "FieldName": "OutputRate",
+      "ComplexVariableType": "MaterialRate"
+    },
+    {
+      "FieldName": "TotalOutput",
+      "ComplexVariableType": "MaterialLot"
+    },
+    {
+      "FieldName": "UnloadPoint"
+    },
+    {
+      "FieldName": "MaterialAttributes"
+    },
+    {
+      "FieldName": "MaterialLotAttributes"
+    }
+
+  ]
+}

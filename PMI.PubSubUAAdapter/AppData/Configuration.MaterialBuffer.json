@@ -1,13 +1,14 @@
 {
   "Id": 123,
-  "PusblishInterval": 1000,  //ms
+  "PublishInterval": 1000,  //ms
+  "ParentType": "Device",
   "Fields": [
     {
       "FieldName": "ID"
     },
     {
       "FieldName": "LoadingRate",
-      "ComplexVariableType":  "MaterialRate"
+      "ComplexVariableType": "MaterialRate"
     },
     {
       "FieldName": "MES_ID"

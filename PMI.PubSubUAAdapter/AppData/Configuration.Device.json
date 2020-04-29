@@ -1,0 +1,24 @@
+{
+  "Id": 123,
+  "PublishInterval": 1000, //ms
+  "Fields": [
+    {
+      "FieldName": "DeviceManual"
+    },
+    {
+      "FieldName": "DeviceRevision"
+    },
+    {
+      "FieldName": "HardwareRevision"
+    },
+    {
+      "FieldName": "Manufacturer"
+    },
+    {
+      "FieldName": "RevisionCounter"
+    },
+    {
+      "FieldName": "SerialNumber"
+    }
+  ]
+}
