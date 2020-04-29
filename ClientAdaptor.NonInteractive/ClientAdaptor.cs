@@ -25,13 +25,12 @@ using Opc.Ua.Configuration;
 using System.Security.Cryptography.X509Certificates;
 using System.Windows;
 using System.ComponentModel;
-using Opc.Ua.Client.Controls;
+//using Opc.Ua.Client.Controls;
 
 using PubSubBase.Definitions;
 using System.Collections.ObjectModel;
 using System.Configuration;
 using System.Threading.Tasks;
-using Opc.Ua.Sample.Controls;
 using Opc.Ua.CommonFunctions;
 
 namespace ClientAdaptor
@@ -1787,109 +1786,109 @@ namespace ClientAdaptor
 
         }
 
-        /// <summary>
-        /// Method which finds available servers in selected host.
-        /// </summary>
-        public ApplicationDescriptionCollection FindServers(string hostName)
-        {
-            try
-            {
-                // Cursor = Cursors.WaitCursor;
+        ///// <summary>
+        ///// Method which finds available servers in selected host.
+        ///// </summary>
+        //public ApplicationDescriptionCollection FindServers(string hostName)
+        //{
+        //    try
+        //    {
+        //        // Cursor = Cursors.WaitCursor;
 
-                // set a short timeout because this is happening in the drop down event.
-                var configuration = EndpointConfiguration.Create();
-                configuration.OperationTimeout = 20000;
+        //        // set a short timeout because this is happening in the drop down event.
+        //        var configuration = EndpointConfiguration.Create();
+        //        configuration.OperationTimeout = 20000;
 
-                // Connect to the local discovery server and find the available servers.
-                using (var client = DiscoveryClient.Create(new Uri(Utils.Format("opc.tcp://{0}:4840", hostName)),
-                                                             configuration))
-                {
-                    return client.FindServers(null);
-                }
-            }
-            catch (Exception ex)
-            {
-                Utils.Trace("Error Establishing a connection. " + ex.Message);
-            }
-            return null;
-        }
+        //        // Connect to the local discovery server and find the available servers.
+        //        using (var client = DiscoveryClient.Create(new Uri(Utils.Format("opc.tcp://{0}:4840", hostName)),
+        //                                                     configuration))
+        //        {
+        //            return client.FindServers(null);
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Utils.Trace("Error Establishing a connection. " + ex.Message);
+        //    }
+        //    return null;
+        //}
 
         /// <summary>
         /// Method to connect the server.
         /// </summary>
-        public Session Connect(string endpointUrl, out string errorMessage, out TreeViewNode node)
-        {
+        //public Session Connect(string endpointUrl, out string errorMessage, out TreeViewNode node)
+        //{
 
-            node = new TreeViewNode();
-            errorMessage = string.Empty;
-            try
-            {
-                var endpoint = CreateConfiguredEndpoint(endpointUrl);
+        //    node = new TreeViewNode();
+        //    errorMessage = string.Empty;
+        //    try
+        //    {
+        //        var endpoint = CreateConfiguredEndpoint(endpointUrl);
 
-                if (endpoint == null)
-                {
-                    errorMessage = "Couldn't open endpoint";
-                    return null;
-                }
-                if (endpoint.UpdateBeforeConnect)
-                {
-                    ConfiguredServerDlg configuredServerDlg = new ConfiguredServerDlg();
-                    endpoint = configuredServerDlg.ShowDialog(endpoint, m_configuration);
+        //        if (endpoint == null)
+        //        {
+        //            errorMessage = "Couldn't open endpoint";
+        //            return null;
+        //        }
+        //        if (endpoint.UpdateBeforeConnect)
+        //        {
+        //            ConfiguredServerDlg configuredServerDlg = new ConfiguredServerDlg();
+        //            endpoint = configuredServerDlg.ShowDialog(endpoint, m_configuration);
 
-                    if (endpoint == null)
-                    {
-                        errorMessage = configuredServerDlg.StatusText;
-                        return null;
-                    }
-                    SelectedEndpoint = endpoint.ToString();
-                }
+        //            if (endpoint == null)
+        //            {
+        //                errorMessage = configuredServerDlg.StatusText;
+        //                return null;
+        //            }
+        //            SelectedEndpoint = endpoint.ToString();
+        //        }
 
-                X509Certificate2 clientCertificate = null;
-                if (endpoint.Description.SecurityPolicyUri != SecurityPolicies.None)
-                {
-                    if (m_configuration.SecurityConfiguration.ApplicationCertificate == null)
-                    {
-                        errorMessage = "Application certificate is empty";
-                        return null;
-                    }
+        //        X509Certificate2 clientCertificate = null;
+        //        if (endpoint.Description.SecurityPolicyUri != SecurityPolicies.None)
+        //        {
+        //            if (m_configuration.SecurityConfiguration.ApplicationCertificate == null)
+        //            {
+        //                errorMessage = "Application certificate is empty";
+        //                return null;
+        //            }
 
-                    Task<X509Certificate2> taskclientCertificate = m_configuration.SecurityConfiguration.ApplicationCertificate.Find(true);
-                    if (taskclientCertificate == null)
-                    {
-                        errorMessage = "Couldn't able to find the client certificate";
-                        return null;
-                    }
-                    clientCertificate = taskclientCertificate.Result as X509Certificate2;
-                }
+        //            Task<X509Certificate2> taskclientCertificate = m_configuration.SecurityConfiguration.ApplicationCertificate.Find(true);
+        //            if (taskclientCertificate == null)
+        //            {
+        //                errorMessage = "Couldn't able to find the client certificate";
+        //                return null;
+        //            }
+        //            clientCertificate = taskclientCertificate.Result as X509Certificate2;
+        //        }
 
-                var channel = SessionChannel.Create(m_configuration, endpoint.Description, endpoint.Configuration,
-                                                   clientCertificate, m_messageContext);
-                Session = new Session(channel, m_configuration, endpoint, clientCertificate)
-                {
-                    ReturnDiagnostics = DiagnosticsMasks.All
-                };
+        //        var channel = SessionChannel.Create(m_configuration, endpoint.Description, endpoint.Configuration,
+        //                                           clientCertificate, m_messageContext);
+        //        Session = new Session(channel, m_configuration, endpoint, clientCertificate)
+        //        {
+        //            ReturnDiagnostics = DiagnosticsMasks.All
+        //        };
 
-                if (!new SessionOpenDlg().ShowDialog(Session, null))
-                {
-                    return null;
-                }
-                Session.KeepAliveInterval = 10000;
-                Session.KeepAlive += Session_KeepAlive;
-                errorMessage = string.Empty;
+        //        if (!new SessionOpenDlg().ShowDialog(Session, null))
+        //        {
+        //            return null;
+        //        }
+        //        Session.KeepAliveInterval = 10000;
+        //        Session.KeepAlive += Session_KeepAlive;
+        //        errorMessage = string.Empty;
 
-                BrowserNodeControl = new BrowseNodeControl(Session);
-                BrowserNodeControl.InitializeBrowserView(BrowseViewType.Objects, null);
+        //        //BrowserNodeControl = new BrowseNodeControl(Session);
+        //        //BrowserNodeControl.InitializeBrowserView(BrowseViewType.Objects, null);
 
-                node.IsRoot = true;
-                BrowserNodeControl.Browse(ref node);
-            }
-            catch (Exception ex)
-            {
-                Utils.Trace(ex, "OPCUAClientAdaptor.Connect API" + ex.Message);
-            }
-            //  channel = null; ToDO: Do we need to close the channel
-            return Session;
-        }
+        //        node.IsRoot = true;
+        //        BrowserNodeControl.Browse(ref node);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Utils.Trace(ex, "OPCUAClientAdaptor.Connect API" + ex.Message);
+        //    }
+        //    //  channel = null; ToDO: Do we need to close the channel
+        //    return Session;
+        //}
 
         /// <summary>
         /// Rebrowse the selected node in the tree.
@@ -2004,7 +2003,7 @@ namespace ClientAdaptor
             }
             catch (Exception exception)
             {
-                ClientUtils.HandleException("OPC UA PubSub Client", exception);
+                //ClientUtils.HandleException("OPC UA PubSub Client", exception);
             }
         }
 
@@ -2024,8 +2023,8 @@ namespace ClientAdaptor
                 Session.KeepAlive += Session_KeepAlive;
                 m_reconnectHandler.Dispose();
                 m_reconnectHandler = null;
-                BrowserNodeControl = new BrowseNodeControl(Session);
-                BrowserNodeControl.InitializeBrowserView(BrowseViewType.Objects, null);
+                //BrowserNodeControl = new BrowseNodeControl(Session);
+                //BrowserNodeControl.InitializeBrowserView(BrowseViewType.Objects, null);
                 try
                 {
                     RefreshOnReconnection = true;
@@ -2048,7 +2047,7 @@ namespace ClientAdaptor
             }
             catch (Exception exception)
             {
-                ClientUtils.HandleException("OPC UA PubSub Client", exception);
+                //ClientUtils.HandleException("OPC UA PubSub Client", exception);
             }
         }
 
@@ -2856,6 +2855,16 @@ namespace ClientAdaptor
         protected void OnPropertyChanged(string info)
         {
             _handler?.Invoke(this, new PropertyChangedEventArgs(info));
+        }
+
+        public ApplicationDescriptionCollection FindServers(string hostName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Session Connect(string endpointUrl, out string errorMessage, out TreeViewNode node)
+        {
+            throw new NotImplementedException();
         }
 
 

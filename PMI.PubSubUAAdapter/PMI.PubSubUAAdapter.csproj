@@ -79,7 +79,6 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Web.Extensions" />
-    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
@@ -184,14 +183,6 @@
       <Project>{ab572cf2-5d9f-4cdf-a6e9-f09704642862}</Project>
       <Name>PublisherDataSource</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SampleApplications\Samples\ClientControls.Net4\UA Client Controls.csproj">
-      <Project>{a247d2ee-14fc-463d-a9ba-6cff1ef22b7a}</Project>
-      <Name>UA Client Controls</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SampleApplications\Samples\Controls.Net4\UA Sample Controls.csproj">
-      <Project>{92ae819b-4938-4502-ac32-67063f9893cd}</Project>
-      <Name>UA Sample Controls</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SampleApplications\Samples\Opc.Ua.Sample\Opc.Ua.Sample.csproj">
       <Project>{6a625404-2444-48b8-93be-85aa4c99321c}</Project>
       <Name>Opc.Ua.Sample</Name>
@@ -199,10 +190,6 @@
     <ProjectReference Include="..\SampleApplications\Samples\PubSub Configuration Tool\PubSubBase\PubSubBase.csproj">
       <Project>{5fbb5d20-5d60-4b08-b077-15bf57005d99}</Project>
       <Name>PubSubBase</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SampleApplications\Samples\ServerControls.Net4\UA Server Controls.csproj">
-      <Project>{80056988-44e7-4ef4-9f59-50bcf215cb03}</Project>
-      <Name>UA Server Controls</Name>
     </ProjectReference>
     <ProjectReference Include="..\SampleApplications\SDK\Opc.Ua.Client\Opc.Ua.Client.csproj">
       <Project>{15100583-bfef-431b-a1ea-1e5a843a39b1}</Project>

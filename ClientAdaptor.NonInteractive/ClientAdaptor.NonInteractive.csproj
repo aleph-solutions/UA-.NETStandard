@@ -36,7 +36,6 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -55,14 +54,6 @@
     <ProjectReference Include="..\Opc.Ua.CommonFunctions\Opc.Ua.CommonFunctions.csproj">
       <Project>{24e0c10e-e77b-4b70-9317-a53d35f86f87}</Project>
       <Name>Opc.Ua.CommonFunctions</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SampleApplications\Samples\ClientControls.Net4\UA Client Controls.csproj">
-      <Project>{a247d2ee-14fc-463d-a9ba-6cff1ef22b7a}</Project>
-      <Name>UA Client Controls</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SampleApplications\Samples\Controls.Net4\UA Sample Controls.csproj">
-      <Project>{92ae819b-4938-4502-ac32-67063f9893cd}</Project>
-      <Name>UA Sample Controls</Name>
     </ProjectReference>
     <ProjectReference Include="..\SampleApplications\Samples\PubSub Configuration Tool\PubSubBase\PubSubBase.csproj">
       <Project>{5fbb5d20-5d60-4b08-b077-15bf57005d99}</Project>

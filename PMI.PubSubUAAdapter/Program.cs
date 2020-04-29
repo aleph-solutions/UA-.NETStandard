@@ -28,9 +28,7 @@
  * ======================================================================*/
 
 using System;
-using System.Windows.Forms;
 using Opc.Ua.Configuration;
-using Opc.Ua.Client.Controls;
 using System.Threading.Tasks;
 
 namespace Opc.Ua.Sample
@@ -43,10 +41,6 @@ namespace Opc.Ua.Sample
         [STAThread]
         static void Main()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-
-            ApplicationInstance.MessageDlg = new ApplicationMessageDlg();
             ApplicationInstance application = new ApplicationInstance();
             application.ApplicationName = "PubSub UA Sample Server";
             application.ApplicationType   = ApplicationType.Server;
@@ -75,13 +69,7 @@ namespace Opc.Ua.Sample
             }
             catch (Exception e)
             {
-                string text = "Exception: " + e.Message;
-                if (e.InnerException != null)
-                {
-                    text += "\r\nInner exception: ";
-                    text += e.InnerException.Message;
-                }
-                MessageBox.Show(text, application.ApplicationName);
+                Console.WriteLine($"Exception thrown: {e}");
             }
         }
     }

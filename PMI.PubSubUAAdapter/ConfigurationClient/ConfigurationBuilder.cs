@@ -100,7 +100,7 @@ namespace PMI.PubSubUAAdapter.Configuration
 
 
             //Add the dataset and the extensionFields
-            _configurationClient.AddPublishedDataSet(datasetItems, $"{machineName}", out PublishedDataSetBase publishedDataSet);
+            _configurationClient.AddPublishedDataSet(datasetItems, datasetAttributes, $"{machineName}", out PublishedDataSetBase publishedDataSet);
             _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
 
             //Prepare the writer

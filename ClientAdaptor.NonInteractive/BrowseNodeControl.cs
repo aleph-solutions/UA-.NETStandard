@@ -16,7 +16,7 @@
 
 using Opc.Ua;
 using Opc.Ua.Client;
-using Opc.Ua.Sample.Controls;
+//using Opc.Ua.Sample.Controls;
 using PubSubBase.Definitions;
 using System;
 using System.Runtime;
@@ -93,78 +93,78 @@ namespace ClientAdaptor
             return false;
         }
 
-        /// <summary>
-        /// Initialize browser.
-        /// </summary>
-        /// <param name="viewType">indicate view type</param>
-        /// <param name="viewId">indicate node id</param>
-        public void InitializeBrowserView(BrowseViewType viewType, NodeId viewId)
-        {
-            m_rootId = Objects.RootFolder;
-            m_showReferences = false;
+        ///// <summary>
+        ///// Initialize browser.
+        ///// </summary>
+        ///// <param name="viewType">indicate view type</param>
+        ///// <param name="viewId">indicate node id</param>
+        //public void InitializeBrowserView(BrowseViewType viewType, NodeId viewId)
+        //{
+        //    m_rootId = Objects.RootFolder;
+        //    m_showReferences = false;
 
-            switch (viewType)
-            {
-                case BrowseViewType.All:
-                    {
-                        m_showReferences = true;
-                        break;
-                    }
+        //    switch (viewType)
+        //    {
+        //        case BrowseViewType.All:
+        //            {
+        //                m_showReferences = true;
+        //                break;
+        //            }
 
-                case BrowseViewType.Objects:
-                    {
-                        m_rootId = Objects.ObjectsFolder;
-                        Browser.ReferenceTypeId = ReferenceTypeIds.HierarchicalReferences;
-                        break;
-                    }
+        //        case BrowseViewType.Objects:
+        //            {
+        //                m_rootId = Objects.ObjectsFolder;
+        //                Browser.ReferenceTypeId = ReferenceTypeIds.HierarchicalReferences;
+        //                break;
+        //            }
 
-                case BrowseViewType.Types:
-                    {
-                        m_rootId = Objects.TypesFolder;
-                        Browser.ReferenceTypeId = ReferenceTypeIds.HierarchicalReferences;
-                        break;
-                    }
+        //        case BrowseViewType.Types:
+        //            {
+        //                m_rootId = Objects.TypesFolder;
+        //                Browser.ReferenceTypeId = ReferenceTypeIds.HierarchicalReferences;
+        //                break;
+        //            }
 
-                case BrowseViewType.ObjectTypes:
-                    {
-                        m_rootId = ObjectTypes.BaseObjectType;
-                        Browser.ReferenceTypeId = ReferenceTypeIds.HasChild;
-                        break;
-                    }
+        //        case BrowseViewType.ObjectTypes:
+        //            {
+        //                m_rootId = ObjectTypes.BaseObjectType;
+        //                Browser.ReferenceTypeId = ReferenceTypeIds.HasChild;
+        //                break;
+        //            }
 
-                case BrowseViewType.EventTypes:
-                    {
-                        m_rootId = ObjectTypes.BaseEventType;
-                        Browser.ReferenceTypeId = ReferenceTypeIds.HasChild;
-                        break;
-                    }
+        //        case BrowseViewType.EventTypes:
+        //            {
+        //                m_rootId = ObjectTypes.BaseEventType;
+        //                Browser.ReferenceTypeId = ReferenceTypeIds.HasChild;
+        //                break;
+        //            }
 
-                case BrowseViewType.DataTypes:
-                    {
-                        m_rootId = DataTypeIds.BaseDataType;
-                        Browser.ReferenceTypeId = ReferenceTypeIds.HasChild;
-                        break;
-                    }
+        //        case BrowseViewType.DataTypes:
+        //            {
+        //                m_rootId = DataTypeIds.BaseDataType;
+        //                Browser.ReferenceTypeId = ReferenceTypeIds.HasChild;
+        //                break;
+        //            }
 
-                case BrowseViewType.ReferenceTypes:
-                    {
-                        m_rootId = ReferenceTypeIds.References;
-                        Browser.ReferenceTypeId = ReferenceTypeIds.HasChild;
-                        break;
-                    }
+        //        case BrowseViewType.ReferenceTypes:
+        //            {
+        //                m_rootId = ReferenceTypeIds.References;
+        //                Browser.ReferenceTypeId = ReferenceTypeIds.HasChild;
+        //                break;
+        //            }
 
-                case BrowseViewType.ServerDefinedView:
-                    {
-                        m_rootId = viewId;
-                        Browser.View = new ViewDescription
-                        {
-                            ViewId = viewId
-                        };
-                        m_showReferences = true;
-                        break;
-                    }
-            }
-        }
+        //        case BrowseViewType.ServerDefinedView:
+        //            {
+        //                m_rootId = viewId;
+        //                Browser.View = new ViewDescription
+        //                {
+        //                    ViewId = viewId
+        //                };
+        //                m_showReferences = true;
+        //                break;
+        //            }
+        //    }
+        //}
 
 
         #endregion
