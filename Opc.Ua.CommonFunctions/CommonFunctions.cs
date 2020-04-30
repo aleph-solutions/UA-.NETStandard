@@ -93,5 +93,33 @@ namespace Opc.Ua.CommonFunctions
             var browseResp = session.Browse(new RequestHeader(), null, 1000, browseDescrColl, out BrowseResultCollection results, out DiagnosticInfoCollection diagnosticInfos);
             return ExpandedNodeId.ToNodeId(results[0].References.First()?.NodeId, session.NamespaceUris);
         }
+
+        #region Events
+        /// <summary>
+        /// Finds the type of the event for the notification.
+        /// </summary>
+        /// <param name="monitoredItem">The monitored item.</param>
+        /// <param name="notification">The notification.</param>
+        /// <returns>The NodeId of the EventType.</returns>
+        public static NodeId FindEventType(MonitoredItem monitoredItem, EventFieldList notification)
+        {
+            EventFilter filter = monitoredItem.Status.Filter as EventFilter;
+
+            if (filter != null)
+            {
+                for (int ii = 0; ii < filter.SelectClauses.Count; ii++)
+                {
+                    SimpleAttributeOperand clause = filter.SelectClauses[ii];
+
+                    if (clause.BrowsePath.Count == 1 && clause.BrowsePath[0] == BrowseNames.EventType)
+                    {
+                        return notification.EventFields[ii].Value as NodeId;
+                    }
+                }
+            }
+
+            return null;
+        }
+        #endregion
     }
 }

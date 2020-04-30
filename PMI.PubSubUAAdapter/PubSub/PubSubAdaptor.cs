@@ -279,6 +279,33 @@ namespace Opc.Ua.Sample.PubSub
             _PublishSubscribeMap.Subscriber.AddConnection(pubSubConnectionState, dataSource);
 
         }
+        public void AddPublishedEvents(PublishedEventsState publishedEventsState)
+        {
+            Subscription subscription = CreateSubscription("PublishedEvents_" + publishedEventsState.DisplayName.Text);
+            Dic_Subscription[publishedEventsState.NodeId] = subscription;
+            SimpleAttributeOperand[] SimpleAttributeOperandArray = publishedEventsState.SelectedFields.Value as SimpleAttributeOperand[];
+
+            var monitoredItem = new MonitoredItem();
+            monitoredItem.StartNodeId = publishedEventsState.PubSubEventNotifier.Value;
+            monitoredItem.AttributeId = Attributes.EventNotifier;
+            monitoredItem.SamplingInterval = 0;
+            monitoredItem.QueueSize = 1000;
+            monitoredItem.DiscardOldest = true;
+            monitoredItem.Filter = GetFilter(publishedEventsState);
+
+            subscription.AddItem(monitoredItem);
+            LstMonitoredItems.Add(monitoredItem);
+            subscription.ApplyChanges();
+        }
+
+        private EventFilter GetFilter(PublishedEventsState publishedEventsState)
+        {
+            var filter = new EventFilter();
+            filter.SelectClauses = publishedEventsState.SelectedFields.Value;
+            filter.WhereClause = publishedEventsState.Filter.Value;
+            return filter;
+        }
+
 
         public void AddPublishedDataItems(PublishedDataItemsState publishedDataItemsState)
         {

@@ -28,7 +28,7 @@ using System.Threading.Tasks;
 
 namespace Opc.Ua.Sample.PubSub
 {
-   
+
     /// <summary>
     /// A node manager for a server that exposes several variables.
     /// </summary>
@@ -70,7 +70,7 @@ namespace Opc.Ua.Sample.PubSub
             uint id = Utils.IncrementIdentifier(ref m_lastUsedId);
             return new NodeId(id, m_namespaceIndex);
         }
-        
+
         #endregion
 
         #region INodeManager Members
@@ -99,14 +99,14 @@ namespace Opc.Ua.Sample.PubSub
                         baseDataVariableState.Value = PubSubState.Operational;
                     }
                 }
-                
+
             }
         }
         #endregion
 
-       
-         
-      
+
+
+
 
         /// <summary>
         /// Loads a node set from a file or resource and addes them to the set of predefined nodes.
@@ -249,7 +249,7 @@ namespace Opc.Ua.Sample.PubSub
             baseDataVariableState = CreateVaraibleState(PubSubTargetVariables, "String", DataTypeIds.String);
             PubSubTargetVariables.AddChild(baseDataVariableState);
             AddPredefinedNode(Server.DefaultSystemContext, PubSubTargetVariables);
-            
+
         }
         public BaseDataVariableState CreateVaraibleState(NodeState parentstate, string name, NodeId dataType)
         {
@@ -316,11 +316,16 @@ namespace Opc.Ua.Sample.PubSub
             removeConnectionMethod.OnCall = RemoveConnectionMethodStateMethodCallHandler;
 
             DataSetFolderState dataSetFolderState = (DataSetFolderState)Server.DiagnosticsNodeManager.FindPredefinedNode(ObjectIds.PublishSubscribe_PublishedDataSets, typeof(DataSetFolderState));
-             dataSetFolderState.AddPublishedDataItems.OnCall = AddPublishedDataItemsMethodStateMethodCallHandler;
+            dataSetFolderState.AddPublishedDataItems.OnCall = AddPublishedDataItemsMethodStateMethodCallHandler;
             dataSetFolderState.RemovePublishedDataSet = new RemovePublishedDataSetMethodState(dataSetFolderState);
             dataSetFolderState.RemovePublishedDataSet.Create(Server.DefaultSystemContext, new NodeId(dataSetFolderState.NodeId.Identifier + ".RemovePublishedDataSet"), new QualifiedName("RemovePublishedDataSet"), new LocalizedText("RemovePublishedDataSet"), false);
             dataSetFolderState.RemovePublishedDataSet.OnCall = RemovePublishedDataSetMethodStateMethodCallHandler;
 
+            //Add event dataset method
+            dataSetFolderState.AddPublishedEvents = new AddPublishedEventsMethodState(dataSetFolderState);
+            dataSetFolderState.AddPublishedEvents.Create(Server.DefaultSystemContext, new NodeId(dataSetFolderState.NodeId.Identifier + ".AddPublishedEvents"), new QualifiedName("AddPublishedEvents"), new LocalizedText("AddPublishedEvents"), false);
+            dataSetFolderState.AddPublishedEvents.OnCall = AddPublishedEventsMethodStateMethodCallHandler;
+            AddPredefinedNode(Server.DefaultSystemContext, dataSetFolderState.AddPublishedEvents);
         }
         public void OnServerStarted()
         {
@@ -339,7 +344,93 @@ namespace Opc.Ua.Sample.PubSub
             var tConfigurationClient = Task.Run(() => configurationBuilder.Start());
         }
         #region Handlers
+
+        #region PublishedEvents Handlers
+        ServiceResult AddPublishedEventsMethodStateMethodCallHandler(
+            ISystemContext context,
+            MethodState method,
+            NodeId objectId,
+            string name,
+            NodeId eventNotifier,
+            string[] fieldNameAliases,
+            ushort[] fieldFlags,
+            SimpleAttributeOperand[] selectedFields,
+            ContentFilter filter,
+            ref ConfigurationVersionDataType configurationVersion,
+            ref NodeId dataSetNodeId)
+        {
+            PublishedEventsState _AddPublishedEventsMethodState = new PublishedEventsState(method.Parent);
+            _AddPublishedEventsMethodState.Create(context, new NodeId("PubSub.DataSets." + name, 2), new QualifiedName(name), new LocalizedText(name), false);
+
+            //EventNotifier
+            _AddPublishedEventsMethodState.PubSubEventNotifier = new PropertyState<NodeId>(_AddPublishedEventsMethodState);
+            _AddPublishedEventsMethodState.PubSubEventNotifier.Create(context, new NodeId(_AddPublishedEventsMethodState.NodeId.Identifier + ".EventNotifier", 2), new QualifiedName("EventNotifier"), new LocalizedText("EventNotifier"), false);
+
+            //ConfigurationVersion
+            _AddPublishedEventsMethodState.ConfigurationVersion = new PropertyState<ConfigurationVersionDataType>(_AddPublishedEventsMethodState);
+            _AddPublishedEventsMethodState.ConfigurationVersion.Create(context, new NodeId(_AddPublishedEventsMethodState.NodeId.Identifier + ".ConfigurationVersion", 2), new QualifiedName("ConfigurationVersion"), new LocalizedText("ConfigurationVersion"), false);
+
+            ConfigurationVersionDataType data = new ConfigurationVersionDataType();
+            data.MajorVersion = 1;
+            data.MinorVersion = 1;
+
+            _AddPublishedEventsMethodState.ConfigurationVersion.Value = data;
+
+            //DataSetMetaData
+            _AddPublishedEventsMethodState.DataSetMetaData = new PropertyState<DataSetMetaDataType>(_AddPublishedEventsMethodState);
+            _AddPublishedEventsMethodState.DataSetMetaData.Create(context, new NodeId(_AddPublishedEventsMethodState.NodeId.Identifier + ".DataSetMetaData", 2), new QualifiedName("DataSetMetaData"), new LocalizedText("DataSetMetaData"), false);
+
+            DataSetMetaDataType _DataSetMetaDataType = new DataSetMetaDataType();
+            _DataSetMetaDataType.ConfigurationVersion = _AddPublishedEventsMethodState.ConfigurationVersion.Value;
+            _DataSetMetaDataType.DataSetClassId = new Uuid();
+            _DataSetMetaDataType.Name = name;
+
+            _AddPublishedEventsMethodState.DataSetMetaData.Value = _DataSetMetaDataType;
+            _DataSetMetaDataType.Fields = new FieldMetaDataCollection();
+            int i = 0;
+            foreach(SimpleAttributeOperand PublishedField in selectedFields)
+            {
+                FieldMetaData metaData = new FieldMetaData();
+                metaData.Name = fieldNameAliases[i];
+                metaData.DataSetFieldId = new Uuid(Guid.NewGuid());
+                //I'm not able to retrieve the datatype and value rank
+
+                _DataSetMetaDataType.Fields.Add(metaData);
+                i++;
+            }
+
+            //SelectedFields
+            _AddPublishedEventsMethodState.SelectedFields = new PropertyState<SimpleAttributeOperand[]>(_AddPublishedEventsMethodState);
+            _AddPublishedEventsMethodState.SelectedFields.Create(context, new NodeId(_AddPublishedEventsMethodState.NodeId.Identifier + ".SelectedFields", 2), new QualifiedName("SelectedFields"), new LocalizedText("SelectedFields"), false);
+            _AddPublishedEventsMethodState.SelectedFields.Value = selectedFields;
+            _AddPublishedEventsMethodState.TypeDefinitionId = _AddPublishedEventsMethodState.GetDefaultTypeDefinitionId(context);
+            dataSetNodeId = _AddPublishedEventsMethodState.NodeId;
+            configurationVersion = _AddPublishedEventsMethodState.ConfigurationVersion.Value;
+
+            //Filters
+            _AddPublishedEventsMethodState.Filter = new PropertyState<ContentFilter>(_AddPublishedEventsMethodState);
+            _AddPublishedEventsMethodState.Filter.Create(context, new NodeId(_AddPublishedEventsMethodState.NodeId.Identifier + ".Filter", 2), new QualifiedName("Filter"), new LocalizedText("Filter"), false);
+            _AddPublishedEventsMethodState.Filter.Value = filter;
+
+            //Add ExtensionFields
+            _AddPublishedEventsMethodState.ExtensionFields = new ExtensionFieldsState(_AddPublishedEventsMethodState);
+            _AddPublishedEventsMethodState.ExtensionFields.Create(context, new NodeId(_AddPublishedEventsMethodState.NodeId.Identifier + ".ExtensionFields", 2), new QualifiedName("ExtensionFields"), new LocalizedText("ExtensionFields"), false);
+
+            _AddPublishedEventsMethodState.ExtensionFields.AddExtensionField = new AddExtensionFieldMethodState(_AddPublishedEventsMethodState.ExtensionFields);
+            _AddPublishedEventsMethodState.ExtensionFields.AddExtensionField.Create(context, new NodeId(_AddPublishedEventsMethodState.ExtensionFields.NodeId.Identifier + ".AddExtensionField", 2), new QualifiedName("AddExtensionField"), new LocalizedText("AddExtensionField"), false);
+            _AddPublishedEventsMethodState.ExtensionFields.AddExtensionField.OnCall = AddExtensionFieldMethodStateMethodCallHandler;
+            
+            
+            method.Parent.AddChild(_AddPublishedEventsMethodState);
+            AddPredefinedNode(context, _AddPublishedEventsMethodState);
+            m_PubSubAdaptor.AddPublishedEvents(_AddPublishedEventsMethodState);
+            return ServiceResult.Good;
+        }
+        #endregion
+
         #region PublishedDataSet Handlers
+
+
         ServiceResult RemovePublishedDataSetMethodStateMethodCallHandler(ISystemContext context, MethodState method, NodeId objectId, NodeId dataSetNodeId)
         {
             PublishedDataItemsState _PublishedDataItemsState = FindPredefinedNode(dataSetNodeId, typeof(NodeState)) as PublishedDataItemsState;
@@ -382,7 +473,7 @@ namespace Opc.Ua.Sample.PubSub
             _DataSetMetaDataType.ConfigurationVersion = _AddPublishedDataItemsMethodState.ConfigurationVersion.Value;
             _DataSetMetaDataType.DataSetClassId = new Uuid();
             _DataSetMetaDataType.Name = name;
-             
+
             _AddPublishedDataItemsMethodState.DataSetMetaData.Value = _DataSetMetaDataType;
             _DataSetMetaDataType.Fields = new FieldMetaDataCollection();
             int i = 0;
@@ -396,15 +487,15 @@ namespace Opc.Ua.Sample.PubSub
                 NodeHandle nodehandle = Server.NodeManager.GetManagerHandle(PublishedVariable.PublishedVariable, out nodeManager) as NodeHandle;
                 if (nodehandle != null)
                 {
-                    BaseDataVariableState publishedVariableNodeState =  nodehandle.Node as BaseDataVariableState;
-                    if(publishedVariableNodeState!=null)
+                    BaseDataVariableState publishedVariableNodeState = nodehandle.Node as BaseDataVariableState;
+                    if (publishedVariableNodeState != null)
                     {
                         metaData.DataType = publishedVariableNodeState.DataType;
                         metaData.ValueRank = publishedVariableNodeState.ValueRank;
                         //publishedVariableNodeState.ArrayDimensions.CopyTo(metaData.ArrayDimensions.ToArray(), publishedVariableNodeState.ArrayDimensions.Count);
                     }
                 }
-                    _DataSetMetaDataType.Fields.Add(metaData);
+                _DataSetMetaDataType.Fields.Add(metaData);
                 i++;
             }
             _AddPublishedDataItemsMethodState.PublishedData = new PropertyState<PublishedVariableDataType[]>(_AddPublishedDataItemsMethodState);
@@ -481,7 +572,7 @@ namespace Opc.Ua.Sample.PubSub
                 state.Address = new NetworkAddressUrlState(state);
                 state.Address.Create(context, new NodeId(state.NodeId.Identifier + ".Address", 2), new QualifiedName("Address", 2), new LocalizedText("Address"), false);
                 state.Address.NetworkInterface = new BaseDataVariableState<string>(state.Address);
-                state.Address.NetworkInterface.Create(context, new NodeId(state.Address.NodeId.Identifier+ ".NetworkInterface", 2), new QualifiedName("NetworkInterface", 2), new LocalizedText("NetworkInterface"), false);
+                state.Address.NetworkInterface.Create(context, new NodeId(state.Address.NodeId.Identifier + ".NetworkInterface", 2), new QualifiedName("NetworkInterface", 2), new LocalizedText("NetworkInterface"), false);
                 state.Address.NetworkInterface.Value = adddressObject.NetworkInterface;
                 (state.Address as NetworkAddressUrlState).Url = new BaseDataVariableState<string>(state.Address);
                 (state.Address as NetworkAddressUrlState).Url.Create(context, new NodeId(state.Address.NodeId.Identifier + ".Url", 2), new QualifiedName("Url", 2), new LocalizedText("Url"), false);
@@ -525,13 +616,13 @@ namespace Opc.Ua.Sample.PubSub
                     (datagramConnectionTransportState.DiscoveryAddress as NetworkAddressUrlState).Url.Create(context, new NodeId(datagramConnectionTransportState.DiscoveryAddress.NodeId.Identifier + ".Url", 2), new QualifiedName("Url", 2), new LocalizedText("Url"), false);
                     (datagramConnectionTransportState.DiscoveryAddress as NetworkAddressUrlState).Url.Value = networkaddress.Url;
                     datagramConnectionTransportState.DiscoveryAddress.TypeDefinitionId = datagramConnectionTransportState.DiscoveryAddress.GetDefaultTypeDefinitionId(context);
-                     
+
                     state.TransportSettings = datagramConnectionTransportState;
 
                 }
                 state.TransportProfileUri = new SelectionListState<string>(state);
                 state.TransportProfileUri.Create(context, new NodeId(state.NodeId.Identifier + "TransportProfileUri", state.NodeId.NamespaceIndex), new QualifiedName("TransportProfileUri", state.BrowseName.NamespaceIndex), new LocalizedText("TransportProfileUri"), false);
-                state.TransportProfileUri.Value =  configuration.TransportProfileUri;
+                state.TransportProfileUri.Value = configuration.TransportProfileUri;
                 state.TransportProfileUri.TypeDefinitionId = state.TransportProfileUri.GetDefaultTypeDefinitionId(context);
 
                 state.TypeDefinitionId = state.GetDefaultTypeDefinitionId(context);
@@ -543,9 +634,9 @@ namespace Opc.Ua.Sample.PubSub
                 state.Status.State.MinimumSamplingInterval = 100;
                 state.Status.Enable = new MethodState(state.Status);
                 state.Status.Enable.Create(context, new NodeId(state.NodeId.Identifier + ".Status" + ".Enable", state.NodeId.NamespaceIndex), new QualifiedName("Enable", state.BrowseName.NamespaceIndex), new LocalizedText("Enable"), false);
-                state.Status.Enable.OnCallMethod +=  EnableMethodCalledEventHandler;
-                
-                state.Status.AddReference(ReferenceTypeIds.HasComponent, false, state.Status.Enable.NodeId); 
+                state.Status.Enable.OnCallMethod += EnableMethodCalledEventHandler;
+
+                state.Status.AddReference(ReferenceTypeIds.HasComponent, false, state.Status.Enable.NodeId);
                 state.Status.AddChild(state.Status.Enable);
                 AddPredefinedNode(context, state.Status.Enable);
                 state.Status.Disable = new MethodState(state.Status);
@@ -560,21 +651,21 @@ namespace Opc.Ua.Sample.PubSub
 
                 method.Parent.AddChild(state);
                 AddPredefinedNode(context, state);
-                
+
                 m_PubSubAdaptor.AddConnection(state as PubSubConnectionState);
 
-                
+
             }
             return ServiceResult.Good;
         }
-         
+
         ServiceResult RemoveConnectionMethodStateMethodCallHandler(ISystemContext context, MethodState method, NodeId objectId, NodeId connectionId)
         {
             PubSubConnectionState _RemoveConnectionState = FindPredefinedNode(connectionId, typeof(NodeState)) as PubSubConnectionState;
-            if (_RemoveConnectionState != null) 
+            if (_RemoveConnectionState != null)
             {
                 m_PubSubAdaptor.RemoveConnection(_RemoveConnectionState);
-                method.Parent.RemoveChild(_RemoveConnectionState); 
+                method.Parent.RemoveChild(_RemoveConnectionState);
                 return ServiceResult.Good;
             }
             return new ServiceResult(StatusCodes.BadNotFound);
@@ -583,18 +674,18 @@ namespace Opc.Ua.Sample.PubSub
         #endregion
         #region Enable_Disable Handler
 
-        
-            ServiceResult Connection_EnableMethodCalledEventHandler(ISystemContext context, MethodState method, IList<object> inputArguments, IList<object> outputArguments)
+
+        ServiceResult Connection_EnableMethodCalledEventHandler(ISystemContext context, MethodState method, IList<object> inputArguments, IList<object> outputArguments)
         {
             INodeManager nodeManager;
             NodeHandle nodehandle = Server.NodeManager.GetManagerHandle(ObjectIds.PublishSubscribe_Status, out nodeManager) as NodeHandle;
-             if(nodehandle!=null)
+            if (nodehandle != null)
             {
-                BaseDataVariableState<PubSubState> baseDataVariableState=  nodehandle.Node as BaseDataVariableState<PubSubState>;
+                BaseDataVariableState<PubSubState> baseDataVariableState = nodehandle.Node as BaseDataVariableState<PubSubState>;
                 BaseDataVariableState<PubSubState> variableState = FindPredefinedNode(new NodeId(method.NodeId.Identifier.ToString().Replace(".Enable", ".State"), method.NodeId.NamespaceIndex), typeof(NodeState)) as BaseDataVariableState<PubSubState>;
                 if (baseDataVariableState.Value != PubSubState.Operational)
                 {
-                    
+
                     if (variableState != null)
                     {
                         variableState.Value = PubSubState.Paused;
@@ -610,7 +701,7 @@ namespace Opc.Ua.Sample.PubSub
             }
             return ServiceResult.Good;
         }
-            ServiceResult EnableMethodCalledEventHandler(ISystemContext context,MethodState method,IList<object> inputArguments,IList<object> outputArguments)
+        ServiceResult EnableMethodCalledEventHandler(ISystemContext context, MethodState method, IList<object> inputArguments, IList<object> outputArguments)
         {
             BaseDataVariableState<PubSubState> variableState = FindPredefinedNode(new NodeId(method.NodeId.Identifier.ToString().Replace(".Enable", ".State"), method.NodeId.NamespaceIndex), typeof(NodeState)) as BaseDataVariableState<PubSubState>;
             if (variableState != null)
@@ -619,13 +710,13 @@ namespace Opc.Ua.Sample.PubSub
                 try
                 {
                     BaseInstanceState state = ((method.Parent as BaseInstanceState).Parent as BaseInstanceState).Parent as BaseInstanceState;
-                    BaseDataVariableState<PubSubState> parentVariableState = FindPredefinedNode(new NodeId(state.NodeId.Identifier.ToString()+".Status"+".State", method.NodeId.NamespaceIndex), typeof(NodeState)) as BaseDataVariableState<PubSubState>;
-                    if(parentVariableState!=null && (parentVariableState.Value!= PubSubState.Operational))
+                    BaseDataVariableState<PubSubState> parentVariableState = FindPredefinedNode(new NodeId(state.NodeId.Identifier.ToString() + ".Status" + ".State", method.NodeId.NamespaceIndex), typeof(NodeState)) as BaseDataVariableState<PubSubState>;
+                    if (parentVariableState != null && (parentVariableState.Value != PubSubState.Operational))
                     {
                         variableState.Value = PubSubState.Disabled;
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
 
                 }
@@ -634,27 +725,27 @@ namespace Opc.Ua.Sample.PubSub
         }
         ServiceResult DisableMethodCalledEventHandler(ISystemContext context, MethodState method, IList<object> inputArguments, IList<object> outputArguments)
         {
-            NodeId id=new NodeId(method.NodeId.Identifier.ToString().Replace(".Disable", ".State"), method.NodeId.NamespaceIndex);
+            NodeId id = new NodeId(method.NodeId.Identifier.ToString().Replace(".Disable", ".State"), method.NodeId.NamespaceIndex);
             BaseDataVariableState<PubSubState> variableState = FindPredefinedNode(id, typeof(NodeState)) as BaseDataVariableState<PubSubState>;
             if (variableState != null)
             {
                 variableState.Value = PubSubState.Disabled;
                 List<BaseInstanceState> LstChildren = new List<BaseInstanceState>();
                 ((method.Parent as BaseInstanceState).Parent as BaseInstanceState).GetChildren(context, LstChildren);
-                if(LstChildren.Count>0)
+                if (LstChildren.Count > 0)
                 {
-                    foreach(BaseInstanceState instancestate in LstChildren)
+                    foreach (BaseInstanceState instancestate in LstChildren)
                     {
-                        ValidateChildStatus(context,instancestate);
+                        ValidateChildStatus(context, instancestate);
                     }
                 }
             }
             return ServiceResult.Good;
         }
-        void ValidateChildStatus(ISystemContext context,BaseInstanceState instancestate)
+        void ValidateChildStatus(ISystemContext context, BaseInstanceState instancestate)
         {
             BaseDataVariableState<PubSubState> variableState = instancestate as BaseDataVariableState<PubSubState>;
-            if(variableState!=null)
+            if (variableState != null)
             {
                 variableState.Value = PubSubState.Paused;
                 return;
@@ -665,7 +756,7 @@ namespace Opc.Ua.Sample.PubSub
                         || (instancestate is DataSetReaderState)
                         || (instancestate is DataSetWriterState)
                         || (instancestate is PubSubStatusState))
-            { 
+            {
 
                 List<BaseInstanceState> LstChildren = new List<BaseInstanceState>();
                 try
@@ -683,7 +774,7 @@ namespace Opc.Ua.Sample.PubSub
                         if (variableState1 != null)
                         {
                             variableState1.Value = PubSubState.Paused;
-                             
+
                         }
                         if ((childinstancestate is PubSubConnectionState)
                             || (childinstancestate is ReaderGroupState)
@@ -760,7 +851,7 @@ namespace Opc.Ua.Sample.PubSub
                 groupId = _ReaderGroupState.NodeId;
                 method.Parent.AddChild(_ReaderGroupState);
                 AddPredefinedNode(context, _ReaderGroupState);
-                
+
                 return ServiceResult.Good;
             }
         }
@@ -900,7 +991,7 @@ namespace Opc.Ua.Sample.PubSub
 
                     _UadpWriterGroupMessageState.PublishingOffset = new PropertyState<double>(_UadpWriterGroupMessageState);
                     _UadpWriterGroupMessageState.PublishingOffset.Create(context, new NodeId(_UadpWriterGroupMessageState.NodeId.Identifier + ".PublishingOffset", 2), new QualifiedName("PublishingOffset"), new LocalizedText("PublishingOffset"), false);
-                     _UadpWriterGroupMessageState.PublishingOffset.Value = _UadpWriterGroupMessageDataType.PublishingOffset[0];
+                    _UadpWriterGroupMessageState.PublishingOffset.Value = _UadpWriterGroupMessageDataType.PublishingOffset[0];
 
                     _UadpWriterGroupMessageState.SamplingOffset = new PropertyState<double>(_UadpWriterGroupMessageState);
                     _UadpWriterGroupMessageState.SamplingOffset.Create(context, new NodeId(_UadpWriterGroupMessageState.NodeId.Identifier + ".SamplingOffset", 2), new QualifiedName("SamplingOffset"), new LocalizedText("SamplingOffset"), false);
@@ -948,13 +1039,13 @@ namespace Opc.Ua.Sample.PubSub
         #endregion
         ServiceResult PubSubConnectionTypeRemoveGroupMethodStateMethodCallHandler(ISystemContext context, MethodState method, NodeId objectId, NodeId groupId)
         {
-            
-            BaseInstanceState _RemoveGroupState = FindPredefinedNode(groupId,typeof(NodeState)) as BaseInstanceState;
+
+            BaseInstanceState _RemoveGroupState = FindPredefinedNode(groupId, typeof(NodeState)) as BaseInstanceState;
             if (_RemoveGroupState != null)
             {
                 m_PubSubAdaptor.RemoveGroup(_RemoveGroupState);
                 method.Parent.RemoveChild(_RemoveGroupState);
-               
+
                 return ServiceResult.Good;
             }
             return new ServiceResult(StatusCodes.BadNotFound);
@@ -973,10 +1064,10 @@ namespace Opc.Ua.Sample.PubSub
             else
             {
                 DataSetReaderState _ReaderState = new DataSetReaderState(method.Parent);
-                _ReaderState.Create(context, new NodeId(method.Parent.NodeId.Identifier + "." + configuration.Name , 2), new QualifiedName(configuration.Name, 2), new LocalizedText(configuration.Name), false);
+                _ReaderState.Create(context, new NodeId(method.Parent.NodeId.Identifier + "." + configuration.Name, 2), new QualifiedName(configuration.Name, 2), new LocalizedText(configuration.Name), false);
                 _ReaderState.CreateTargetVariables.OnCall = DataSetReaderTypeCreateTargetVariablesMethodStateMethodCallHandler;
                 _ReaderState.CreateDataSetMirror.OnCall = DataSetReaderTypeCreateDataSetMirrorMethodStateMethodCallHandler;
-                
+
                 _ReaderState.PublisherId = new PropertyState<string>(_ReaderState);
                 _ReaderState.PublisherId.Create(context, new NodeId(_ReaderState.NodeId.Identifier + ".PublisherId", 2), new QualifiedName("PublisherId"), new LocalizedText("PublisherId"), false);
                 _ReaderState.PublisherId.Value = configuration.PublisherId;
@@ -1120,7 +1211,7 @@ namespace Opc.Ua.Sample.PubSub
                 _ReaderState.Status.AddReference(ReferenceTypeIds.HasComponent, false, _ReaderState.Status.Disable.NodeId);
                 _ReaderState.TypeDefinitionId = _ReaderState.GetDefaultTypeDefinitionId(context);
 
-                dataSetReaderNodeId = new NodeId(method.Parent.NodeId.Identifier + "." + configuration.Name , 2);
+                dataSetReaderNodeId = new NodeId(method.Parent.NodeId.Identifier + "." + configuration.Name, 2);
                 method.Parent.AddChild(_ReaderState);
                 AddPredefinedNode(context, _ReaderState);
                 m_PubSubAdaptor.AddDataSetReader(_ReaderState, m_subscriberDelegate);
@@ -1132,9 +1223,9 @@ namespace Opc.Ua.Sample.PubSub
             DataSetReaderState _RemoveConnectionState = FindPredefinedNode(dataSetReaderNodeId, typeof(NodeState)) as DataSetReaderState;
             if (_RemoveConnectionState != null)
             {
-                
+
                 method.Parent.RemoveChild(_RemoveConnectionState);
-               
+
                 return ServiceResult.Good;
             }
             return new ServiceResult(StatusCodes.BadNotFound);
@@ -1170,17 +1261,18 @@ namespace Opc.Ua.Sample.PubSub
                 DataSetFolderState dataSetFolderState = (DataSetFolderState)Server.DiagnosticsNodeManager.FindPredefinedNode(ObjectIds.PublishSubscribe_PublishedDataSets, typeof(DataSetFolderState));
                 List<BaseInstanceState> LstChildren = new List<BaseInstanceState>();
                 dataSetFolderState.GetChildren(context, LstChildren);
-                foreach(BaseInstanceState state in LstChildren)
+                foreach (BaseInstanceState state in LstChildren)
                 {
-                    if(state.DisplayName.Text== configuration.DataSetName)
+                    if (state.DisplayName.Text == configuration.DataSetName)
                     {
                         _WriterState.AddReference(ReferenceTypeIds.DataSetToWriter, true, state.NodeId);
-                        _WriterState.Handle = state as PublishedDataItemsState;
+                        if(state is PublishedDataItemsState) _WriterState.Handle = state as PublishedDataItemsState;
+                        else if(state is PublishedEventsState) _WriterState.Handle = state as PublishedEventsState;
                         break;
                     }
                     //    
                 }
-                
+
                 ExtensionObject WriterTransportobject = configuration.TransportSettings;
                 if (WriterTransportobject.Body is BrokerDataSetWriterTransportDataType)
                 {
@@ -1275,13 +1367,13 @@ namespace Opc.Ua.Sample.PubSub
                 AddPredefinedNode(context, _WriterState);
                 m_PubSubAdaptor.AddDataSetWriter(_WriterState);
             }
-            
+
             return ServiceResult.Good;
         }
 
         ServiceResult PubSubGroupTypeRemoveWriterMethodStateMethodCallHandler(ISystemContext context, MethodState method, NodeId objectId, NodeId dataSetWriterNodeId)
         {
-            DataSetWriterState _DataSetWriterState = FindPredefinedNode(dataSetWriterNodeId,typeof(NodeState)) as DataSetWriterState;
+            DataSetWriterState _DataSetWriterState = FindPredefinedNode(dataSetWriterNodeId, typeof(NodeState)) as DataSetWriterState;
             if (_DataSetWriterState != null)
             {
                 m_PubSubAdaptor.RemoveDataSetWriter(_DataSetWriterState);
@@ -1294,7 +1386,7 @@ namespace Opc.Ua.Sample.PubSub
 
         ServiceResult PublishedDataItemsAddVariablesMethodStateMethodCallHandler(ISystemContext context, MethodState method, NodeId objectId, ConfigurationVersionDataType configurationVersion, string[] fieldNameAliases, bool[] promotedFields, PublishedVariableDataType[] variablesToAdd, ref ConfigurationVersionDataType newConfigurationVersion, ref StatusCode[] addResults)
         {
-          
+
             return ServiceResult.Good;
         }
         ServiceResult DataSetReaderTypeCreateTargetVariablesMethodStateMethodCallHandler(ISystemContext context, MethodState method, NodeId objectId, ConfigurationVersionDataType configurationVersion, FieldTargetDataType[] targetVariablesToAdd, ref StatusCode[] addResults)
@@ -1302,8 +1394,8 @@ namespace Opc.Ua.Sample.PubSub
             DataSetReaderState dataSetReaderState = method.Parent as DataSetReaderState;
             if (dataSetReaderState != null)
             {
-                 dataSetReaderState.SubscribedDataSet = new SubscribedDataSetState(dataSetReaderState);
-                dataSetReaderState.SubscribedDataSet.Create(context, new NodeId(dataSetReaderState.NodeId.Identifier+ ".SubscribedDataSet", dataSetReaderState.NodeId.NamespaceIndex), new QualifiedName("SubscribedDataSet", dataSetReaderState.NodeId.NamespaceIndex), new LocalizedText("SubscribedDataSet"), false);
+                dataSetReaderState.SubscribedDataSet = new SubscribedDataSetState(dataSetReaderState);
+                dataSetReaderState.SubscribedDataSet.Create(context, new NodeId(dataSetReaderState.NodeId.Identifier + ".SubscribedDataSet", dataSetReaderState.NodeId.NamespaceIndex), new QualifiedName("SubscribedDataSet", dataSetReaderState.NodeId.NamespaceIndex), new LocalizedText("SubscribedDataSet"), false);
                 dataSetReaderState.TypeDefinitionId = dataSetReaderState.SubscribedDataSet.GetDefaultTypeDefinitionId(context);
                 TargetVariablesState targetVariablesState = new TargetVariablesState(dataSetReaderState.SubscribedDataSet);
                 targetVariablesState.Create(Server.DefaultSystemContext, new NodeId(dataSetReaderState.SubscribedDataSet.NodeId.Identifier + ".TargetVariables"), new QualifiedName("TargetVariables", dataSetReaderState.SubscribedDataSet.NodeId.NamespaceIndex), new LocalizedText("TargetVariables"), false);
@@ -1313,14 +1405,14 @@ namespace Opc.Ua.Sample.PubSub
                 targetVariablesState.AddTargetVariables = new TargetVariablesTypeAddTargetVariablesMethodState(dataSetReaderState.SubscribedDataSet);
                 targetVariablesState.AddTargetVariables.Create(context, new NodeId(dataSetReaderState.SubscribedDataSet.NodeId.Identifier + ".AddTargetVariables", dataSetReaderState.SubscribedDataSet.NodeId.NamespaceIndex), new QualifiedName("AddTargetVariables", dataSetReaderState.SubscribedDataSet.NodeId.NamespaceIndex), new LocalizedText("AddTargetVariables"), false);
                 // targetVariablesState.AddTargetVariables.OnCall += TargetVariablesTypeAddTargetVariablesMethodStateMethodCallHandler;
-               // targetVariablesState.DataSetMetaData = dataSetReaderState.SubscribedDataSet.DataSetMetaData;
-              //  targetVariablesState.MessageReceiveTimeout = dataSetReaderState.SubscribedDataSet.MessageReceiveTimeout;
+                // targetVariablesState.DataSetMetaData = dataSetReaderState.SubscribedDataSet.DataSetMetaData;
+                //  targetVariablesState.MessageReceiveTimeout = dataSetReaderState.SubscribedDataSet.MessageReceiveTimeout;
                 targetVariablesState.TypeDefinitionId = targetVariablesState.GetDefaultTypeDefinitionId(context);
                 method.Parent.AddChild(targetVariablesState);
-                AddPredefinedNode(context,targetVariablesState);
-                
-                ReaderGroupState readerGroupState= dataSetReaderState.Parent as ReaderGroupState;
-                PubSubConnectionState pubSubConnectionState= readerGroupState.Parent as PubSubConnectionState;
+                AddPredefinedNode(context, targetVariablesState);
+
+                ReaderGroupState readerGroupState = dataSetReaderState.Parent as ReaderGroupState;
+                PubSubConnectionState pubSubConnectionState = readerGroupState.Parent as PubSubConnectionState;
                 m_PubSubAdaptor.CreateTargetVariables(pubSubConnectionState.NodeId, dataSetReaderState.NodeId, targetVariablesToAdd);
             }
             return ServiceResult.Good;
@@ -1338,7 +1430,7 @@ namespace Opc.Ua.Sample.PubSub
         //}
         ServiceResult DataSetReaderTypeCreateDataSetMirrorMethodStateMethodCallHandler(ISystemContext context, MethodState method, NodeId objectId, string parentNodeName, RolePermissionType[] rolePermissions, ref NodeId parentNodeId)
         {
-            
+
             return ServiceResult.Good;
         }
 
@@ -1387,9 +1479,9 @@ namespace Opc.Ua.Sample.PubSub
         {
             throw new NotImplementedException();
         }
-        
-         
- 
+
+
+
         #endregion
 
         #region Protected Members
