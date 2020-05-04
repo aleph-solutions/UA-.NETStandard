@@ -382,73 +382,10 @@ namespace PMI.PubSubUAAdapter.Configuration
             {
                 foreach(var field in config.Fields)
                 {
-                    var fieldName = field.FieldName;
-                    NodeId fieldId = null;
-                    if (field.FieldName.Split('.').Length == 2)
+                    if (field.Enabled)
                     {
-                        var subObjectName = field.FieldName.Split('.')[0];
-                        var subObjectId = subNodes.FirstOrDefault(x => x.BrowseName.Name == subObjectName).NodeId;
-
-                        List<ReferenceDescription> references;
-                        if (!subObjectReferences.ContainsKey(subObjectName))
-                        {
-                            references = Browse(subObjectId);
-                            subObjectReferences.Add(subObjectName, references);
-                        }
-                        else
-                        {
-                            references = subObjectReferences[subObjectName];
-                        }
-
-                        var fieldReference = references.FirstOrDefault(x => x.BrowseName.Name == field.BrowseName);
-                        if(fieldReference != null)
-                        {
-                            fieldId = ExpandedNodeId.ToNodeId(fieldReference.NodeId, _browseSession.NamespaceUris);
-                            itemList.Add(fieldName, fieldId);
-                        }
-                    }
-                    else
-                    {
-                        var fieldReference = subNodes.FirstOrDefault(x => x.BrowseName.Name == field.BrowseName);
-
-                        if(fieldReference != null)
-                        {
-                            fieldId = ExpandedNodeId.ToNodeId(fieldReference.NodeId, _browseSession.NamespaceUris);
-                            itemList.Add(fieldName, fieldId);
-                        }
-                       
-                    }
-
-                    //If the field is a complex variable, include also the sub properties
-                    if (!String.IsNullOrEmpty(field.ComplexVariableType))
-                    {
-                        if(fieldId != null)
-                        {
-                            LoadComplexVariableItemList(itemList, field.ComplexVariableType, fieldId, fieldName);
-                        }
-                    }
-
-                    if (fieldId == null) Console.WriteLine($"NodeId for the field {fieldName} of object with nodId {objectNodeId} not found");
-                }
-            }
-        }
-
-        private void LoadComplexVariableItemList(Dictionary<string, NodeId> itemList, string variableTypeName, NodeId variableNodeId, string variableName)
-        {
-            try
-            {
-                var config = LoadJsonConfiguration(variableTypeName);
-
-                var subObjectReferences = new Dictionary<string, List<ReferenceDescription>>();
-                var subNodes = Browse(variableNodeId);
-
-                if (config != null)
-                {
-                    foreach (var field in config.Fields)
-                    {
-                        var fieldName = $"{variableName}.{field.FieldName}";
-                        Console.WriteLine($"Field: {fieldName}");
-
+                        var fieldName = field.FieldName;
+                        NodeId fieldId = null;
                         if (field.FieldName.Split('.').Length == 2)
                         {
                             var subObjectName = field.FieldName.Split('.')[0];
@@ -466,16 +403,86 @@ namespace PMI.PubSubUAAdapter.Configuration
                             }
 
                             var fieldReference = references.FirstOrDefault(x => x.BrowseName.Name == field.BrowseName);
-
-                            var fieldId = ExpandedNodeId.ToNodeId(fieldReference.NodeId, _browseSession.NamespaceUris);
-                            itemList.Add(fieldName, fieldId);
+                            if (fieldReference != null)
+                            {
+                                fieldId = ExpandedNodeId.ToNodeId(fieldReference.NodeId, _browseSession.NamespaceUris);
+                                itemList.Add(fieldName, fieldId);
+                            }
                         }
                         else
                         {
-                            var fieldExpId = subNodes.FirstOrDefault(x => x.BrowseName.Name == field.BrowseName).NodeId;
-                            var fieldId = ExpandedNodeId.ToNodeId(fieldExpId, _browseSession.NamespaceUris);
-                            itemList.Add(fieldName, fieldId);
+                            var fieldReference = subNodes.FirstOrDefault(x => x.BrowseName.Name == field.BrowseName);
+
+                            if (fieldReference != null)
+                            {
+                                fieldId = ExpandedNodeId.ToNodeId(fieldReference.NodeId, _browseSession.NamespaceUris);
+                                itemList.Add(fieldName, fieldId);
+                            }
+
                         }
+
+                        //If the field is a complex variable, include also the sub properties
+                        if (!String.IsNullOrEmpty(field.ComplexVariableType))
+                        {
+                            if (fieldId != null)
+                            {
+                                LoadComplexVariableItemList(itemList, field.ComplexVariableType, fieldId, fieldName);
+                            }
+                        }
+
+                        if (fieldId == null) Console.WriteLine($"NodeId for the field {fieldName} of object with nodId {objectNodeId} not found");
+                    }
+                }
+            }
+        }
+
+        private void LoadComplexVariableItemList(Dictionary<string, NodeId> itemList, string variableTypeName, NodeId variableNodeId, string variableName)
+        {
+            try
+            {
+                var config = LoadJsonConfiguration(variableTypeName);
+
+                var subObjectReferences = new Dictionary<string, List<ReferenceDescription>>();
+                var subNodes = Browse(variableNodeId);
+
+                if (config != null)
+                {
+                    foreach (var field in config.Fields)
+                    {
+                        if (field.Enabled)
+                        {
+                            var fieldName = $"{variableName}.{field.FieldName}";
+                            Console.WriteLine($"Field: {fieldName}");
+
+                            if (field.FieldName.Split('.').Length == 2)
+                            {
+                                var subObjectName = field.FieldName.Split('.')[0];
+                                var subObjectId = subNodes.FirstOrDefault(x => x.BrowseName.Name == subObjectName).NodeId;
+
+                                List<ReferenceDescription> references;
+                                if (!subObjectReferences.ContainsKey(subObjectName))
+                                {
+                                    references = Browse(subObjectId);
+                                    subObjectReferences.Add(subObjectName, references);
+                                }
+                                else
+                                {
+                                    references = subObjectReferences[subObjectName];
+                                }
+
+                                var fieldReference = references.FirstOrDefault(x => x.BrowseName.Name == field.BrowseName);
+
+                                var fieldId = ExpandedNodeId.ToNodeId(fieldReference.NodeId, _browseSession.NamespaceUris);
+                                itemList.Add(fieldName, fieldId);
+                            }
+                            else
+                            {
+                                var fieldExpId = subNodes.FirstOrDefault(x => x.BrowseName.Name == field.BrowseName).NodeId;
+                                var fieldId = ExpandedNodeId.ToNodeId(fieldExpId, _browseSession.NamespaceUris);
+                                itemList.Add(fieldName, fieldId);
+                            }
+                        }
+                        
                     }
                 }
             }
@@ -581,6 +588,21 @@ namespace PMI.PubSubUAAdapter.Configuration
 
         [DataMember]
         public string ComplexVariableType { get; set; }
+
+        [DataMember]
+        public bool Enabled
+        {
+            get
+            {
+                if (_enabled != null) return (bool)_enabled;
+                return true;
+            }
+            set
+            {
+                _enabled = value;
+            }
+        }
+        private bool? _enabled;
     }
 
 
