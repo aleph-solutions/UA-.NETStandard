@@ -55,26 +55,6 @@ namespace PMI.PubSubUAAdapter.Configuration
             }
         }
 
-        public void StartSample()
-        {
-            //Initialiaze the MQTT connection
-            var connectionId = InitializeMQTTConnection("mqtt", "40.91.255.161:1883", out _mqttConnection);
-
-            //Add a sample group
-            var groupId = AddWriterGroup(_mqttConnection, "group1", "test-configurator", out DataSetWriterGroup group);
-            EnableWriterGroup(group.Name);
-
-            //Add dataset
-            var items = new Dictionary<string, NodeId>();
-            var datasetName = "dataset1";
-            items.Add("BufferLength.AnalogMeasurement", new NodeId(7226, 5));
-            AddPublishedDataSet(items, datasetName, out PublishedDataSetBase dataset);
-
-            //Add writer
-            var writerId = AddWriter(group, "writer1", datasetName, out DataSetWriterDefinition writer);
-            EnableWriter(writer.Name);
-        }
-
         /// <summary>
         /// Initialiazes the MQTT connection
         /// </summary>
@@ -144,18 +124,7 @@ namespace PMI.PubSubUAAdapter.Configuration
             return groupId;
         }
 
-        /// <summary>
-        /// Adds a PublishedDataSet
-        /// </summary>
-        /// <param name="itemList">The items of the dataset</param>
-        /// <param name="datasetName">The name of the DataSet</param>
-        /// <param name="publishedDataSet">The publishedDataSet instance</param>
-        public void AddPublishedDataSet(Dictionary<string, NodeId> itemList, string datasetName, out PublishedDataSetBase publishedDataSet)
-        {
-            AddPublishedDataSet(itemList, new Dictionary<string, uint>(), datasetName, out publishedDataSet);
-        }
-
-        public void AddPublishedDataSet(Dictionary<string, NodeId> itemList, Dictionary<string, uint> attributesList, string datasetName, out PublishedDataSetBase publishedDataSet)
+        public void AddPublishedDataSet(List<DataSetFieldConfiguration> itemList, string datasetName, out PublishedDataSetBase publishedDataSet)
         {
             Console.WriteLine($"ConfigurationClient AddPublishedDataSet {datasetName}...");
             try
@@ -164,17 +133,12 @@ namespace PMI.PubSubUAAdapter.Configuration
 
                 foreach (var item in itemList)
                 {
-                    var attributeId = Attributes.Value;
-                    if(attributesList.Any(x => x.Key == item.Key))
-                    {
-                        attributeId = attributesList[item.Key];
-                    }
-
                     datasetItems.Add(new PublishedDataSetItemDefinition(new PublishedDataSetBase())
                     {
-                        Name = item.Key,
-                        Attribute = attributeId,
-                        PublishVariableNodeId = item.Value,
+                        Name = item.Name,
+                        Attribute = item.Attribute,
+                        PublishVariableNodeId = item.SourceNodeId,
+                        SamplingInterval = item.SamplingInterval
                     });
                 }
 

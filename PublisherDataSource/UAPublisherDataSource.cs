@@ -199,10 +199,10 @@ namespace PublisherDataSource
             if (networkMessage.DataSetClassId == null)
             {
                 var dataSetClassIdEquals = true;
-                var dataSetClassCandidate = ((activeDataSetWriters.First()?.Handle as PublishedDataItemsState).DataSetMetaData.Value as DataSetMetaDataType).DataSetClassId.GuidString;
+                var dataSetClassCandidate = ((activeDataSetWriters.First()?.Handle as PublishedDataSetState).DataSetMetaData.Value as DataSetMetaDataType).DataSetClassId.GuidString;
                 foreach (var writer in activeDataSetWriters)
                 {
-                    var dataSetClass = ((writer.Handle as PublishedDataItemsState).DataSetMetaData.Value as DataSetMetaDataType).DataSetClassId.GuidString;
+                    var dataSetClass = ((writer.Handle as PublishedDataSetState).DataSetMetaData.Value as DataSetMetaDataType).DataSetClassId.GuidString;
                     if (dataSetClass != dataSetClassCandidate) dataSetClassIdEquals = false;
                 }
 
@@ -241,7 +241,7 @@ namespace PublisherDataSource
             Opc.Ua.JsonDataSetMessage message = new Opc.Ua.JsonDataSetMessage();
 
             message.DataSetWriterId = writerState.DataSetWriterId.Value.ToString();
-            message.MetaDataVersion = ((writerState.Handle as PublishedDataItemsState).DataSetMetaData.Value as DataSetMetaDataType).ConfigurationVersion;
+            message.MetaDataVersion = ((writerState.Handle as PublishedDataSetState).DataSetMetaData.Value as DataSetMetaDataType).ConfigurationVersion;
             message.FieldContentMask = writerState.DataSetFieldContentMask.Value;
             message.SequenceNumber = (ushort)(Utils.IncrementIdentifier(ref SequenceNumber) % UInt16.MaxValue);
             message.Status = StatusCodes.Good;
@@ -249,117 +249,124 @@ namespace PublisherDataSource
             message.Payload = new Dictionary<string, DataValue>();
 
 
-
-            #region PublishedDataItems
-
-            if (writerState.Handle is PublishedDataItemsState)
+            try
             {
-                int count = (writerState.Handle as PublishedDataItemsState).PublishedData.Value.Count();
-                for (int ii = 0; ii < count; ii++)
+                #region PublishedDataItems
+
+                if (writerState.Handle is PublishedDataItemsState)
                 {
-                    var field = ((writerState.Handle as PublishedDataItemsState).DataSetMetaData.Value as DataSetMetaDataType).Fields[ii];
-                    var source = ((writerState.Handle as PublishedDataItemsState).PublishedData.Value[ii]);
-                    MonitoredItem monitoredItem = LstMonitoredItems.Where(i => i.ResolvedNodeId == source.PublishedVariable && i.AttributeId == source.AttributeId).FirstOrDefault();
-
-                    if (monitoredItem == null)
+                    int count = (writerState.Handle as PublishedDataItemsState).PublishedData.Value.Count();
+                    for (int ii = 0; ii < count; ii++)
                     {
-                        var substituteValue = source.SubstituteValue;
+                        var field = ((writerState.Handle as PublishedDataItemsState).DataSetMetaData.Value as DataSetMetaDataType).Fields[ii];
+                        var source = ((writerState.Handle as PublishedDataItemsState).PublishedData.Value[ii]);
+                        MonitoredItem monitoredItem = LstMonitoredItems.Where(i => i.ResolvedNodeId == source.PublishedVariable && i.AttributeId == source.AttributeId).FirstOrDefault();
 
-                        if (substituteValue != Variant.Null)
+                        if (monitoredItem == null)
                         {
-                            var qname = substituteValue.Value as QualifiedName;
+                            var substituteValue = source.SubstituteValue;
 
-                            if (((writerState.Handle as PublishedDataItemsState).ExtensionFields) != null && qname != null)
+                            if (substituteValue != Variant.Null)
                             {
-                                //foreach (var extensionField in (writerState.Handle as PublishedDataItemsState).ExtensionFields.GetChildren)
-                                //{
-                                //    if (extensionField.Key == qname)
-                                //    {
-                                //        substituteValue = extensionField.Value;
-                                //        break;
-                                //    }
-                                //}
+                                var qname = substituteValue.Value as QualifiedName;
+
+                                if (((writerState.Handle as PublishedDataItemsState).ExtensionFields) != null && qname != null)
+                                {
+                                    //foreach (var extensionField in (writerState.Handle as PublishedDataItemsState).ExtensionFields.GetChildren)
+                                    //{
+                                    //    if (extensionField.Key == qname)
+                                    //    {
+                                    //        substituteValue = extensionField.Value;
+                                    //        break;
+                                    //    }
+                                    //}
+                                }
+
+                                message.Payload.Add(field.Name, new DataValue(substituteValue, StatusCodes.Good, DateTime.UtcNow, DateTime.UtcNow));
                             }
 
-                            message.Payload.Add(field.Name, new DataValue(substituteValue, StatusCodes.Good, DateTime.UtcNow, DateTime.UtcNow));
-                        }
-
-                        continue;
-                    }
-                    var notification = monitoredItem.LastValue as MonitoredItemNotification;
-
-                    if (ServiceResult.IsBad(monitoredItem.Status.Error) || notification == null || ServiceResult.IsBad(notification.Value.StatusCode))
-                    {
-                        if (source.SubstituteValue != Variant.Null)
-                        {
-                            message.Payload.Add(field.Name, new DataValue(source.SubstituteValue, StatusCodes.UncertainSubstituteValue, DateTime.UtcNow, DateTime.UtcNow));
                             continue;
                         }
-                    }
+                        var notification = monitoredItem.LastValue as MonitoredItemNotification;
 
-                    if (ServiceResult.IsBad(monitoredItem.Status.Error))
-                    {
-                        message.Payload.Add(field.Name, new DataValue(monitoredItem.Status.Error.Code, DateTime.UtcNow));
-                        continue;
-                    }
-
-                    if (notification != null)
-                    {
-                        message.Payload.Add(field.Name, notification.Value);
-                    }
-
-                }
-
-                if (((writerState.Handle as PublishedDataItemsState).ExtensionFields) != null)
-                {
-                    var extensionFields = new List<BaseInstanceState>();
-                    (writerState.Handle as PublishedDataItemsState).ExtensionFields.GetChildren(new SystemContext(), extensionFields);
-
-                    foreach (var extensionField in extensionFields.Where(x => x.NodeClass == NodeClass.Variable))
-                    {
-                        var propExtensionField = extensionField as PropertyState;
-
-                        if (propExtensionField != null)
+                        if (ServiceResult.IsBad(monitoredItem.Status.Error) || notification == null || ServiceResult.IsBad(notification.Value.StatusCode))
                         {
-                            message.Payload.Add(propExtensionField.BrowseName.Name, new DataValue(new Variant(propExtensionField.Value)));
-                        }
-                    }
-                }
-            }
-            #endregion
-
-            #region PublishedEvents
-            else if (writerState.Handle is PublishedEventsState)
-            {
-                var dataset = writerState.Handle as PublishedEventsState;
-                var source = dataset.PubSubEventNotifier.Value;
-                MonitoredItem monitoredItem = LstMonitoredItems.FirstOrDefault(x => x.ResolvedNodeId == source && x.AttributeId == Attributes.EventNotifier);
-            
-                if(monitoredItem != null)
-                {
-                    var notification = monitoredItem.LastValue as EventFieldList;
-                    var count = dataset.SelectedFields.Value.Length;
-                    if (ServiceResult.IsGood(monitoredItem.Status.Error) && notification != null)
-                    {
-                        // check the type of event.
-                        NodeId eventTypeId = CommonFunctions.FindEventType(monitoredItem, notification);
-
-                        if(eventTypeId != null)
-                        {
-                            for (int ii = 0; ii < count; ii++)
+                            if (source.SubstituteValue != Variant.Null)
                             {
-                                var fieldName = dataset.DataSetMetaData.Value.Fields[ii];
-                                var fieldBrowseName = dataset.SelectedFields.Value[ii].BrowsePath[0];
-                                //var fieldValue = monitoredItem.
+                                message.Payload.Add(field.Name, new DataValue(source.SubstituteValue, StatusCodes.UncertainSubstituteValue, DateTime.UtcNow, DateTime.UtcNow));
+                                continue;
                             }
                         }
-                       
-                    } 
 
+                        if (ServiceResult.IsBad(monitoredItem.Status.Error))
+                        {
+                            message.Payload.Add(field.Name, new DataValue(monitoredItem.Status.Error.Code, DateTime.UtcNow));
+                            continue;
+                        }
+
+                        if (notification != null)
+                        {
+                            message.Payload.Add(field.Name, notification.Value);
+                        }
+
+                    }
+
+                    if (((writerState.Handle as PublishedDataItemsState).ExtensionFields) != null)
+                    {
+                        var extensionFields = new List<BaseInstanceState>();
+                        (writerState.Handle as PublishedDataItemsState).ExtensionFields.GetChildren(new SystemContext(), extensionFields);
+
+                        foreach (var extensionField in extensionFields.Where(x => x.NodeClass == NodeClass.Variable))
+                        {
+                            var propExtensionField = extensionField as PropertyState;
+
+                            if (propExtensionField != null)
+                            {
+                                message.Payload.Add(propExtensionField.BrowseName.Name, new DataValue(new Variant(propExtensionField.Value)));
+                            }
+                        }
+                    }
                 }
-            }
-            #endregion
+                #endregion
 
+                #region PublishedEvents
+                else if (writerState.Handle is PublishedEventsState)
+                {
+                    var dataset = writerState.Handle as PublishedEventsState;
+                    var source = dataset.PubSubEventNotifier.Value;
+                    MonitoredItem monitoredItem = LstMonitoredItems.FirstOrDefault(x => x.ResolvedNodeId == source && x.AttributeId == Attributes.EventNotifier);
+
+                    if (monitoredItem != null)
+                    {
+                        var notification = monitoredItem.LastValue as EventFieldList;
+                        var count = dataset.SelectedFields.Value.Length;
+                        if (ServiceResult.IsGood(monitoredItem.Status.Error) && notification != null)
+                        {
+                            // check the type of event.
+                            NodeId eventTypeId = CommonFunctions.FindEventType(monitoredItem, notification);
+
+                            if (eventTypeId != null)
+                            {
+                                for (int ii = 0; ii < count; ii++)
+                                {
+                                    var fieldName = dataset.DataSetMetaData.Value.Fields[ii].Name;
+                                    var fieldBrowseName = dataset.SelectedFields.Value[ii].BrowsePath[0];
+                                    var fieldValue = notification.EventFields[ii];
+                                    message.Payload.Add(fieldName, new DataValue(fieldValue));
+                                }
+                            }
+
+                        }
+
+                    }
+                }
+                #endregion
+
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"UAPublisherDataSource Run...Exception thorown: {ex}");
+            }
 
             return message;
         }

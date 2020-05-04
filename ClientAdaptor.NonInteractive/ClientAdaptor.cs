@@ -2201,16 +2201,16 @@ namespace ClientAdaptor
                         }
                         else
                         {
-                            MessageBox.Show("UserName or Password is incorrect.", "OPC PubSub Configuration Tool",
-                                             MessageBoxButton.OK, MessageBoxImage.Error);
+                            //MessageBox.Show("UserName or Password is incorrect.", "OPC PubSub Configuration Tool",
+                                             //MessageBoxButton.OK, MessageBoxImage.Error);
                             m_isOpened = false;
                             return m_isOpened;
                         }
                     }
                     else
                     {
-                        MessageBox.Show("UserIdentity not Provided.", "OPC PubSub Configuration Tool", MessageBoxButton.OK,
-                                         MessageBoxImage.Error);
+                        //MessageBox.Show("UserIdentity not Provided.", "OPC PubSub Configuration Tool", MessageBoxButton.OK,
+                                         //MessageBoxImage.Error);
                         m_isOpened = false;
                         return m_isOpened;
                     }
@@ -2547,6 +2547,22 @@ namespace ClientAdaptor
             }
             return _PublishedDataSetBase;
         }
+
+        public PublishedDataSetBase AddPublishedDataSetEvents(string publishedName, NodeId eventNotifier, ObservableCollection<PublishedEventSet> selectedFields)
+        {
+            PublishedDataSetBase _PublishedDataSetBase = null;
+            try
+            {
+
+            }
+            catch(Exception ex)
+            {
+                Utils.Trace(ex, "OPCUAClientAdaptor.AddPublishedDataSetEvents API" + ex.Message);
+            }
+            return _PublishedDataSetBase;
+
+        }
+
 
         public NodeId AddExtensionField(PublishedDataSetBase publishedDataSet, string fieldName, object fieldValue)
         {

@@ -365,6 +365,7 @@ namespace Opc.Ua.Sample.PubSub
             //EventNotifier
             _AddPublishedEventsMethodState.PubSubEventNotifier = new PropertyState<NodeId>(_AddPublishedEventsMethodState);
             _AddPublishedEventsMethodState.PubSubEventNotifier.Create(context, new NodeId(_AddPublishedEventsMethodState.NodeId.Identifier + ".EventNotifier", 2), new QualifiedName("EventNotifier"), new LocalizedText("EventNotifier"), false);
+            _AddPublishedEventsMethodState.PubSubEventNotifier.Value = eventNotifier;
 
             //ConfigurationVersion
             _AddPublishedEventsMethodState.ConfigurationVersion = new PropertyState<ConfigurationVersionDataType>(_AddPublishedEventsMethodState);

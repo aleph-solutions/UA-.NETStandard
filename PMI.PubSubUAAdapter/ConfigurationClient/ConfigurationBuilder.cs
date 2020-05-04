@@ -93,14 +93,14 @@ namespace PMI.PubSubUAAdapter.Configuration
             _configurationClient.AddWriterGroup(_mqttConnection, $"{machineName}", $"{_topicPrefix}{machineName}", out DataSetWriterGroup writerGroup);
             _configurationClient.EnableWriterGroup(writerGroup.Name);
           
-            //Prepare the dataset for the entire MachienModule
+            //Prepare the dataset for the entire MachineModule
             var typeId = GetTypeDefinition(machineModuleId);
-            var datasetItems = InitializeItemList(machineModuleId, typeId, out Dictionary<string, uint> datasetAttributes);
+            var datasetItems = InitializeItemList(machineModuleId, typeId);
             LoadItemList(datasetItems, "MachineModule", machineModuleId);
 
 
             //Add the dataset and the extensionFields
-            _configurationClient.AddPublishedDataSet(datasetItems, datasetAttributes, $"{machineName}", out PublishedDataSetBase publishedDataSet);
+            _configurationClient.AddPublishedDataSet(datasetItems, $"{machineName}", out PublishedDataSetBase publishedDataSet);
             _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
 
             //Prepare the writer
@@ -165,11 +165,11 @@ namespace PMI.PubSubUAAdapter.Configuration
                     var objectId = ExpandedNodeId.ToNodeId(objItem.NodeId, _browseSession.NamespaceUris);
 
                     //Prepare the Dataset
-                    var datasetItems = InitializeItemList(objectId, typeId, out Dictionary<string, uint> datasetAttributes);
+                    var datasetItems = InitializeItemList(objectId, typeId);
                     LoadItemList(datasetItems, "MaterialBuffer", objectId);
 
                     //Add the dataset
-                    _configurationClient.AddPublishedDataSet(datasetItems, datasetAttributes, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
+                    _configurationClient.AddPublishedDataSet(datasetItems, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
                     _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
 
                     //Prepare the writer
@@ -196,11 +196,11 @@ namespace PMI.PubSubUAAdapter.Configuration
                     var objectId = ExpandedNodeId.ToNodeId(objItem.NodeId, _browseSession.NamespaceUris);
 
                     //Prepare the Dataset
-                    var datasetItems = InitializeItemList(objectId, typeId, out Dictionary<string, uint> datasetAttributes);
+                    var datasetItems = InitializeItemList(objectId, typeId);
                     LoadItemList(datasetItems, "MaterialLoadingPoint", objectId);
 
                     //Add the dataset
-                    _configurationClient.AddPublishedDataSet(datasetItems, datasetAttributes, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
+                    _configurationClient.AddPublishedDataSet(datasetItems, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
                     _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
 
                     //Prepare the writer
@@ -226,11 +226,11 @@ namespace PMI.PubSubUAAdapter.Configuration
                     var objectId = ExpandedNodeId.ToNodeId(objItem.NodeId, _browseSession.NamespaceUris);
 
                     //Prepare the Dataset
-                    var datasetItems = InitializeItemList(objectId, typeId, out Dictionary<string, uint> datasetAttributes);
+                    var datasetItems = InitializeItemList(objectId, typeId);
                     LoadItemList(datasetItems, "MaterialOutput", objectId);
 
                     //Add the dataset
-                    _configurationClient.AddPublishedDataSet(datasetItems, datasetAttributes, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
+                    _configurationClient.AddPublishedDataSet(datasetItems, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
                     _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
 
                     //Prepare the writer
@@ -256,11 +256,11 @@ namespace PMI.PubSubUAAdapter.Configuration
                     var objectId = ExpandedNodeId.ToNodeId(objItem.NodeId, _browseSession.NamespaceUris);
 
                     //Prepare the Dataset
-                    var datasetItems = InitializeItemList(objectId, typeId, out Dictionary<string, uint> datasetAttributes);
+                    var datasetItems = InitializeItemList(objectId, typeId);
                     LoadItemList(datasetItems, "MaterialRejectionTrap", objectId);
 
                     //Add the dataset
-                    _configurationClient.AddPublishedDataSet(datasetItems, datasetAttributes, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
+                    _configurationClient.AddPublishedDataSet(datasetItems, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
                     _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
 
                     //Prepare the writer
@@ -287,11 +287,11 @@ namespace PMI.PubSubUAAdapter.Configuration
                     var objectId = ExpandedNodeId.ToNodeId(objItem.NodeId, _browseSession.NamespaceUris);
 
                     //Prepare the Dataset
-                    var datasetItems = InitializeItemList(objectId, typeId, out Dictionary<string, uint> datasetAttributes);
+                    var datasetItems = InitializeItemList(objectId, typeId);
                     LoadItemList(datasetItems, "ProcessControlLoop", objectId);
 
                     //Add the dataset
-                    _configurationClient.AddPublishedDataSet(datasetItems, datasetAttributes, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
+                    _configurationClient.AddPublishedDataSet(datasetItems, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
                     _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
 
                     //Prepare the writer
@@ -318,11 +318,11 @@ namespace PMI.PubSubUAAdapter.Configuration
                     var objectId = ExpandedNodeId.ToNodeId(objItem.NodeId, _browseSession.NamespaceUris);
 
                     //Prepare the Dataset
-                    var datasetItems = InitializeItemList(objectId, typeId, out Dictionary<string, uint> datasetAttributes);
+                    var datasetItems = InitializeItemList(objectId, typeId);
                     LoadItemList(datasetItems, "ProcessItem", objectId);
 
                     //Add the dataset
-                    _configurationClient.AddPublishedDataSet(datasetItems, datasetAttributes, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
+                    _configurationClient.AddPublishedDataSet(datasetItems, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
                     _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
 
                     //Prepare the writer
@@ -335,11 +335,9 @@ namespace PMI.PubSubUAAdapter.Configuration
 
 
         #region Private Methods
-        private Dictionary<string, NodeId> InitializeItemList(NodeId objectId, NodeId objectTypeId, out Dictionary<string, uint> attributesList)
+        private List<DataSetFieldConfiguration> InitializeItemList(NodeId objectId, NodeId objectTypeId)
         {
-            var fieldList = new Dictionary<string, NodeId>();
-            attributesList = new Dictionary<string, uint>();
-
+            var fieldList = new List<DataSetFieldConfiguration>();
             var jsonConfig = LoadJsonConfiguration("Base");
 
             foreach (var field in jsonConfig.Fields)
@@ -362,15 +360,20 @@ namespace PMI.PubSubUAAdapter.Configuration
 
                 }
 
-                fieldList.Add(field.FieldName, fieldId);
-                attributesList.Add(field.FieldName, field.Attribute);
+                fieldList.Add(new DataSetFieldConfiguration()
+                {
+                    Name = field.FieldName,
+                    SourceNodeId = fieldId,
+                    Attribute = field.Attribute,
+                    SamplingInterval = field.SamplingInterval
+                });
             }
 
 
             return fieldList;
         }
 
-        private void LoadItemList(Dictionary<string, NodeId> itemList, PubSubObjectConfiguration config, NodeId objectNodeId)
+        private void LoadItemList(List<DataSetFieldConfiguration> itemList, PubSubObjectConfiguration config, NodeId objectNodeId)
         {
             //Load the parent type item list
             if (config.ParentType != null) LoadItemList(itemList, config.ParentType, objectNodeId);
@@ -406,7 +409,7 @@ namespace PMI.PubSubUAAdapter.Configuration
                             if (fieldReference != null)
                             {
                                 fieldId = ExpandedNodeId.ToNodeId(fieldReference.NodeId, _browseSession.NamespaceUris);
-                                itemList.Add(fieldName, fieldId);
+                                itemList.Add(new DataSetFieldConfiguration(fieldName, fieldId, field));
                             }
                         }
                         else
@@ -416,7 +419,7 @@ namespace PMI.PubSubUAAdapter.Configuration
                             if (fieldReference != null)
                             {
                                 fieldId = ExpandedNodeId.ToNodeId(fieldReference.NodeId, _browseSession.NamespaceUris);
-                                itemList.Add(fieldName, fieldId);
+                                itemList.Add(new DataSetFieldConfiguration(fieldName, fieldId, field));
                             }
 
                         }
@@ -436,7 +439,7 @@ namespace PMI.PubSubUAAdapter.Configuration
             }
         }
 
-        private void LoadComplexVariableItemList(Dictionary<string, NodeId> itemList, string variableTypeName, NodeId variableNodeId, string variableName)
+        private void LoadComplexVariableItemList(List<DataSetFieldConfiguration> itemList, string variableTypeName, NodeId variableNodeId, string variableName)
         {
             try
             {
@@ -473,13 +476,13 @@ namespace PMI.PubSubUAAdapter.Configuration
                                 var fieldReference = references.FirstOrDefault(x => x.BrowseName.Name == field.BrowseName);
 
                                 var fieldId = ExpandedNodeId.ToNodeId(fieldReference.NodeId, _browseSession.NamespaceUris);
-                                itemList.Add(fieldName, fieldId);
+                                itemList.Add(new DataSetFieldConfiguration(fieldName, fieldId, field));
                             }
                             else
                             {
                                 var fieldExpId = subNodes.FirstOrDefault(x => x.BrowseName.Name == field.BrowseName).NodeId;
                                 var fieldId = ExpandedNodeId.ToNodeId(fieldExpId, _browseSession.NamespaceUris);
-                                itemList.Add(fieldName, fieldId);
+                                itemList.Add(new DataSetFieldConfiguration(fieldName, fieldId, field));
                             }
                         }
                         
@@ -493,7 +496,7 @@ namespace PMI.PubSubUAAdapter.Configuration
 
         }
 
-        private void LoadItemList(Dictionary<string, NodeId> itemList, string objectTypeName, NodeId objectNodeId)
+        private void LoadItemList(List<DataSetFieldConfiguration> itemList, string objectTypeName, NodeId objectNodeId)
         {
             var jsonConfig = LoadJsonConfiguration(objectTypeName);
             LoadItemList(itemList, jsonConfig, objectNodeId);
@@ -553,7 +556,7 @@ namespace PMI.PubSubUAAdapter.Configuration
     }
 
     [DataContract]
-    class FieldDefinition
+    public class FieldDefinition
     {
         [DataMember]
         public string FieldName { get; set; }
@@ -603,7 +606,44 @@ namespace PMI.PubSubUAAdapter.Configuration
             }
         }
         private bool? _enabled;
+
+
+        public int SamplingInterval
+        {
+            get
+            {
+                return _samplingInterval;
+            }
+            set
+            {
+                _samplingInterval = value;
+            }
+        }
+        private int _samplingInterval = -1;
     }
 
+    public class DataSetFieldConfiguration
+    {
+        public DataSetFieldConfiguration()
+        {
 
+        }
+
+        public DataSetFieldConfiguration(string name, NodeId fieldId, FieldDefinition jsonDefinition)
+        {
+            Name = name;
+            SourceNodeId = fieldId;
+            Attribute = jsonDefinition.Attribute;
+            SamplingInterval = jsonDefinition.SamplingInterval;
+        }
+
+        public string Name { get; set; }
+
+        public NodeId SourceNodeId { get; set; }
+        public uint Attribute { get { return _attribute; } set { _attribute = value; } }
+        private uint _attribute = Attributes.Value;
+
+        public int SamplingInterval { get { return _samplingInterval; } set { _samplingInterval = value; } }
+        private int _samplingInterval = -1;
+    }
 }
