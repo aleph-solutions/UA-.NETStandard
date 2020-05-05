@@ -94,6 +94,22 @@ namespace Opc.Ua.CommonFunctions
             return ExpandedNodeId.ToNodeId(results[0].References.First()?.NodeId, session.NamespaceUris);
         }
 
+        //public static IEnumerable<NodeId> GetGeneratedEvent(Session session, NodeId typeNodeId)
+        //{
+        //    var browseDescrColl = new BrowseDescriptionCollection()
+        //    {
+        //        new BrowseDescription()
+        //        {
+        //            NodeId = typeNodeId,
+        //            BrowseDirection = BrowseDirection.Forward,
+        //            ReferenceTypeId = ReferenceTypeIds.GeneratesEvent,
+        //            IncludeSubtypes = true,
+        //            NodeClassMask = (uint)(NodeClass.ObjectType),
+        //            ResultMask = (uint)BrowseResultMask.All
+        //        }
+        //    };
+        //}
+
         #region Events
         /// <summary>
         /// Finds the type of the event for the notification.

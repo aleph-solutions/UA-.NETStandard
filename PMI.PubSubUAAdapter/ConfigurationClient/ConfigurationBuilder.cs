@@ -41,6 +41,9 @@ namespace PMI.PubSubUAAdapter.Configuration
             //Initialize the encodable types in order to be correctly serialized in the json
             InitializeEncodableTypes();
 
+            //Sample
+            SampleEvents();
+
             //Browse the Objects folder
             var objFolderNodes = Browse(ObjectIds.ObjectsFolder);
 
@@ -66,6 +69,35 @@ namespace PMI.PubSubUAAdapter.Configuration
                 Console.WriteLine("ConfigurationBuilder Start...DeviceSet object not found");
             }
             _configurationClient.EnableAllWriters();
+        }
+
+        private void SampleEvents()
+        {
+            var fields = InitializeEventItemList();
+            fields.Add(new DataSetEventFieldConfiguration(new QualifiedName(TMCPlus.BrowseNames.MaterialLotAttributes, 4)));
+            
+            fields.Add(new DataSetEventFieldConfiguration(new QualifiedName(TMCPlus.BrowseNames.MaterialAttributes, 4)));
+
+            fields.Add(new DataSetEventFieldConfiguration(new QualifiedName(TMCPlus.BrowseNames.LoadingPointMES_ID, 4)));
+
+            fields.Add(new DataSetEventFieldConfiguration(new QualifiedName(TMCPlus.BrowseNames.PONumber, 4)));
+
+            fields.Add(new DataSetEventFieldConfiguration(new QualifiedName(TMCPlus.BrowseNames.MaterialQuantity, 3)));
+            fields.Add(new DataSetEventFieldConfiguration()
+            {
+                Name = $"{TMCPlus.BrowseNames.MaterialQuantity}/{TMCPlus.BrowseNames.QuantityInLUoM}",
+                BrowsePath = new QualifiedNameCollection
+                {
+                    new QualifiedName(TMCPlus.BrowseNames.MaterialQuantity, 3),
+                    new QualifiedName(TMCPlus.BrowseNames.QuantityInLUoM, 3),
+                }
+            });
+
+            _configurationClient.AddWriterGroup(_mqttConnection, "TestEventGroup", "eventsTest", out DataSetWriterGroup group);
+            _configurationClient.AddPublishedDataSetEvent(fields, new NodeId(1012, 4), "EventData", new NodeId(5331, 5), out PublishedDataSetBase dataset);
+            _configurationClient.AddWriter(group, "EventWriter", "EventData", out DataSetWriterDefinition writer);
+            _configurationClient.EnableWriterGroup("TestEventGroup");
+            _configurationClient.EnableWriter("EventWriter");
         }
 
 
@@ -335,6 +367,8 @@ namespace PMI.PubSubUAAdapter.Configuration
 
 
         #region Private Methods
+
+        #region Data Items
         private List<DataSetFieldConfiguration> InitializeItemList(NodeId objectId, NodeId objectTypeId)
         {
             var fieldList = new List<DataSetFieldConfiguration>();
@@ -511,6 +545,24 @@ namespace PMI.PubSubUAAdapter.Configuration
             }
             else throw new FileNotFoundException($"JSON file {jsonFilename} not found.");
         }
+        #endregion
+
+        #region Events Items
+        private List<DataSetEventFieldConfiguration> InitializeEventItemList()
+        {
+            var fields = new List<DataSetEventFieldConfiguration>()
+            {
+                new DataSetEventFieldConfiguration(BrowseNames.EventId),
+                new DataSetEventFieldConfiguration(BrowseNames.EventType),
+                new DataSetEventFieldConfiguration(BrowseNames.Message),
+                new DataSetEventFieldConfiguration(BrowseNames.SourceName),
+                new DataSetEventFieldConfiguration(BrowseNames.SourceNode),
+                new DataSetEventFieldConfiguration(BrowseNames.Severity),
+                new DataSetEventFieldConfiguration(BrowseNames.Time)
+            };
+            return fields;
+        }
+        #endregion
 
         private NodeId GetChildId(NodeId startNodeId, string childName)
         {
@@ -552,11 +604,11 @@ namespace PMI.PubSubUAAdapter.Configuration
         public string ParentType { get; set; }
         
         [DataMember]
-        public IEnumerable<FieldDefinition> Fields { get; set; }
+        public IEnumerable<FieldFileDefinition> Fields { get; set; }
     }
 
     [DataContract]
-    public class FieldDefinition
+    public class FieldFileDefinition
     {
         [DataMember]
         public string FieldName { get; set; }
@@ -607,7 +659,7 @@ namespace PMI.PubSubUAAdapter.Configuration
         }
         private bool? _enabled;
 
-
+        [DataMember]
         public int SamplingInterval
         {
             get
@@ -622,28 +674,5 @@ namespace PMI.PubSubUAAdapter.Configuration
         private int _samplingInterval = -1;
     }
 
-    public class DataSetFieldConfiguration
-    {
-        public DataSetFieldConfiguration()
-        {
-
-        }
-
-        public DataSetFieldConfiguration(string name, NodeId fieldId, FieldDefinition jsonDefinition)
-        {
-            Name = name;
-            SourceNodeId = fieldId;
-            Attribute = jsonDefinition.Attribute;
-            SamplingInterval = jsonDefinition.SamplingInterval;
-        }
-
-        public string Name { get; set; }
-
-        public NodeId SourceNodeId { get; set; }
-        public uint Attribute { get { return _attribute; } set { _attribute = value; } }
-        private uint _attribute = Attributes.Value;
-
-        public int SamplingInterval { get { return _samplingInterval; } set { _samplingInterval = value; } }
-        private int _samplingInterval = -1;
-    }
+    
 }

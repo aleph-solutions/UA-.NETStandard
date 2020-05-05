@@ -87,6 +87,8 @@
   <ItemGroup>
     <Compile Include="ConfigurationClient\ConfigurationClient.cs" />
     <Compile Include="ConfigurationClient\ConfigurationBuilder.cs" />
+    <Compile Include="Definitions\DataSetEventFieldConfiguration.cs" />
+    <Compile Include="Definitions\DataSetFieldConfiguration.cs" />
     <Compile Include="Identifiers\TMCIdentifiers.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="PubSub\PublisherNodeManager.cs" />

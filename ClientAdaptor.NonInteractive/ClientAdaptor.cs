@@ -2406,6 +2406,54 @@ namespace ClientAdaptor
             return m_publishedDataSetBaseCollection;
         }
 
+        private PublishedEventSet LoadPublishedEvents(string publisherName, NodeId publisherNodeId)
+        {
+            PublishedEventSet publishedEvents = new PublishedEventSet
+            {
+                Name = publisherName,
+                PublishedDataSetNodeId = publisherNodeId
+            };
+
+            DataSetMetaDataDefinition m_dataSetMetaDataDefinition = new DataSetMetaDataDefinition(publishedEvents) { Name = "DataSetMetaData" };
+            publishedEvents.Children.Add(m_dataSetMetaDataDefinition);
+            ReferenceDescriptionCollection m_refDescriptionCollection = Browse(publisherNodeId);
+            foreach (ReferenceDescription m_refDescription in m_refDescriptionCollection)
+            {
+                try
+                {
+                    if (m_refDescription.BrowseName.Name == "ConfigurationVersion")
+                    {
+                        ConfigurationVersionDataType m_configurationVersionDataType = (ConfigurationVersionDataType)Session.ReadValue((NodeId)m_refDescription.NodeId, typeof(ConfigurationVersionDataType));
+                        if (m_configurationVersionDataType != null)
+                        {
+                            publishedEvents.ConfigurationVersionDataType = m_configurationVersionDataType;
+                        }
+                    }
+                    else if (m_refDescription.BrowseName.Name == "DataSetMetaData")
+                    {
+                        try
+                        {
+                            DataSetMetaDataType m_dataSetMetaDataType = (DataSetMetaDataType)Session.ReadValue((NodeId)m_refDescription.NodeId, typeof(DataSetMetaDataType));
+                            if (m_dataSetMetaDataType != null)
+                            {
+                                m_dataSetMetaDataDefinition.DataSetMetaDataType = m_dataSetMetaDataType;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Utils.Trace(ex, "ClientAdaptor:LoadPublishedEvents-DataSetMetaData API" + ex.Message);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Utils.Trace(ex, "OPCUAClientAdaptor.LoadPublishedEvents API" + ex.Message);
+                }
+            }
+            return publishedEvents;
+
+        }
+
         /// <summary>
         /// Method to load published data with configuration version and DataSetMetadata.
         /// </summary>
@@ -2548,19 +2596,37 @@ namespace ClientAdaptor
             return _PublishedDataSetBase;
         }
 
-        public PublishedDataSetBase AddPublishedDataSetEvents(string publishedName, NodeId eventNotifier, ObservableCollection<PublishedEventSet> selectedFields)
+        public PublishedDataSetBase AddPublishedDataSetEvents(string publishedName, NodeId eventNotifier, ObservableCollection<PublishedEventSet> selectedFields, ContentFilter filter)
         {
             PublishedDataSetBase _PublishedDataSetBase = null;
+            NodeId publisherId = null;
             try
             {
+                var fields = new List<SimpleAttributeOperand>();
+                var fieldNameAliases = new List<string>();
+                var fieldFlags = new List<DataSetFieldFlags>();
+                foreach (var field in selectedFields)
+                {
+                    fieldFlags.Add(DataSetFieldFlags.None);
+                    fieldNameAliases.Add(field.Name);
+                    fields.Add(new SimpleAttributeOperand()
+                    {
+                        AttributeId = Attributes.Value,
+                        BrowsePath =  field.BrowsePath
+                    });
+                }
 
+                IList<object> lstResponse = Session.Call(Constants.PublishedDataSetsNodeId,
+                    Constants.AddPublishedEventsNodeId, new object[] { publishedName, eventNotifier, fieldNameAliases.ToArray(), null, fields.ToArray(), filter });
+            
+                publisherId = lstResponse[0] as NodeId;
+                return LoadPublishedEvents(publishedName, publisherId);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Utils.Trace(ex, "OPCUAClientAdaptor.AddPublishedDataSetEvents API" + ex.Message);
             }
             return _PublishedDataSetBase;
-
         }
 
 
@@ -3279,6 +3345,17 @@ namespace ClientAdaptor
             get
             {
                 return m_dicNodeId["PublishedDataSetsNodeId"];
+
+            }
+        }
+        /// <summary>
+        /// Added Published Event Dataset Node ID
+        /// </summary>
+        public static NodeId AddPublishedEventsNodeId
+        {
+            get
+            {
+                return m_dicNodeId["AddPublishedEventsNodeId"];
 
             }
         }

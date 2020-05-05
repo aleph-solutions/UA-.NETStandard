@@ -105,6 +105,7 @@ namespace PMI.PubSubUAAdapter.Configuration
                 MessageSecurityMode = 1,
                 MessageSetting = 1,
                 PublishingInterval = 1000,
+                KeepAliveTime = 5000,
                 QueueName = queueName,
                 TransportSetting = 1,
                 WriterGroupId = _writerGroups == null ? 1 : _writerGroups.Count + 1,
@@ -160,6 +161,32 @@ namespace PMI.PubSubUAAdapter.Configuration
             }
         }
 
+        public void AddPublishedDataSetEvent(List<DataSetEventFieldConfiguration> eventFields, NodeId eventTypeId, string datasetName, NodeId eventNotifier, out PublishedDataSetBase publishedDataSet)
+        {
+            Console.WriteLine($"ConfigurationClient AddPublishedDataSetEvent {datasetName}...");
+            try
+            {
+                var selectedFields = new ObservableCollection<PublishedEventSet>();
+                foreach(var field in eventFields)
+                {
+                    selectedFields.Add(new PublishedEventSet()
+                    {
+                        Name = field.Name,
+                        BrowsePath = field.BrowsePath,
+                    });
+                }
+                
+                ContentFilter whereClause = new ContentFilter();
+                ContentFilterElement typeClause = whereClause.Push(FilterOperator.OfType, eventTypeId);
+
+                publishedDataSet = m_clientAdaptor.AddPublishedDataSetEvents(datasetName, eventNotifier, selectedFields, whereClause);
+            }
+            catch(Exception ex)
+            {
+                publishedDataSet = null;
+                Console.WriteLine($"ConfigurationClient AddPublishedDataSetEvent {datasetName}...Exception: {ex}");
+            }
+        }
         /// <summary>
         /// Adds a DataSetWriter
         /// </summary>

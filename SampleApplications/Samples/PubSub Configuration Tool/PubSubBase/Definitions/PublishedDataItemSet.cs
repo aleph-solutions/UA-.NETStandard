@@ -252,7 +252,7 @@ namespace PubSubBase.Definitions
         /// initialising base class object
         /// </summary>
         /// <param name="_PublishedDataSetDefinition"></param>
-        public DataSetMetaDataDefinition(PublishedDataSetDefinition _PublishedDataSetDefinition)
+        public DataSetMetaDataDefinition(PublishedDataSetBase _PublishedDataSetDefinition)
         {
             ParentNode = _PublishedDataSetDefinition;
 

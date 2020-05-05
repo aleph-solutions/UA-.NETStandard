@@ -6,25 +6,41 @@ namespace PubSubBase.Definitions
     public class PublishedEventSet : PublishedDataSetBase
     {
         #region Private Fields
-        QualifiedName _fieldName;
+        QualifiedNameCollection _browsePath;
         #endregion
 
-        public QualifiedName FieldAliasName
+        public QualifiedNameCollection BrowsePath
         {
             get
             {
-                return _fieldName;
+                return _browsePath;
             }
             set
             {
-                _fieldName = value;
+                _browsePath = value;
             }
         }
 
+        public NodeId PublishedDataSetNodeId { get; set; }
 
-        public PublishedEventSet(PublishedDataSetBase _PublishedDataSetBase)
+        ConfigurationVersionDataType m_configurationVersionDataType = new ConfigurationVersionDataType();
+        /// <summary>
+        /// defines data type of the target definition
+        /// </summary>
+        public ConfigurationVersionDataType ConfigurationVersionDataType
         {
-            ParentNode = _PublishedDataSetBase;
+            get
+            {
+                return m_configurationVersionDataType;
+            }
+            set
+            {
+                m_configurationVersionDataType = value;
+                OnPropertyChanged("ConfigurationVersionDataType");
+            }
+        }
+        public PublishedEventSet()
+        {
         }
     }
 }
