@@ -12,6 +12,7 @@ using Opc.Ua.Configuration;
 using Opc.Ua.Client.Controls;
 using System.Security.Cryptography.X509Certificates;
 using Opc.Ua.CommonFunctions;
+using Opc.Ua.Extensions;
 
 namespace PublisherDataSource
 {
@@ -212,8 +213,7 @@ namespace PublisherDataSource
             foreach (var writerState in activeDataSetWriters)
             {
                 var message = GetJsonDataSetMessage(writerState, groupState);
-                networkMessage.Messages.Add(message);
-
+                if(message.Payload != null && message.Payload.Count != 0) networkMessage.Messages.Add(message);
 
                 if ((networkMessage.MessageContentMask & (uint)JsonNetworkMessageContentMask.SingleDataSetMessage) != 0)
                 {
@@ -233,7 +233,10 @@ namespace PublisherDataSource
 
             if ((networkMessage.MessageContentMask & (uint)JsonNetworkMessageContentMask.SingleDataSetMessage) == 0)
             {
-                PublishJsonMessage((groupState.TransportSettings as BrokerWriterGroupTransportState).QueueName.Value, networkMessage);
+                if(networkMessage.Messages != null && networkMessage.Messages.Count > 0)
+                {
+                    PublishJsonMessage((groupState.TransportSettings as BrokerWriterGroupTransportState).QueueName.Value, networkMessage);
+                }
             }
         }
         private JsonDataSetMessage GetJsonDataSetMessage(DataSetWriterState writerState, WriterGroupState groupState)
@@ -334,18 +337,21 @@ namespace PublisherDataSource
                 {
                     var dataset = writerState.Handle as PublishedEventsState;
                     var source = dataset.PubSubEventNotifier.Value;
-                    MonitoredItem monitoredItem = LstMonitoredItems.FirstOrDefault(x => x.ResolvedNodeId == source && x.AttributeId == Attributes.EventNotifier);
+                    var monitoredEventTypeOp = dataset.Filter.Value.Elements.FirstOrDefault(x => x.FilterOperator == FilterOperator.OfType).FilterOperands[0].Body as LiteralOperand;
+                    var monitoredEventType = monitoredEventTypeOp.Value.Value as NodeId;
+                    EventMonitoredItem monitoredItem = LstMonitoredItems.Where(x => x.AttributeId == Attributes.EventNotifier).Cast<EventMonitoredItem>().FirstOrDefault(x => x.ResolvedNodeId == source && x.EventType == monitoredEventType);
 
                     if (monitoredItem != null)
                     {
                         var notification = monitoredItem.LastValue as EventFieldList;
+                        
                         var count = dataset.SelectedFields.Value.Length;
                         if (ServiceResult.IsGood(monitoredItem.Status.Error) && notification != null)
                         {
                             // check the type of event.
                             NodeId eventTypeId = CommonFunctions.FindEventType(monitoredItem, notification);
 
-                            if (eventTypeId != null)
+                            if (eventTypeId != null && eventTypeId.Equals(monitoredItem.EventType))
                             {
                                 for (int ii = 0; ii < count; ii++)
                                 {
@@ -655,6 +661,7 @@ namespace PublisherDataSource
             var data = ostrm.ToArray();
             Dictionary<string, object> Settings = new Dictionary<string, object>();
             Settings["topic"] = topic;
+            var dataStr = Encoding.UTF8.GetString(data);
             m_TransportdataSource.SendData(data, Settings);
             Settings = null;
         }

@@ -2,11 +2,13 @@
 using DataSource;
 using MQTTTransportDataSource;
 using Opc.Ua.Client;
+using Opc.Ua.Extensions;
 using Opc.Ua.Publisher;
 using Opc.Ua.Subscriber;
 using PMI.PubSubUAAdapter.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
@@ -285,18 +287,23 @@ namespace Opc.Ua.Sample.PubSub
             Dic_Subscription[publishedEventsState.NodeId] = subscription;
             SimpleAttributeOperand[] SimpleAttributeOperandArray = publishedEventsState.SelectedFields.Value as SimpleAttributeOperand[];
 
-            var monitoredItem = new MonitoredItem();
+            var monitoredItem = new EventMonitoredItem();
             monitoredItem.StartNodeId = publishedEventsState.PubSubEventNotifier.Value;
             monitoredItem.AttributeId = Attributes.EventNotifier;
             monitoredItem.SamplingInterval = 0;
             monitoredItem.QueueSize = 1000;
             monitoredItem.DiscardOldest = true;
             monitoredItem.Filter = GetFilter(publishedEventsState);
-
+            var eventTypeOperand = publishedEventsState.Filter.Value.Elements.FirstOrDefault(x => x.FilterOperator == FilterOperator.OfType).FilterOperands[0].Body as LiteralOperand;
+            monitoredItem.EventType = eventTypeOperand.Value.Value as NodeId;
+            
+            
             subscription.AddItem(monitoredItem);
             LstMonitoredItems.Add(monitoredItem);
             subscription.ApplyChanges();
         }
+
+
 
         private EventFilter GetFilter(PublishedEventsState publishedEventsState)
         {

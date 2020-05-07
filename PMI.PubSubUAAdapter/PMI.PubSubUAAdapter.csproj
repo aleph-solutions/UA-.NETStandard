@@ -89,6 +89,8 @@
     <Compile Include="ConfigurationClient\ConfigurationBuilder.cs" />
     <Compile Include="Definitions\DataSetEventFieldConfiguration.cs" />
     <Compile Include="Definitions\DataSetFieldConfiguration.cs" />
+    <Compile Include="Definitions\PubSubEventConfiguration.cs" />
+    <Compile Include="Definitions\PubSubObjectDataConfiguration.cs" />
     <Compile Include="Identifiers\TMCIdentifiers.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="PubSub\PublisherNodeManager.cs" />
@@ -172,6 +174,10 @@
     <ProjectReference Include="..\Opc.Ua.CommonFunctions\Opc.Ua.CommonFunctions.csproj">
       <Project>{24E0C10E-E77B-4B70-9317-A53D35F86F87}</Project>
       <Name>Opc.Ua.CommonFunctions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Opc.Ua.Extensions\Opc.Ua.Extensions.csproj">
+      <Project>{3b4b6517-201d-4a18-b176-01bb5f6af6ce}</Project>
+      <Name>Opc.Ua.Extensions</Name>
     </ProjectReference>
     <ProjectReference Include="..\Opc.Ua.Publisher\Opc.Ua.Publisher.csproj">
       <Project>{79b2b57c-ab6a-43e2-a03a-c1d7da2324d0}</Project>

@@ -42,7 +42,7 @@ namespace PMI.PubSubUAAdapter.Configuration
             InitializeEncodableTypes();
 
             //Sample
-            SampleEvents();
+            //SampleEvents();
 
             //Browse the Objects folder
             var objFolderNodes = Browse(ObjectIds.ObjectsFolder);
@@ -50,7 +50,7 @@ namespace PMI.PubSubUAAdapter.Configuration
             //Search for the DeviceSet folder
             var deviceSetExpNodeId = objFolderNodes.FirstOrDefault(x => x.BrowseName.Name == "DeviceSet" && x.NodeClass == NodeClass.Object)?.NodeId;
 
-            if(deviceSetExpNodeId != null)
+            if (deviceSetExpNodeId != null)
             {
                 var deviceSetNodeId = ExpandedNodeId.ToNodeId(deviceSetExpNodeId, _browseSession.NamespaceUris);
 
@@ -73,31 +73,57 @@ namespace PMI.PubSubUAAdapter.Configuration
 
         private void SampleEvents()
         {
-            var fields = InitializeEventItemList();
-            fields.Add(new DataSetEventFieldConfiguration(new QualifiedName(TMCPlus.BrowseNames.MaterialLotAttributes, 4)));
-            
-            fields.Add(new DataSetEventFieldConfiguration(new QualifiedName(TMCPlus.BrowseNames.MaterialAttributes, 4)));
+            //var fields = InitializeEventItemList();
+            //fields.Add(new DataSetEventFieldConfiguration(new QualifiedName(TMCPlus.BrowseNames.MaterialLotAttributes, 4)));
 
-            fields.Add(new DataSetEventFieldConfiguration(new QualifiedName(TMCPlus.BrowseNames.LoadingPointMES_ID, 4)));
+            //fields.Add(new DataSetEventFieldConfiguration(new QualifiedName(TMCPlus.BrowseNames.MaterialAttributes, 4)));
 
-            fields.Add(new DataSetEventFieldConfiguration(new QualifiedName(TMCPlus.BrowseNames.PONumber, 4)));
+            //fields.Add(new DataSetEventFieldConfiguration(new QualifiedName(TMCPlus.BrowseNames.LoadingPointMES_ID, 4)));
 
-            fields.Add(new DataSetEventFieldConfiguration(new QualifiedName(TMCPlus.BrowseNames.MaterialQuantity, 3)));
-            fields.Add(new DataSetEventFieldConfiguration()
-            {
-                Name = $"{TMCPlus.BrowseNames.MaterialQuantity}/{TMCPlus.BrowseNames.QuantityInLUoM}",
-                BrowsePath = new QualifiedNameCollection
-                {
-                    new QualifiedName(TMCPlus.BrowseNames.MaterialQuantity, 3),
-                    new QualifiedName(TMCPlus.BrowseNames.QuantityInLUoM, 3),
-                }
-            });
+            //fields.Add(new DataSetEventFieldConfiguration(new QualifiedName(TMCPlus.BrowseNames.PONumber, 4)));
+
+            //fields.Add(new DataSetEventFieldConfiguration(new QualifiedName(TMCPlus.BrowseNames.MaterialQuantity, 3)));
+            //fields.Add(new DataSetEventFieldConfiguration()
+            //{
+            //    Name = $"{TMCPlus.BrowseNames.MaterialQuantity}/{TMCPlus.BrowseNames.QuantityInLUoM}",
+            //    BrowsePath = new QualifiedNameCollection
+            //    {
+            //        new QualifiedName(TMCPlus.BrowseNames.MaterialQuantity, 3),
+            //        new QualifiedName(TMCPlus.BrowseNames.QuantityInLUoM, 3),
+            //    }
+            //});
+
+            //_configurationClient.AddWriterGroup(_mqttConnection, "TestEventGroup", "eventsTest", out DataSetWriterGroup group);
+            //_configurationClient.AddPublishedDataSetEvent(fields, new NodeId(1012, 4), "EventData", new NodeId(5331, 5), out PublishedDataSetBase dataset);
+            //_configurationClient.AddPublishedDataSetEvent(fields, new NodeId(1008, 4), "EventData2", new NodeId(5331, 5), out PublishedDataSetBase dataset2);
+            //_configurationClient.AddWriter(group, "EventWriter", "EventData", out DataSetWriterDefinition writer);
+            //_configurationClient.AddWriter(group, "EventWriter2", "EventData2", out DataSetWriterDefinition writer2);
+            //_configurationClient.EnableWriterGroup("TestEventGroup");
+            //_configurationClient.EnableWriter("EventWriter");
+            //_configurationClient.EnableWriter("EventWriter2");
+
+
+            var configurations = GetEventsConfigurations(new NodeId(5331, 5));
+            var materialConsumedConf = configurations.FirstOrDefault(x => x.EventTypeId.Equals(new NodeId(1012, 4)));
+            var loadingPointIsLoaded = configurations.FirstOrDefault(x => x.EventTypeId.Equals(new NodeId(1008, 4)));
+            var items = InitializeEventItemList();
+            LoadEventFieldsList(items, materialConsumedConf);
+
+            var items2 = InitializeEventItemList();
+            LoadEventFieldsList(items2, loadingPointIsLoaded);
 
             _configurationClient.AddWriterGroup(_mqttConnection, "TestEventGroup", "eventsTest", out DataSetWriterGroup group);
-            _configurationClient.AddPublishedDataSetEvent(fields, new NodeId(1012, 4), "EventData", new NodeId(5331, 5), out PublishedDataSetBase dataset);
-            _configurationClient.AddWriter(group, "EventWriter", "EventData", out DataSetWriterDefinition writer);
-            _configurationClient.EnableWriterGroup("TestEventGroup");
-            _configurationClient.EnableWriter("EventWriter");
+            _configurationClient.EnableWriterGroup(group.Name);
+            _configurationClient.AddPublishedDataSetEvent(items, new NodeId(1012, 4), "EventDataTest", new NodeId(5331, 5), out PublishedDataSetBase dataset);
+            _configurationClient.AddPublishedDataSetEvent(items2, new NodeId(1008, 4), "EventDataTest2", new NodeId(5331, 5), out PublishedDataSetBase dataset2);
+            _configurationClient.AddPublishedDataSetEvent(items2, new NodeId(1012, 4), "EventDataTest2", new NodeId(5335, 5), out PublishedDataSetBase dataset3);
+            _configurationClient.AddWriter(group, "EventWriter", dataset.Name, out DataSetWriterDefinition writer);
+            _configurationClient.AddWriter(group, "EventWriter2", dataset2.Name, out DataSetWriterDefinition writer2);
+            _configurationClient.AddWriter(group, "EventWriter3", dataset3.Name, out DataSetWriterDefinition writer3);
+            _configurationClient.EnableWriter(writer.Name);
+            _configurationClient.EnableWriter(writer2.Name);
+            _configurationClient.EnableWriter(writer3.Name);
+
         }
 
 
@@ -113,18 +139,18 @@ namespace PMI.PubSubUAAdapter.Configuration
 
 
             //Configure the Objects
-            ConfigureDefectSensors(defectSensorsFolderId, machineName);
-            ConfigureMaterialStorageBuffers(materialBuffersFolderId, machineName);
+            //ConfigureDefectSensors(defectSensorsFolderId, machineName);
+            //ConfigureMaterialStorageBuffers(materialBuffersFolderId, machineName);
             ConfigureMaterialLoadingPoints(materialLoadingPointsFolderId, machineName);
-            ConfigureMaterialOutputs(materialOutputsFolderId, machineName);
-            ConfigureMaterialRejectionTraps(rejectionTrapsFolderId, machineName);
-            ConfigureProcessControlLoops(processControlLoopsFolderId, machineName);
-            ConfigureProcessItems(processItemsFolderId, machineName);
+            //ConfigureMaterialOutputs(materialOutputsFolderId, machineName);
+            //ConfigureMaterialRejectionTraps(rejectionTrapsFolderId, machineName);
+            //ConfigureProcessControlLoops(processControlLoopsFolderId, machineName);
+            //ConfigureProcessItems(processItemsFolderId, machineName);
 
             //Prepare the Writer group
             _configurationClient.AddWriterGroup(_mqttConnection, $"{machineName}", $"{_topicPrefix}{machineName}", out DataSetWriterGroup writerGroup);
             _configurationClient.EnableWriterGroup(writerGroup.Name);
-          
+
             //Prepare the dataset for the entire MachineModule
             var typeId = GetTypeDefinition(machineModuleId);
             var datasetItems = InitializeItemList(machineModuleId, typeId);
@@ -138,6 +164,42 @@ namespace PMI.PubSubUAAdapter.Configuration
             //Prepare the writer
             _configurationClient.AddWriter(writerGroup, $"{machineName}", publishedDataSet.Name, $"{writerGroup.QueueName}", out DataSetWriterDefinition writer);
             //_configurationClient.EnableWriter(writer.Name);
+
+            //Configure Events
+            var subObjects = new List<NodeId>();
+            var configurationId = GetChildId(machineModuleId, TMCGroup.TMC.BrowseNames.Configuration);
+            //subObjects.Add(configurationId);
+            var livestatusId = GetChildId(machineModuleId, TMCGroup.TMC.BrowseNames.LiveStatus);
+            subObjects.Add(livestatusId);
+            var productionId = GetChildId(machineModuleId, TMCGroup.TMC.BrowseNames.Production);
+            //subObjects.Add(productionId);
+            var setupId = GetChildId(machineModuleId, TMCGroup.TMC.BrowseNames.SetUp);
+            //subObjects.Add(setupId);
+            var specificationId = GetChildId(machineModuleId, TMCGroup.TMC.BrowseNames.Specification);
+            //subObjects.Add(specificationId);
+
+            _configurationClient.AddWriterGroup(_mqttConnection, $"{machineName}.Events", $"{_topicPrefix}{machineName}/Events", out DataSetWriterGroup writerGroupEvents);
+            _configurationClient.EnableWriterGroup(writerGroupEvents.Name);
+
+            foreach (var subObjId in subObjects)
+            {
+                var eventsConfiguration = GetEventsConfigurations(subObjId);
+
+                foreach (var conf in eventsConfiguration)
+                {
+                    if (ObjectIncluded(conf, subObjId))
+                    {
+                        var eventFields = InitializeEventItemList();
+                        LoadEventFieldsList(eventFields, conf);
+
+                        PublishedDataSetBase eventDataSet = new PublishedDataSetBase();
+                        _configurationClient.AddPublishedDataSetEvent(eventFields, conf.EventTypeId, $"{machineName}.{conf.EventTypeName}", subObjId, out eventDataSet);
+
+                        DataSetWriterDefinition writerEvent = new DataSetWriterDefinition();
+                        _configurationClient.AddWriter(writerGroupEvents, $"{machineName}.{conf.EventTypeName}", eventDataSet.Name, $"{writerGroupEvents.QueueName}/{conf.EventTypeName}", out writerEvent);
+                    }
+                }
+            }
 
         }
 
@@ -171,10 +233,10 @@ namespace PMI.PubSubUAAdapter.Configuration
 
             var references = Browse(folderId);
 
-            foreach(var objItem in references.Where(x => x.NodeClass == NodeClass.Object))
+            foreach (var objItem in references.Where(x => x.NodeClass == NodeClass.Object))
             {
                 var typeId = GetTypeDefinition(objItem.NodeId);
-                if(typeId.Equals(ExpandedNodeId.ToNodeId(TMCPlus.ObjectTypeIds.PMI_DefectDetectionSensorType, _browseSession.NamespaceUris)))
+                if (typeId.Equals(ExpandedNodeId.ToNodeId(TMCPlus.ObjectTypeIds.PMI_DefectDetectionSensorType, _browseSession.NamespaceUris)))
                 {
                     //Do things
                 }
@@ -218,8 +280,11 @@ namespace PMI.PubSubUAAdapter.Configuration
             _configurationClient.AddWriterGroup(_mqttConnection, $"{machineName}.MaterialLoadingPoints", $"{_topicPrefix}{machineName}/MaterialLoadingPoints", out DataSetWriterGroup writerGroup);
             _configurationClient.EnableWriterGroup(writerGroup.Name);
 
-            var references = Browse(folderId);
+            _configurationClient.AddWriterGroup(_mqttConnection, $"{machineName}.MaterialLoadingPoints.Events", $"{_topicPrefix}{machineName}/MaterialLoadingPoints/Events", out DataSetWriterGroup writerGroupEvents);
+            _configurationClient.EnableWriterGroup(writerGroupEvents.Name);
 
+            var references = Browse(folderId);
+            List<PubSubEventConfiguration> eventsConfiguration = null;
             foreach (var objItem in references.Where(x => x.NodeClass == NodeClass.Object))
             {
                 var typeId = GetTypeDefinition(objItem.NodeId);
@@ -238,6 +303,28 @@ namespace PMI.PubSubUAAdapter.Configuration
                     //Prepare the writer
                     _configurationClient.AddWriter(writerGroup, $"{machineName}.MaterialLoadingPoints.{objItem.BrowseName.Name}", publishedDataSet.Name, $"{writerGroup.QueueName}/{objItem.BrowseName.Name}", out DataSetWriterDefinition writer);
                     //_configurationClient.EnableWriter(writer.Name);
+
+                    //Get the event configuration                
+                    if (eventsConfiguration == null)
+                    {
+                        eventsConfiguration = GetEventsConfigurations(objectId);
+                    }
+
+                    foreach (var conf in eventsConfiguration)
+                    {
+                        if(ObjectIncluded(conf, objectId))
+                        {
+                            var eventFields = InitializeEventItemList();
+                            LoadEventFieldsList(eventFields, conf);
+                            
+                            PublishedDataSetBase eventDataSet = new PublishedDataSetBase();
+                            _configurationClient.AddPublishedDataSetEvent(eventFields, conf.EventTypeId, $"{machineName}.{objItem.BrowseName.Name}.{conf.EventTypeName}", objectId, out eventDataSet);
+                            
+                            DataSetWriterDefinition writerEvent = new DataSetWriterDefinition();
+                            _configurationClient.AddWriter(writerGroupEvents, $"{machineName}.MaterialLoadingPoints.{objItem.BrowseName.Name}.{conf.EventTypeName}", eventDataSet.Name, $"{writerGroupEvents.QueueName}/{objItem.BrowseName.Name}/{conf.EventTypeName}", out writerEvent);
+                        }
+                    }
+
                 }
             }
         }
@@ -247,7 +334,7 @@ namespace PMI.PubSubUAAdapter.Configuration
             //Prepare the Writer group
             _configurationClient.AddWriterGroup(_mqttConnection, $"{machineName}.MaterialOutputs", $"{_topicPrefix}{machineName}/MaterialOutputs", out DataSetWriterGroup writerGroup);
             _configurationClient.EnableWriterGroup(writerGroup.Name);
-            
+
             var references = Browse(folderId);
 
             foreach (var objItem in references.Where(x => x.NodeClass == NodeClass.Object))
@@ -334,7 +421,7 @@ namespace PMI.PubSubUAAdapter.Configuration
         }
 
         private void ConfigureProcessItems(NodeId folderId, string machineName)
-        { 
+        {
             //Prepare the Writer group
             _configurationClient.AddWriterGroup(_mqttConnection, $"{machineName}.ProcessItems", $"{_topicPrefix}{machineName}/ProcessItems", out DataSetWriterGroup writerGroup);
             _configurationClient.EnableWriterGroup(writerGroup.Name);
@@ -359,7 +446,6 @@ namespace PMI.PubSubUAAdapter.Configuration
 
                     //Prepare the writer
                     _configurationClient.AddWriter(writerGroup, $"{machineName}.ProcessItems.{objItem.BrowseName.Name}", publishedDataSet.Name, $"{writerGroup.QueueName}/{objItem.BrowseName.Name}", out DataSetWriterDefinition writer);
-                    //////_configurationClient.EnableWriter(writer.Name);
                 }
             }
         }
@@ -372,21 +458,21 @@ namespace PMI.PubSubUAAdapter.Configuration
         private List<DataSetFieldConfiguration> InitializeItemList(NodeId objectId, NodeId objectTypeId)
         {
             var fieldList = new List<DataSetFieldConfiguration>();
-            var jsonConfig = LoadJsonConfiguration("Base");
+            var jsonConfig = LoadJsonDataConfiguration("Base");
 
             foreach (var field in jsonConfig.Fields)
             {
                 var fieldId = objectId;
                 if (field.BrowseName == "_type") fieldId = objectTypeId;
-                else if(field.BrowseName == "_this") fieldId = objectId;
-                else if(field.FieldName.Split('.').Length == 2)
+                else if (field.BrowseName == "_this") fieldId = objectId;
+                else if (field.FieldName.Split('.').Length == 2)
                 {
                     var subObjectId = GetChildId(objectId, field.BrowseName);
-                    if(subObjectId != null)
+                    if (subObjectId != null)
                     {
                         var subObjectNodes = Browse(subObjectId);
                         var node = subObjectNodes.FirstOrDefault(x => x.BrowseName.Name == field.BrowseName);
-                        if(node != null)
+                        if (node != null)
                         {
                             fieldId = ExpandedNodeId.ToNodeId(node.NodeId, _browseSession.NamespaceUris);
                         }
@@ -407,17 +493,17 @@ namespace PMI.PubSubUAAdapter.Configuration
             return fieldList;
         }
 
-        private void LoadItemList(List<DataSetFieldConfiguration> itemList, PubSubObjectConfiguration config, NodeId objectNodeId)
+        private void LoadItemList(List<DataSetFieldConfiguration> itemList, PubSubObjectDataConfiguration config, NodeId objectNodeId)
         {
             //Load the parent type item list
             if (config.ParentType != null) LoadItemList(itemList, config.ParentType, objectNodeId);
-            
+
             var subObjectReferences = new Dictionary<string, List<ReferenceDescription>>();
             var subNodes = Browse(objectNodeId);
 
-            if(config != null)
+            if (config != null)
             {
-                foreach(var field in config.Fields)
+                foreach (var field in config.Fields)
                 {
                     if (field.Enabled)
                     {
@@ -477,7 +563,7 @@ namespace PMI.PubSubUAAdapter.Configuration
         {
             try
             {
-                var config = LoadJsonConfiguration(variableTypeName);
+                var config = LoadJsonDataConfiguration(variableTypeName);
 
                 var subObjectReferences = new Dictionary<string, List<ReferenceDescription>>();
                 var subNodes = Browse(variableNodeId);
@@ -519,11 +605,11 @@ namespace PMI.PubSubUAAdapter.Configuration
                                 itemList.Add(new DataSetFieldConfiguration(fieldName, fieldId, field));
                             }
                         }
-                        
+
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine($"ConfigurationBuilder LoadComplexVariableItemList...Error loading configuration. Type: {variableTypeName}; Variable name: {variableName}; Exception: {ex}");
             }
@@ -532,35 +618,166 @@ namespace PMI.PubSubUAAdapter.Configuration
 
         private void LoadItemList(List<DataSetFieldConfiguration> itemList, string objectTypeName, NodeId objectNodeId)
         {
-            var jsonConfig = LoadJsonConfiguration(objectTypeName);
+            var jsonConfig = LoadJsonDataConfiguration(objectTypeName);
             LoadItemList(itemList, jsonConfig, objectNodeId);
         }
 
-        private PubSubObjectConfiguration LoadJsonConfiguration(string typeName)
+        private PubSubObjectDataConfiguration LoadJsonDataConfiguration(string typeName)
         {
             var jsonFilename = $@"AppData/Configuration.{typeName}.json";
             if (File.Exists(jsonFilename))
             {
-                return JsonConvert.DeserializeObject<PubSubObjectConfiguration>(File.ReadAllText(jsonFilename));
+                return JsonConvert.DeserializeObject<PubSubObjectDataConfiguration>(File.ReadAllText(jsonFilename));
             }
             else throw new FileNotFoundException($"JSON file {jsonFilename} not found.");
         }
         #endregion
 
-        #region Events Items
+        #region Events
         private List<DataSetEventFieldConfiguration> InitializeEventItemList()
         {
             var fields = new List<DataSetEventFieldConfiguration>()
             {
-                new DataSetEventFieldConfiguration(BrowseNames.EventId),
-                new DataSetEventFieldConfiguration(BrowseNames.EventType),
-                new DataSetEventFieldConfiguration(BrowseNames.Message),
-                new DataSetEventFieldConfiguration(BrowseNames.SourceName),
-                new DataSetEventFieldConfiguration(BrowseNames.SourceNode),
-                new DataSetEventFieldConfiguration(BrowseNames.Severity),
-                new DataSetEventFieldConfiguration(BrowseNames.Time)
+                //new DataSetEventFieldConfiguration(BrowseNames.EventId),
+                //new DataSetEventFieldConfiguration(BrowseNames.EventType),
+                //new DataSetEventFieldConfiguration(BrowseNames.Message),
+                //new DataSetEventFieldConfiguration(BrowseNames.SourceName),
+                //new DataSetEventFieldConfiguration(BrowseNames.SourceNode),
+                //new DataSetEventFieldConfiguration(BrowseNames.Severity),
+                //new DataSetEventFieldConfiguration(BrowseNames.Time)
             };
             return fields;
+        }
+
+        private void LoadEventFieldsList(List<DataSetEventFieldConfiguration> fieldsList, PubSubEventConfiguration configuration)
+        {
+            foreach (var field in configuration.Fields)
+            {
+                if (field.Enabled)
+                {
+                    fieldsList.Add(new DataSetEventFieldConfiguration
+                    {
+                        Name = field.AliasName,
+                        BrowsePath = field.BrowsePath
+                    });
+                }
+            }
+        }
+
+        private List<PubSubEventConfiguration> GetEventsConfigurations(NodeId objectNodeId)
+        {
+            var ret = new List<PubSubEventConfiguration>();
+
+            try
+            {
+                var eventsList = CommonFunctions.GetGeneratedEvent(_browseSession, objectNodeId);
+                foreach (var eventRef in eventsList)
+                {
+                    var conf = GetEventConfiguration(eventRef);
+                    ret.Add(conf);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ConfigurationBulder GetEventsConfigurations...Exception thrown: {ex}");
+            }
+
+            return ret;
+        }
+
+        private PubSubEventConfiguration GetEventConfiguration(ReferenceDescription eventTypeReference)
+        {
+            //Try to get the configuration from file
+            var jsonConfig = LoadJsonEventConfiguration(eventTypeReference.BrowseName.Name);
+            if (jsonConfig != null) return jsonConfig;
+
+            var eventTypeId = ExpandedNodeId.ToNodeId(eventTypeReference.NodeId, _browseSession.NamespaceUris);
+            var ret = new PubSubEventConfiguration();
+
+            ret.EventTypeId = eventTypeId;
+            ret.EventTypeName = eventTypeReference.BrowseName.Name;
+            ret.Fields = new List<PubSubEventFieldConfiguration>();
+            var children = Browse(eventTypeId, (uint)NodeClass.Variable);
+            var retFieldList = ret.Fields as List<PubSubEventFieldConfiguration>;
+            foreach (var child in children)
+            {
+                var fieldConf = new PubSubEventFieldConfiguration();
+                fieldConf.AliasName = child.BrowseName.Name;
+                fieldConf.BrowsePath = new QualifiedNameCollection { child.BrowseName };
+                retFieldList.Add(fieldConf);
+                GetEventsSubFields(retFieldList, ExpandedNodeId.ToNodeId(child.NodeId, _browseSession.NamespaceUris), fieldConf.BrowsePath);
+            }
+            GetEventSuperTypeFields(retFieldList, eventTypeId);
+
+            try
+            {
+                File.WriteAllText($@"AppData/Configuration.{eventTypeReference.BrowseName.Name}.json", JsonConvert.SerializeObject(ret));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ConfigurationBuilder GetEventConfiguration...Unable to write the configuration file. Excpetion: {ex}");
+            }
+
+            return ret;
+
+        }
+
+        private void GetEventsSubFields(List<PubSubEventFieldConfiguration> fieldsList, NodeId parentFieldId, QualifiedNameCollection browsePath)
+        {
+            var childrenVar = Browse(parentFieldId, (uint)NodeClass.Variable);
+            foreach (var child in childrenVar)
+            {
+                var fieldConf = new PubSubEventFieldConfiguration();
+                fieldConf.BrowsePath = new QualifiedNameCollection(browsePath);
+                fieldConf.BrowsePath.Add(child.BrowseName);
+                fieldsList.Add(fieldConf);
+                GetEventsSubFields(fieldsList, ExpandedNodeId.ToNodeId(child.NodeId, _browseSession.NamespaceUris), fieldConf.BrowsePath);
+            }
+        }
+
+        private void GetEventSuperTypeFields(List<PubSubEventFieldConfiguration> fieldsList, NodeId subTypeId)
+        {
+            var superTypeId = CommonFunctions.GetSuperTypeId(_browseSession, subTypeId);
+            if (superTypeId != null)
+            {
+                var children = Browse(superTypeId, (uint)NodeClass.Variable);
+                foreach (var child in children)
+                {
+                    var fieldConf = new PubSubEventFieldConfiguration();
+                    fieldConf.AliasName = child.BrowseName.Name;
+                    fieldConf.BrowsePath = new QualifiedNameCollection { child.BrowseName };
+                    fieldsList.Add(fieldConf);
+                    GetEventsSubFields(fieldsList, ExpandedNodeId.ToNodeId(child.NodeId, _browseSession.NamespaceUris), fieldConf.BrowsePath);
+                }
+
+                if (!superTypeId.Equals(ObjectTypeIds.BaseEventType)) GetEventSuperTypeFields(fieldsList, superTypeId);
+            }
+        }
+
+        private PubSubEventConfiguration LoadJsonEventConfiguration(string typeName)
+        {
+            var jsonFilename = $@"AppData/Configuration.{typeName}.json";
+            if (File.Exists(jsonFilename))
+            {
+                return JsonConvert.DeserializeObject<PubSubEventConfiguration>(File.ReadAllText(jsonFilename));
+            }
+            else return null;
+            //else throw new FileNotFoundException($"JSON file {jsonFilename} not found.");
+        }
+
+        private bool ObjectIncluded(PubSubEventConfiguration configuration, NodeId objectId)
+        {
+            if(configuration.ExcludedNodes != null)
+            {
+                if (!configuration.ExcludedNodes.Any(x => x.Equals(objectId))) return true;
+                return false;
+            }
+            else if(configuration.IncludedNodes != null)
+            {
+                if (configuration.IncludedNodes.Any(x => x.Equals(objectId))) return true;
+                return false;
+            }
+            return true;
         }
         #endregion
 
@@ -579,6 +796,16 @@ namespace PMI.PubSubUAAdapter.Configuration
             return CommonFunctions.Browse(_browseSession, startNodeId);
         }
 
+        private List<ReferenceDescription> Browse(NodeId startNodeId, uint nodeClassMask)
+        {
+            return CommonFunctions.Browse(_browseSession, startNodeId, nodeClassMask);
+        }
+
+        private List<ReferenceDescription> Browse(ExpandedNodeId startNodeId, uint nodeClassMask)
+        {
+            return CommonFunctions.Browse(_browseSession, startNodeId, nodeClassMask);
+        }
+
         private NodeId GetTypeDefinition(NodeId nodeId)
         {
             return CommonFunctions.GetTypeDefinition(_browseSession, nodeId);
@@ -591,88 +818,7 @@ namespace PMI.PubSubUAAdapter.Configuration
         #endregion
     }
 
-    [DataContract]
-    class PubSubObjectConfiguration
-    {
-        [DataMember]
-        public string Id { get; set; }
 
-        [DataMember]
-        public int PublishInterval { get; set; }
 
-        [DataMember]
-        public string ParentType { get; set; }
-        
-        [DataMember]
-        public IEnumerable<FieldFileDefinition> Fields { get; set; }
-    }
 
-    [DataContract]
-    public class FieldFileDefinition
-    {
-        [DataMember]
-        public string FieldName { get; set; }
-
-        [DataMember]
-        public uint Attribute
-        {
-            get
-            {
-                if (_attribute != null) return (uint)_attribute;
-                return Attributes.Value;
-            }
-            set
-            { _attribute = value; }
-        }
-        private uint? _attribute;
-
-        [DataMember]
-        public string BrowseName 
-        {
-            get 
-            {
-                if (_browseName != null) return _browseName;
-                return FieldName;
-            }
-            set 
-            { 
-                _browseName = value; 
-            } 
-        }
-        private string _browseName;
-
-        [DataMember]
-        public string ComplexVariableType { get; set; }
-
-        [DataMember]
-        public bool Enabled
-        {
-            get
-            {
-                if (_enabled != null) return (bool)_enabled;
-                return true;
-            }
-            set
-            {
-                _enabled = value;
-            }
-        }
-        private bool? _enabled;
-
-        [DataMember]
-        public int SamplingInterval
-        {
-            get
-            {
-                return _samplingInterval;
-            }
-            set
-            {
-                _samplingInterval = value;
-            }
-        }
-        private int _samplingInterval = -1;
-    }
-
-    
 }

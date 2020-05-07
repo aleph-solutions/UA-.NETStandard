@@ -179,7 +179,7 @@ namespace PMI.PubSubUAAdapter.Configuration
                 ContentFilter whereClause = new ContentFilter();
                 ContentFilterElement typeClause = whereClause.Push(FilterOperator.OfType, eventTypeId);
 
-                publishedDataSet = m_clientAdaptor.AddPublishedDataSetEvents(datasetName, eventNotifier, selectedFields, whereClause);
+                publishedDataSet = m_clientAdaptor.AddPublishedDataSetEvents(datasetName, eventNotifier, eventTypeId, selectedFields, whereClause);
             }
             catch(Exception ex)
             {

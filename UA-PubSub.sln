@@ -60,9 +60,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AMQPTransportDataSource", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PMI.PubSubUAAdapter", "PMI.PubSubUAAdapter\PMI.PubSubUAAdapter.csproj", "{7A8BB6B2-0E44-426C-8C57-BDC468EB2CC3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Opc.Ua.CommonFunctions", "Opc.Ua.CommonFunctions\Opc.Ua.CommonFunctions.csproj", "{24E0C10E-E77B-4B70-9317-A53D35F86F87}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Opc.Ua.CommonFunctions", "Opc.Ua.CommonFunctions\Opc.Ua.CommonFunctions.csproj", "{24E0C10E-E77B-4B70-9317-A53D35F86F87}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientAdaptor.NonInteractive", "ClientAdaptor.NonInteractive\ClientAdaptor.NonInteractive.csproj", "{E27D5E9B-E2F7-4F8D-936D-1118C1194AEF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Opc.Ua.Extensions", "Opc.Ua.Extensions\Opc.Ua.Extensions.csproj", "{3B4B6517-201D-4A18-B176-01BB5F6AF6CE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -351,6 +353,18 @@ Global
 		{E27D5E9B-E2F7-4F8D-936D-1118C1194AEF}.Release|x64.Build.0 = Release|Any CPU
 		{E27D5E9B-E2F7-4F8D-936D-1118C1194AEF}.Release|x86.ActiveCfg = Release|Any CPU
 		{E27D5E9B-E2F7-4F8D-936D-1118C1194AEF}.Release|x86.Build.0 = Release|Any CPU
+		{3B4B6517-201D-4A18-B176-01BB5F6AF6CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B4B6517-201D-4A18-B176-01BB5F6AF6CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B4B6517-201D-4A18-B176-01BB5F6AF6CE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3B4B6517-201D-4A18-B176-01BB5F6AF6CE}.Debug|x64.Build.0 = Debug|Any CPU
+		{3B4B6517-201D-4A18-B176-01BB5F6AF6CE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3B4B6517-201D-4A18-B176-01BB5F6AF6CE}.Debug|x86.Build.0 = Debug|Any CPU
+		{3B4B6517-201D-4A18-B176-01BB5F6AF6CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B4B6517-201D-4A18-B176-01BB5F6AF6CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B4B6517-201D-4A18-B176-01BB5F6AF6CE}.Release|x64.ActiveCfg = Release|Any CPU
+		{3B4B6517-201D-4A18-B176-01BB5F6AF6CE}.Release|x64.Build.0 = Release|Any CPU
+		{3B4B6517-201D-4A18-B176-01BB5F6AF6CE}.Release|x86.ActiveCfg = Release|Any CPU
+		{3B4B6517-201D-4A18-B176-01BB5F6AF6CE}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

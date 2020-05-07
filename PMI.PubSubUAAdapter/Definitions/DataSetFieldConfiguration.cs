@@ -14,7 +14,7 @@ namespace PMI.PubSubUAAdapter.Configuration
 
         }
 
-        public DataSetFieldConfiguration(string name, NodeId fieldId, FieldFileDefinition jsonDefinition)
+        public DataSetFieldConfiguration(string name, NodeId fieldId, PubSubDatFieldConfiguration jsonDefinition)
         {
             Name = name;
             SourceNodeId = fieldId;

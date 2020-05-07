@@ -2596,7 +2596,7 @@ namespace ClientAdaptor
             return _PublishedDataSetBase;
         }
 
-        public PublishedDataSetBase AddPublishedDataSetEvents(string publishedName, NodeId eventNotifier, ObservableCollection<PublishedEventSet> selectedFields, ContentFilter filter)
+        public PublishedDataSetBase AddPublishedDataSetEvents(string publishedName, NodeId eventNotifier, NodeId eventType, ObservableCollection<PublishedEventSet> selectedFields, ContentFilter filter)
         {
             PublishedDataSetBase _PublishedDataSetBase = null;
             NodeId publisherId = null;
@@ -2612,14 +2612,15 @@ namespace ClientAdaptor
                     fields.Add(new SimpleAttributeOperand()
                     {
                         AttributeId = Attributes.Value,
-                        BrowsePath =  field.BrowsePath
+                        BrowsePath = field.BrowsePath,
+                        //TypeDefinitionId = eventType
                     });
                 }
 
                 IList<object> lstResponse = Session.Call(Constants.PublishedDataSetsNodeId,
                     Constants.AddPublishedEventsNodeId, new object[] { publishedName, eventNotifier, fieldNameAliases.ToArray(), null, fields.ToArray(), filter });
             
-                publisherId = lstResponse[0] as NodeId;
+                publisherId = lstResponse[1] as NodeId;
                 return LoadPublishedEvents(publishedName, publisherId);
             }
             catch (Exception ex)
