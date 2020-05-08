@@ -22,6 +22,12 @@ namespace PMI.PubSubUAAdapter.Configuration
 
         [DataMember]
         public IEnumerable<PubSubDatFieldConfiguration> Fields { get; set; }
+
+        [DataMember]
+        public IEnumerable<NodeId> IncludedNodes { get; set; }
+
+        [DataMember]
+        public IEnumerable<NodeId> ExcludedNodes { get; set; }
     }
 
     [DataContract]

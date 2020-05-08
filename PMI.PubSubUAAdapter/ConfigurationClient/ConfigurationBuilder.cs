@@ -154,15 +154,16 @@ namespace PMI.PubSubUAAdapter.Configuration
             //Prepare the dataset for the entire MachineModule
             var typeId = GetTypeDefinition(machineModuleId);
             var datasetItems = InitializeItemList(machineModuleId, typeId);
-            LoadItemList(datasetItems, "MachineModule", machineModuleId);
+            var objectIncluded = LoadItemList(datasetItems, "MachineModule", machineModuleId);
+            if (objectIncluded)
+            {
+                //Add the dataset and the extensionFields
+                _configurationClient.AddPublishedDataSet(datasetItems, $"{machineName}", out PublishedDataSetBase publishedDataSet);
+                _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
 
-
-            //Add the dataset and the extensionFields
-            _configurationClient.AddPublishedDataSet(datasetItems, $"{machineName}", out PublishedDataSetBase publishedDataSet);
-            _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
-
-            //Prepare the writer
-            _configurationClient.AddWriter(writerGroup, $"{machineName}", publishedDataSet.Name, $"{writerGroup.QueueName}", out DataSetWriterDefinition writer);
+                //Prepare the writer
+                _configurationClient.AddWriter(writerGroup, $"{machineName}", publishedDataSet.Name, $"{writerGroup.QueueName}", out DataSetWriterDefinition writer);
+            }
 
             //Configure Events
             var subObjects = new List<NodeId>();
@@ -259,15 +260,17 @@ namespace PMI.PubSubUAAdapter.Configuration
 
                     //Prepare the Dataset
                     var datasetItems = InitializeItemList(objectId, typeId);
-                    LoadItemList(datasetItems, "MaterialBuffer", objectId);
+                    var objectIncluded = LoadItemList(datasetItems, "MaterialBuffer", objectId);
 
-                    //Add the dataset
-                    _configurationClient.AddPublishedDataSet(datasetItems, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
-                    _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
+                    if (objectIncluded)
+                    {                    
+                        //Add the dataset
+                        _configurationClient.AddPublishedDataSet(datasetItems, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
+                        _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
 
-                    //Prepare the writer
-                    _configurationClient.AddWriter(writerGroup, $"{machineName}.MaterialBuffers.{objItem.BrowseName.Name}", publishedDataSet.Name, $"{writerGroup.QueueName}/{objItem.BrowseName.Name}", out DataSetWriterDefinition writer);
-                    //_configurationClient.EnableWriter(writer.Name);
+                        //Prepare the writer
+                        _configurationClient.AddWriter(writerGroup, $"{machineName}.MaterialBuffers.{objItem.BrowseName.Name}", publishedDataSet.Name, $"{writerGroup.QueueName}/{objItem.BrowseName.Name}", out DataSetWriterDefinition writer);
+                    }
 
                     //Configure object events
                     ConfigureObjectEvents(machineName, objItem.BrowseName.Name, objectId, writerGroup);
@@ -284,11 +287,7 @@ namespace PMI.PubSubUAAdapter.Configuration
             _configurationClient.AddWriterGroup(_mqttConnection, $"{machineName}.MaterialLoadingPoints", $"{_topicPrefix}{machineName}/MaterialLoadingPoints", out DataSetWriterGroup writerGroup);
             _configurationClient.EnableWriterGroup(writerGroup.Name);
 
-            //_configurationClient.AddWriterGroup(_mqttConnection, $"{machineName}.MaterialLoadingPoints.Events", $"{_topicPrefix}{machineName}/MaterialLoadingPoints/Events", out DataSetWriterGroup writerGroupEvents);
-            //_configurationClient.EnableWriterGroup(writerGroupEvents.Name);
-
             var references = Browse(folderId);
-            //List<PubSubEventConfiguration> eventsConfiguration = null;
             foreach (var objItem in references.Where(x => x.NodeClass == NodeClass.Object))
             {
                 var typeId = GetTypeDefinition(objItem.NodeId);
@@ -298,42 +297,20 @@ namespace PMI.PubSubUAAdapter.Configuration
 
                     //Prepare the Dataset
                     var datasetItems = InitializeItemList(objectId, typeId);
-                    LoadItemList(datasetItems, "MaterialLoadingPoint", objectId);
+                    var objectIncluded = LoadItemList(datasetItems, "MaterialLoadingPoint", objectId);
 
-                    //Add the dataset
-                    _configurationClient.AddPublishedDataSet(datasetItems, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
-                    _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
+                    if (objectIncluded)
+                    {
+                        //Add the dataset
+                        _configurationClient.AddPublishedDataSet(datasetItems, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
+                        _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
 
-                    //Prepare the writer
-                    _configurationClient.AddWriter(writerGroup, $"{machineName}.MaterialLoadingPoints.{objItem.BrowseName.Name}", publishedDataSet.Name, $"{writerGroup.QueueName}/{objItem.BrowseName.Name}", out DataSetWriterDefinition writer);
-                    //_configurationClient.EnableWriter(writer.Name);
-
+                        //Prepare the writer
+                        _configurationClient.AddWriter(writerGroup, $"{machineName}.MaterialLoadingPoints.{objItem.BrowseName.Name}", publishedDataSet.Name, $"{writerGroup.QueueName}/{objItem.BrowseName.Name}", out DataSetWriterDefinition writer);
+                    }
 
                     //Configure object events
                     ConfigureObjectEvents(machineName, objItem.BrowseName.Name, objectId, writerGroup);
-
-
-                    ////Get the event configuration                
-                    //if (eventsConfiguration == null)
-                    //{
-                    //    eventsConfiguration = GetEventsConfigurations(objectId);
-                    //}
-
-                    //foreach (var conf in eventsConfiguration)
-                    //{
-                    //    if(ObjectIncluded(conf, objectId))
-                    //    {
-                    //        var eventFields = InitializeEventItemList();
-                    //        LoadEventFieldsList(eventFields, conf);
-                            
-                    //        PublishedDataSetBase eventDataSet = new PublishedDataSetBase();
-                    //        _configurationClient.AddPublishedDataSetEvent(eventFields, conf.EventTypeId, $"{machineName}.{objItem.BrowseName.Name}.{conf.EventTypeName}", objectId, out eventDataSet);
-                            
-                    //        DataSetWriterDefinition writerEvent = new DataSetWriterDefinition();
-                    //        _configurationClient.AddWriter(writerGroupEvents, $"{machineName}.MaterialLoadingPoints.{objItem.BrowseName.Name}.{conf.EventTypeName}", eventDataSet.Name, $"{writerGroupEvents.QueueName}/{objItem.BrowseName.Name}/{conf.EventTypeName}", out writerEvent);
-                    //    }
-                    //}
-
                 }
             }
         }
@@ -355,15 +332,20 @@ namespace PMI.PubSubUAAdapter.Configuration
 
                     //Prepare the Dataset
                     var datasetItems = InitializeItemList(objectId, typeId);
-                    LoadItemList(datasetItems, "MaterialOutput", objectId);
+                    var objectIncluded = LoadItemList(datasetItems, "MaterialOutput", objectId);
 
-                    //Add the dataset
-                    _configurationClient.AddPublishedDataSet(datasetItems, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
-                    _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
+                    if (objectIncluded)
+                    {
+                        //Add the dataset
+                        _configurationClient.AddPublishedDataSet(datasetItems, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
+                        _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
 
-                    //Prepare the writer
-                    _configurationClient.AddWriter(writerGroup, $"{machineName}.MaterialOutputs.{objItem.BrowseName.Name}", publishedDataSet.Name, $"{writerGroup.QueueName}/{objItem.BrowseName.Name}", out DataSetWriterDefinition writer);
-                    //_configurationClient.EnableWriter(writer.Name);
+                        //Prepare the writer
+                        _configurationClient.AddWriter(writerGroup, $"{machineName}.MaterialOutputs.{objItem.BrowseName.Name}", publishedDataSet.Name, $"{writerGroup.QueueName}/{objItem.BrowseName.Name}", out DataSetWriterDefinition writer);
+                    }
+
+                    //Configure object events
+                    ConfigureObjectEvents(machineName, objItem.BrowseName.Name, objectId, writerGroup);
                 }
             }
         }
@@ -385,18 +367,25 @@ namespace PMI.PubSubUAAdapter.Configuration
 
                     //Prepare the Dataset
                     var datasetItems = InitializeItemList(objectId, typeId);
-                    LoadItemList(datasetItems, "MaterialRejectionTrap", objectId);
+                    var objectIncluded = LoadItemList(datasetItems, "MaterialRejectionTrap", objectId);
 
-                    //Add the dataset
-                    _configurationClient.AddPublishedDataSet(datasetItems, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
-                    _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
+                    if (objectIncluded)
+                    {
+                        //Add the dataset
+                        _configurationClient.AddPublishedDataSet(datasetItems, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
+                        _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
 
-                    //Prepare the writer
-                    _configurationClient.AddWriter(writerGroup, $"{machineName}.MaterialRejectionTraps.{objItem.BrowseName.Name}", publishedDataSet.Name, $"{writerGroup.QueueName}/{objItem.BrowseName.Name}", out DataSetWriterDefinition writer);
-                    //_configurationClient.EnableWriter(writer.Name);
+                        //Prepare the writer
+                        _configurationClient.AddWriter(writerGroup, $"{machineName}.MaterialRejectionTraps.{objItem.BrowseName.Name}", publishedDataSet.Name, $"{writerGroup.QueueName}/{objItem.BrowseName.Name}", out DataSetWriterDefinition writer);
+                    }
+
+                    //Configure object events
+                    ConfigureObjectEvents(machineName, objItem.BrowseName.Name, objectId, writerGroup);
                 }
+
             }
         }
+
 
         private void ConfigureProcessControlLoops(NodeId folderId, string machineName)
         {
@@ -416,15 +405,17 @@ namespace PMI.PubSubUAAdapter.Configuration
 
                     //Prepare the Dataset
                     var datasetItems = InitializeItemList(objectId, typeId);
-                    LoadItemList(datasetItems, "ProcessControlLoop", objectId);
+                    var objectIncluded = LoadItemList(datasetItems, "ProcessControlLoop", objectId);
 
-                    //Add the dataset
-                    _configurationClient.AddPublishedDataSet(datasetItems, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
-                    _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
+                    if (objectIncluded)
+                    {
+                        //Add the dataset
+                        _configurationClient.AddPublishedDataSet(datasetItems, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
+                        _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
 
-                    //Prepare the writer
-                    _configurationClient.AddWriter(writerGroup, $"{machineName}.ProcessControlLoops.{objItem.BrowseName.Name}", publishedDataSet.Name, $"{writerGroup.QueueName}/{objItem.BrowseName.Name}", out DataSetWriterDefinition writer);
-                    //_configurationClient.EnableWriter(writer.Name);
+                        //Prepare the writer
+                        _configurationClient.AddWriter(writerGroup, $"{machineName}.ProcessControlLoops.{objItem.BrowseName.Name}", publishedDataSet.Name, $"{writerGroup.QueueName}/{objItem.BrowseName.Name}", out DataSetWriterDefinition writer);
+                    }
 
                     //Configure object events
                     ConfigureObjectEvents(machineName, objItem.BrowseName.Name, objectId, writerGroup);
@@ -450,14 +441,17 @@ namespace PMI.PubSubUAAdapter.Configuration
 
                     //Prepare the Dataset
                     var datasetItems = InitializeItemList(objectId, typeId);
-                    LoadItemList(datasetItems, "ProcessItem", objectId);
+                    var objectIncluded = LoadItemList(datasetItems, "ProcessItem", objectId);
 
-                    //Add the dataset
-                    _configurationClient.AddPublishedDataSet(datasetItems, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
-                    _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
+                    if (objectIncluded)
+                    {
+                        //Add the dataset
+                        _configurationClient.AddPublishedDataSet(datasetItems, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
+                        _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
 
-                    //Prepare the writer
-                    _configurationClient.AddWriter(writerGroup, $"{machineName}.ProcessItems.{objItem.BrowseName.Name}", publishedDataSet.Name, $"{writerGroup.QueueName}/{objItem.BrowseName.Name}", out DataSetWriterDefinition writer);
+                        //Prepare the writer
+                        _configurationClient.AddWriter(writerGroup, $"{machineName}.ProcessItems.{objItem.BrowseName.Name}", publishedDataSet.Name, $"{writerGroup.QueueName}/{objItem.BrowseName.Name}", out DataSetWriterDefinition writer);
+                    }
 
                     //Configure object events
                     ConfigureObjectEvents(machineName, objItem.BrowseName.Name, objectId, writerGroup);
@@ -508,17 +502,29 @@ namespace PMI.PubSubUAAdapter.Configuration
             return fieldList;
         }
 
-        private void LoadItemList(List<DataSetFieldConfiguration> itemList, PubSubObjectDataConfiguration config, NodeId objectNodeId)
+        private bool LoadItemList(List<DataSetFieldConfiguration> itemList, PubSubObjectDataConfiguration configuration, NodeId objectNodeId)
         {
+            var objectIncluded = true;
+
             //Load the parent type item list
-            if (config.ParentType != null) LoadItemList(itemList, config.ParentType, objectNodeId);
-
-            var subObjectReferences = new Dictionary<string, List<ReferenceDescription>>();
-            var subNodes = Browse(objectNodeId);
-
-            if (config != null)
+            //if (configuration.ParentType != null) LoadItemList(itemList, configuration.ParentType, objectNodeId);
+            if (configuration != null)
             {
-                foreach (var field in config.Fields)
+                if (configuration.ExcludedNodes != null)
+                {
+                    if (!configuration.ExcludedNodes.Any(x => x.Equals(objectNodeId))) objectIncluded = true;
+                    else return false;
+                }
+                else if (configuration.IncludedNodes != null)
+                {
+                    if (configuration.IncludedNodes.Any(x => x.Equals(objectNodeId))) objectIncluded = true;
+                    else return false;
+                }
+
+                var subObjectReferences = new Dictionary<string, List<ReferenceDescription>>();
+                var subNodes = Browse(objectNodeId);
+
+                foreach (var field in configuration.Fields)
                 {
                     if (field.Enabled)
                     {
@@ -572,6 +578,9 @@ namespace PMI.PubSubUAAdapter.Configuration
                     }
                 }
             }
+            else return false;
+
+            return objectIncluded;
         }
 
         private void LoadComplexVariableItemList(List<DataSetFieldConfiguration> itemList, string variableTypeName, NodeId variableNodeId, string variableName)
@@ -631,10 +640,10 @@ namespace PMI.PubSubUAAdapter.Configuration
 
         }
 
-        private void LoadItemList(List<DataSetFieldConfiguration> itemList, string objectTypeName, NodeId objectNodeId)
+        private bool LoadItemList(List<DataSetFieldConfiguration> itemList, string objectTypeName, NodeId objectNodeId)
         {
             var jsonConfig = LoadJsonDataConfiguration(objectTypeName);
-            LoadItemList(itemList, jsonConfig, objectNodeId);
+            return LoadItemList(itemList, jsonConfig, objectNodeId);
         }
 
         private PubSubObjectDataConfiguration LoadJsonDataConfiguration(string typeName)
