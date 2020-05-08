@@ -367,7 +367,6 @@ namespace PublisherDataSource
                     }
                 }
                 #endregion
-
             }
             catch(Exception ex)
             {

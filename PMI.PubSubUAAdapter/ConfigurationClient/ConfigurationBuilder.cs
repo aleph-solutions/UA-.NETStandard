@@ -139,13 +139,13 @@ namespace PMI.PubSubUAAdapter.Configuration
 
 
             //Configure the Objects
-            //ConfigureDefectSensors(defectSensorsFolderId, machineName);
-            //ConfigureMaterialStorageBuffers(materialBuffersFolderId, machineName);
+            ConfigureDefectSensors(defectSensorsFolderId, machineName);
+            ConfigureMaterialStorageBuffers(materialBuffersFolderId, machineName);
             ConfigureMaterialLoadingPoints(materialLoadingPointsFolderId, machineName);
-            //ConfigureMaterialOutputs(materialOutputsFolderId, machineName);
-            //ConfigureMaterialRejectionTraps(rejectionTrapsFolderId, machineName);
-            //ConfigureProcessControlLoops(processControlLoopsFolderId, machineName);
-            //ConfigureProcessItems(processItemsFolderId, machineName);
+            ConfigureMaterialOutputs(materialOutputsFolderId, machineName);
+            ConfigureMaterialRejectionTraps(rejectionTrapsFolderId, machineName);
+            ConfigureProcessControlLoops(processControlLoopsFolderId, machineName);
+            ConfigureProcessItems(processItemsFolderId, machineName);
 
             //Prepare the Writer group
             _configurationClient.AddWriterGroup(_mqttConnection, $"{machineName}", $"{_topicPrefix}{machineName}", out DataSetWriterGroup writerGroup);
@@ -163,20 +163,19 @@ namespace PMI.PubSubUAAdapter.Configuration
 
             //Prepare the writer
             _configurationClient.AddWriter(writerGroup, $"{machineName}", publishedDataSet.Name, $"{writerGroup.QueueName}", out DataSetWriterDefinition writer);
-            //_configurationClient.EnableWriter(writer.Name);
 
             //Configure Events
             var subObjects = new List<NodeId>();
             var configurationId = GetChildId(machineModuleId, TMCGroup.TMC.BrowseNames.Configuration);
-            //subObjects.Add(configurationId);
+            subObjects.Add(configurationId);
             var livestatusId = GetChildId(machineModuleId, TMCGroup.TMC.BrowseNames.LiveStatus);
             subObjects.Add(livestatusId);
             var productionId = GetChildId(machineModuleId, TMCGroup.TMC.BrowseNames.Production);
-            //subObjects.Add(productionId);
+            subObjects.Add(productionId);
             var setupId = GetChildId(machineModuleId, TMCGroup.TMC.BrowseNames.SetUp);
-            //subObjects.Add(setupId);
+            subObjects.Add(setupId);
             var specificationId = GetChildId(machineModuleId, TMCGroup.TMC.BrowseNames.Specification);
-            //subObjects.Add(specificationId);
+            subObjects.Add(specificationId);
 
             _configurationClient.AddWriterGroup(_mqttConnection, $"{machineName}.Events", $"{_topicPrefix}{machineName}/Events", out DataSetWriterGroup writerGroupEvents);
             _configurationClient.EnableWriterGroup(writerGroupEvents.Name);
@@ -196,7 +195,7 @@ namespace PMI.PubSubUAAdapter.Configuration
                         _configurationClient.AddPublishedDataSetEvent(eventFields, conf.EventTypeId, $"{machineName}.{conf.EventTypeName}", subObjId, out eventDataSet);
 
                         DataSetWriterDefinition writerEvent = new DataSetWriterDefinition();
-                        _configurationClient.AddWriter(writerGroupEvents, $"{machineName}.{conf.EventTypeName}", eventDataSet.Name, $"{writerGroupEvents.QueueName}/{conf.EventTypeName}", out writerEvent);
+                        _configurationClient.AddWriter(writerGroup, $"{machineName}.{conf.EventTypeName}", eventDataSet.Name, $"{writerGroup.QueueName}/{conf.EventTypeName}", out writerEvent);
                     }
                 }
             }
@@ -269,8 +268,13 @@ namespace PMI.PubSubUAAdapter.Configuration
                     //Prepare the writer
                     _configurationClient.AddWriter(writerGroup, $"{machineName}.MaterialBuffers.{objItem.BrowseName.Name}", publishedDataSet.Name, $"{writerGroup.QueueName}/{objItem.BrowseName.Name}", out DataSetWriterDefinition writer);
                     //_configurationClient.EnableWriter(writer.Name);
+
+                    //Configure object events
+                    ConfigureObjectEvents(machineName, objItem.BrowseName.Name, objectId, writerGroup);
                 }
             }
+
+
         }
 
         private void ConfigureMaterialLoadingPoints(NodeId folderId, string machineName)
@@ -280,11 +284,11 @@ namespace PMI.PubSubUAAdapter.Configuration
             _configurationClient.AddWriterGroup(_mqttConnection, $"{machineName}.MaterialLoadingPoints", $"{_topicPrefix}{machineName}/MaterialLoadingPoints", out DataSetWriterGroup writerGroup);
             _configurationClient.EnableWriterGroup(writerGroup.Name);
 
-            _configurationClient.AddWriterGroup(_mqttConnection, $"{machineName}.MaterialLoadingPoints.Events", $"{_topicPrefix}{machineName}/MaterialLoadingPoints/Events", out DataSetWriterGroup writerGroupEvents);
-            _configurationClient.EnableWriterGroup(writerGroupEvents.Name);
+            //_configurationClient.AddWriterGroup(_mqttConnection, $"{machineName}.MaterialLoadingPoints.Events", $"{_topicPrefix}{machineName}/MaterialLoadingPoints/Events", out DataSetWriterGroup writerGroupEvents);
+            //_configurationClient.EnableWriterGroup(writerGroupEvents.Name);
 
             var references = Browse(folderId);
-            List<PubSubEventConfiguration> eventsConfiguration = null;
+            //List<PubSubEventConfiguration> eventsConfiguration = null;
             foreach (var objItem in references.Where(x => x.NodeClass == NodeClass.Object))
             {
                 var typeId = GetTypeDefinition(objItem.NodeId);
@@ -304,26 +308,31 @@ namespace PMI.PubSubUAAdapter.Configuration
                     _configurationClient.AddWriter(writerGroup, $"{machineName}.MaterialLoadingPoints.{objItem.BrowseName.Name}", publishedDataSet.Name, $"{writerGroup.QueueName}/{objItem.BrowseName.Name}", out DataSetWriterDefinition writer);
                     //_configurationClient.EnableWriter(writer.Name);
 
-                    //Get the event configuration                
-                    if (eventsConfiguration == null)
-                    {
-                        eventsConfiguration = GetEventsConfigurations(objectId);
-                    }
 
-                    foreach (var conf in eventsConfiguration)
-                    {
-                        if(ObjectIncluded(conf, objectId))
-                        {
-                            var eventFields = InitializeEventItemList();
-                            LoadEventFieldsList(eventFields, conf);
+                    //Configure object events
+                    ConfigureObjectEvents(machineName, objItem.BrowseName.Name, objectId, writerGroup);
+
+
+                    ////Get the event configuration                
+                    //if (eventsConfiguration == null)
+                    //{
+                    //    eventsConfiguration = GetEventsConfigurations(objectId);
+                    //}
+
+                    //foreach (var conf in eventsConfiguration)
+                    //{
+                    //    if(ObjectIncluded(conf, objectId))
+                    //    {
+                    //        var eventFields = InitializeEventItemList();
+                    //        LoadEventFieldsList(eventFields, conf);
                             
-                            PublishedDataSetBase eventDataSet = new PublishedDataSetBase();
-                            _configurationClient.AddPublishedDataSetEvent(eventFields, conf.EventTypeId, $"{machineName}.{objItem.BrowseName.Name}.{conf.EventTypeName}", objectId, out eventDataSet);
+                    //        PublishedDataSetBase eventDataSet = new PublishedDataSetBase();
+                    //        _configurationClient.AddPublishedDataSetEvent(eventFields, conf.EventTypeId, $"{machineName}.{objItem.BrowseName.Name}.{conf.EventTypeName}", objectId, out eventDataSet);
                             
-                            DataSetWriterDefinition writerEvent = new DataSetWriterDefinition();
-                            _configurationClient.AddWriter(writerGroupEvents, $"{machineName}.MaterialLoadingPoints.{objItem.BrowseName.Name}.{conf.EventTypeName}", eventDataSet.Name, $"{writerGroupEvents.QueueName}/{objItem.BrowseName.Name}/{conf.EventTypeName}", out writerEvent);
-                        }
-                    }
+                    //        DataSetWriterDefinition writerEvent = new DataSetWriterDefinition();
+                    //        _configurationClient.AddWriter(writerGroupEvents, $"{machineName}.MaterialLoadingPoints.{objItem.BrowseName.Name}.{conf.EventTypeName}", eventDataSet.Name, $"{writerGroupEvents.QueueName}/{objItem.BrowseName.Name}/{conf.EventTypeName}", out writerEvent);
+                    //    }
+                    //}
 
                 }
             }
@@ -416,6 +425,9 @@ namespace PMI.PubSubUAAdapter.Configuration
                     //Prepare the writer
                     _configurationClient.AddWriter(writerGroup, $"{machineName}.ProcessControlLoops.{objItem.BrowseName.Name}", publishedDataSet.Name, $"{writerGroup.QueueName}/{objItem.BrowseName.Name}", out DataSetWriterDefinition writer);
                     //_configurationClient.EnableWriter(writer.Name);
+
+                    //Configure object events
+                    ConfigureObjectEvents(machineName, objItem.BrowseName.Name, objectId, writerGroup);
                 }
             }
         }
@@ -446,6 +458,9 @@ namespace PMI.PubSubUAAdapter.Configuration
 
                     //Prepare the writer
                     _configurationClient.AddWriter(writerGroup, $"{machineName}.ProcessItems.{objItem.BrowseName.Name}", publishedDataSet.Name, $"{writerGroup.QueueName}/{objItem.BrowseName.Name}", out DataSetWriterDefinition writer);
+
+                    //Configure object events
+                    ConfigureObjectEvents(machineName, objItem.BrowseName.Name, objectId, writerGroup);
                 }
             }
         }
@@ -778,6 +793,34 @@ namespace PMI.PubSubUAAdapter.Configuration
                 return false;
             }
             return true;
+        }
+
+        public void ConfigureObjectEvents(string machineName, string objectName, NodeId objectId, DataSetWriterGroup writerGroup)
+        {
+            var eventsConfiguration = GetEventsConfigurations(objectId);
+
+            foreach (var conf in eventsConfiguration)
+            {
+                if (ObjectIncluded(conf, objectId))
+                {
+                    var eventFields = InitializeEventItemList();
+                    LoadEventFieldsList(eventFields, conf);
+
+                    PublishedDataSetBase eventDataSet = new PublishedDataSetBase();
+                    _configurationClient.AddPublishedDataSetEvent(eventFields, conf.EventTypeId, $"{machineName}.{objectName}.{conf.EventTypeName}", objectId, out eventDataSet);
+
+                    DataSetWriterDefinition writerEvent = new DataSetWriterDefinition();
+                    _configurationClient.AddWriter(writerGroup, $"{writerGroup.GroupName}.{objectName}.{conf.EventTypeName}", eventDataSet.Name, $"{writerGroup.QueueName}/{objectName}/{conf.EventTypeName}", out writerEvent);
+                }
+            }
+
+        }
+
+        public void ConfigureObjectEvents(string machineName, string objectName, string objectTypeName, NodeId objectId)
+        {
+            _configurationClient.AddWriterGroup(_mqttConnection, $"{machineName}.{objectTypeName}s.Events", $"{_topicPrefix}{machineName}/{objectTypeName}s/Events", out DataSetWriterGroup writerGroupEvents);
+            _configurationClient.EnableWriterGroup(writerGroupEvents.Name);
+            ConfigureObjectEvents(machineName, objectName, objectId, writerGroupEvents);
         }
         #endregion
 
