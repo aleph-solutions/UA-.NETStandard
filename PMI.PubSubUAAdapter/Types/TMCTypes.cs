@@ -48,6 +48,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Opc.Ua;
 using System.Diagnostics;
+using Range = Opc.Ua.Range;
 
 namespace TMCGroup.TMC
 {

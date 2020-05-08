@@ -27,29 +27,31 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PubSubBase", "SampleApplica
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Opc.Ua.Sample", "SampleApplications\Samples\Opc.Ua.Sample\Opc.Ua.Sample.csproj", "{6A625404-2444-48B8-93BE-85AA4C99321C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Opc.Ua.Publisher", "Opc.Ua.Publisher\Opc.Ua.Publisher.csproj", "{79B2B57C-AB6A-43E2-A03A-C1D7DA2324D0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Opc.Ua.Publisher", "Opc.Ua.Publisher\Opc.Ua.Publisher.csproj", "{79B2B57C-AB6A-43E2-A03A-C1D7DA2324D0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PublisherDataSource", "PublisherDataSource\PublisherDataSource.csproj", "{AB572CF2-5D9F-4CDF-A6E9-F09704642862}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PublisherDataSource", "PublisherDataSource\PublisherDataSource.csproj", "{AB572CF2-5D9F-4CDF-A6E9-F09704642862}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UDPTransportDataSource", "UDPTransportDataSource\UDPTransportDataSource.csproj", "{5BF28E82-2091-43D4-BCBB-46956D8628AD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UDPTransportDataSource", "UDPTransportDataSource\UDPTransportDataSource.csproj", "{5BF28E82-2091-43D4-BCBB-46956D8628AD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataSource", "DataSource\DataSource.csproj", "{ACC81814-AD70-40DB-AD26-ADDCC6382112}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataSource", "DataSource\DataSource.csproj", "{ACC81814-AD70-40DB-AD26-ADDCC6382112}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MQTTTransportDataSource", "MQTTTransportDataSource\MQTTTransportDataSource.csproj", "{EC9DD90E-8C26-4AAC-95E6-238D182611EA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Opc.Ua.Subscriber", "Opc.Ua.Subscriber\Opc.Ua.Subscriber.csproj", "{2ED69941-6DB8-4E03-BE24-F1A410E10D0B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Opc.Ua.Subscriber", "Opc.Ua.Subscriber\Opc.Ua.Subscriber.csproj", "{2ED69941-6DB8-4E03-BE24-F1A410E10D0B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SubscriberDataSource", "SubscriberDataSource\SubscriberDataSource.csproj", "{87047DB6-4BB5-4424-85A8-4808158BE777}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubscriberDataSource", "SubscriberDataSource\SubscriberDataSource.csproj", "{87047DB6-4BB5-4424-85A8-4808158BE777}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AMQPTransportDataSource", "AMQPTransportDataSource\AMQPTransportDataSource.csproj", "{920E5498-0C41-4C33-917C-198B7834EEC2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PMI.PubSubUAAdapter", "PMI.PubSubUAAdapter\PMI.PubSubUAAdapter.csproj", "{7A8BB6B2-0E44-426C-8C57-BDC468EB2CC3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PMI.PubSubOpcUaServer", "PMI.PubSubUAAdapter\PMI.PubSubOpcUaServer.csproj", "{7A8BB6B2-0E44-426C-8C57-BDC468EB2CC3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Opc.Ua.CommonFunctions", "Opc.Ua.CommonFunctions\Opc.Ua.CommonFunctions.csproj", "{24E0C10E-E77B-4B70-9317-A53D35F86F87}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientAdaptor.NonInteractive", "ClientAdaptor.NonInteractive\ClientAdaptor.NonInteractive.csproj", "{E27D5E9B-E2F7-4F8D-936D-1118C1194AEF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClientAdaptor.NonInteractive", "ClientAdaptor.NonInteractive\ClientAdaptor.NonInteractive.csproj", "{E27D5E9B-E2F7-4F8D-936D-1118C1194AEF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Opc.Ua.Extensions", "Opc.Ua.Extensions\Opc.Ua.Extensions.csproj", "{3B4B6517-201D-4A18-B176-01BB5F6AF6CE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Opc.Ua.Extensions", "Opc.Ua.Extensions\Opc.Ua.Extensions.csproj", "{3B4B6517-201D-4A18-B176-01BB5F6AF6CE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Stack", "Stack", "{A56B3061-DC86-4734-9BD6-F5379EA8E631}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -281,6 +283,12 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6C449A1E-244E-4515-9949-A7E22012537C} = {A56B3061-DC86-4734-9BD6-F5379EA8E631}
+		{D918C0F6-39BD-4ED0-8323-E5A2EB9A85DA} = {A56B3061-DC86-4734-9BD6-F5379EA8E631}
+		{15100583-BFEF-431B-A1EA-1E5A843A39B1} = {A56B3061-DC86-4734-9BD6-F5379EA8E631}
+		{A39614CA-8EBE-4408-A9D2-38C7E5AE2A1D} = {A56B3061-DC86-4734-9BD6-F5379EA8E631}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {33FA5BCB-C827-4D44-AECF-F51342DFE64A}
