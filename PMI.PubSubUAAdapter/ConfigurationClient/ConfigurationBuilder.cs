@@ -137,7 +137,6 @@ namespace PMI.PubSubUAAdapter.Configuration
             var processControlLoopsFolderId = GetChildId(machineModuleId, "ProcessControlLoops");
             var processItemsFolderId = GetChildId(machineModuleId, "ProcessItems");
 
-
             //Configure the Objects
             ConfigureDefectSensors(defectSensorsFolderId, machineName);
             ConfigureMaterialStorageBuffers(materialBuffersFolderId, machineName);
@@ -418,44 +417,51 @@ namespace PMI.PubSubUAAdapter.Configuration
                     }
 
                     //Configure object events
-                    ConfigureObjectEvents(machineName, objItem.BrowseName.Name, objectId, writerGroup);
+                    //ConfigureObjectEvents(machineName, objItem.BrowseName.Name, objectId, writerGroup);
                 }
             }
         }
 
         private void ConfigureProcessItems(NodeId folderId, string machineName)
         {
-            //Prepare the Writer group
-            _configurationClient.AddWriterGroup(_mqttConnection, $"{machineName}.ProcessItems", $"{_topicPrefix}{machineName}/ProcessItems", out DataSetWriterGroup writerGroup);
-            _configurationClient.EnableWriterGroup(writerGroup.Name);
-
-            var references = Browse(folderId);
-
-            foreach (var objItem in references.Where(x => x.NodeClass == NodeClass.Object))
+            try
             {
-                var typeId = GetTypeDefinition(objItem.NodeId);
-                if (typeId.Equals(ExpandedNodeId.ToNodeId(TMCPlus.ObjectTypeIds.PMI_ProcessControlItemType, _browseSession.NamespaceUris)) ||
-                    typeId.Equals(ExpandedNodeId.ToNodeId(TMCPlus.ObjectTypeIds.PMI_ProcessItemType, _browseSession.NamespaceUris)))
+                //Prepare the Writer group
+                _configurationClient.AddWriterGroup(_mqttConnection, $"{machineName}.ProcessItems", $"{_topicPrefix}{machineName}/ProcessItems", out DataSetWriterGroup writerGroup);
+                _configurationClient.EnableWriterGroup(writerGroup.Name);
+
+                var references = Browse(folderId);
+
+                foreach (var objItem in references.Where(x => x.NodeClass == NodeClass.Object))
                 {
-                    var objectId = ExpandedNodeId.ToNodeId(objItem.NodeId, _browseSession.NamespaceUris);
-
-                    //Prepare the Dataset
-                    var datasetItems = InitializeItemList(objectId, typeId);
-                    var objectIncluded = LoadItemList(datasetItems, "ProcessItem", objectId);
-
-                    if (objectIncluded)
+                    var typeId = GetTypeDefinition(objItem.NodeId);
+                    if (typeId.Equals(ExpandedNodeId.ToNodeId(TMCPlus.ObjectTypeIds.PMI_ProcessControlItemType, _browseSession.NamespaceUris)) ||
+                        typeId.Equals(ExpandedNodeId.ToNodeId(TMCPlus.ObjectTypeIds.PMI_ProcessItemType, _browseSession.NamespaceUris)))
                     {
-                        //Add the dataset
-                        _configurationClient.AddPublishedDataSet(datasetItems, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
-                        _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
+                        var objectId = ExpandedNodeId.ToNodeId(objItem.NodeId, _browseSession.NamespaceUris);
 
-                        //Prepare the writer
-                        _configurationClient.AddWriter(writerGroup, $"{machineName}.ProcessItems.{objItem.BrowseName.Name}", publishedDataSet.Name, $"{writerGroup.QueueName}/{objItem.BrowseName.Name}", out DataSetWriterDefinition writer);
+                        //Prepare the Dataset
+                        var datasetItems = InitializeItemList(objectId, typeId);
+                        var objectIncluded = LoadItemList(datasetItems, "ProcessItem", objectId);
+
+                        if (objectIncluded)
+                        {
+                            //Add the dataset
+                            _configurationClient.AddPublishedDataSet(datasetItems, $"{machineName}.{objItem.BrowseName.Name}", out PublishedDataSetBase publishedDataSet);
+                            _configurationClient.AddExtensionField(publishedDataSet, "DataSetName", $"{_pathPrefix}/{publishedDataSet.Name.Replace('.', '/')}");
+
+                            //Prepare the writer
+                            _configurationClient.AddWriter(writerGroup, $"{machineName}.ProcessItems.{objItem.BrowseName.Name}", publishedDataSet.Name, $"{writerGroup.QueueName}/{objItem.BrowseName.Name}", out DataSetWriterDefinition writer);
+                        }
+
+                        //Configure object events
+                        //ConfigureObjectEvents(machineName, objItem.BrowseName.Name, objectId, writerGroup);
                     }
-
-                    //Configure object events
-                    ConfigureObjectEvents(machineName, objItem.BrowseName.Name, objectId, writerGroup);
                 }
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"ConfigurationBuilder ConfigureProcessItems...Error: {ex}");
             }
         }
         #endregion
@@ -604,7 +610,7 @@ namespace PMI.PubSubUAAdapter.Configuration
                             if (field.FieldName.Split('.').Length == 2)
                             {
                                 var subObjectName = field.FieldName.Split('.')[0];
-                                var subObjectId = subNodes.FirstOrDefault(x => x.BrowseName.Name == subObjectName).NodeId;
+                                var subObjectId = subNodes.FirstOrDefault(x => x.BrowseName.Name == subObjectName)?.NodeId;
 
                                 List<ReferenceDescription> references;
                                 if (!subObjectReferences.ContainsKey(subObjectName))

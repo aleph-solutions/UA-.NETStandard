@@ -12,7 +12,8 @@
     },
     {
       "FieldName": "SetPoint",
-      "ComplexVariableType": "ProcessItem"
+      "ComplexVariableType": "ProcessItem",
+      "Optional": true
     }
   ]
 }

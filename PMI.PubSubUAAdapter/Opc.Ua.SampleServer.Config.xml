@@ -175,7 +175,7 @@
     <NodeManagerSaveFile>Opc.Ua.Server.nodes.xml</NodeManagerSaveFile>
     <MinSubscriptionLifetime>10000</MinSubscriptionLifetime>
     <MaxPublishRequestCount>20</MaxPublishRequestCount>
-    <MaxSubscriptionCount>100</MaxSubscriptionCount>
+    <MaxSubscriptionCount>10000</MaxSubscriptionCount>
     <MaxEventQueueSize>10000</MaxEventQueueSize>
   </ServerConfiguration>
 

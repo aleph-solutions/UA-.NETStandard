@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.IO;
 using Opc.Ua.Client;
 using Opc.Ua.Configuration;
-using Opc.Ua.Client.Controls;
+//using Opc.Ua.Client.Controls;
 using System.Security.Cryptography.X509Certificates;
 using Opc.Ua.CommonFunctions;
 using Opc.Ua.Extensions;
@@ -41,6 +41,7 @@ namespace PublisherDataSource
         Dictionary<NodeId, Thread> DicWriterGroupPublisher = new Dictionary<NodeId, Thread>();
         List<MonitoredItem> LstMonitoredItems = new List<MonitoredItem>();
         X509Certificate2 m_servercertificate;
+        Dictionary<ushort, uint> dicWriterSentMessages = new Dictionary<ushort, uint>();
 
         #region Public Methods
         public UAPublisherDataSource(X509Certificate2 servercertificate)
@@ -220,13 +221,11 @@ namespace PublisherDataSource
                     PublishJsonMessage((writerState.TransportSettings as BrokerDataSetWriterTransportState).QueueName.Value, networkMessage);
 
                     networkMessage = new Opc.Ua.JsonNetworkMessage();
-
                     networkMessage.MessageId = Guid.NewGuid().ToString();
                     networkMessage.MessageType = "ua-data";
                     networkMessage.PublisherId = m_PubSubConnectionState.PublisherId.Value.ToString();
                     networkMessage.MessageContentMask = (groupState.MessageSettings as JsonWriterGroupMessageState).NetworkMessageContentMask.Value;
                     networkMessage.Messages = new List<Opc.Ua.JsonDataSetMessage>();
-
                 }
 
             }
@@ -251,7 +250,6 @@ namespace PublisherDataSource
             message.Timestamp = DateTime.UtcNow;
             message.Payload = new Dictionary<string, DataValue>();
 
-
             try
             {
                 #region PublishedDataItems
@@ -259,11 +257,18 @@ namespace PublisherDataSource
                 if (writerState.Handle is PublishedDataItemsState)
                 {
                     int count = (writerState.Handle as PublishedDataItemsState).PublishedData.Value.Count();
+
+                    if (!dicWriterSentMessages.ContainsKey(writerState.DataSetWriterId.Value))
+                    {
+                        dicWriterSentMessages.Add(writerState.DataSetWriterId.Value, 0);
+                    }
+                    var writerMessageCount = dicWriterSentMessages[writerState.DataSetWriterId.Value];
+
                     for (int ii = 0; ii < count; ii++)
                     {
                         var field = ((writerState.Handle as PublishedDataItemsState).DataSetMetaData.Value as DataSetMetaDataType).Fields[ii];
                         var source = ((writerState.Handle as PublishedDataItemsState).PublishedData.Value[ii]);
-                        MonitoredItem monitoredItem = LstMonitoredItems.Where(i => i.ResolvedNodeId == source.PublishedVariable && i.AttributeId == source.AttributeId).FirstOrDefault();
+                        PubSubDataMonitoredItem monitoredItem = LstMonitoredItems.Where(x => x.AttributeId != Attributes.EventNotifier).Cast<PubSubDataMonitoredItem>().Where(i => i.ResolvedNodeId == source.PublishedVariable && i.AttributeId == source.AttributeId).FirstOrDefault();
 
                         if (monitoredItem == null)
                         {
@@ -309,7 +314,12 @@ namespace PublisherDataSource
 
                         if (notification != null)
                         {
-                            message.Payload.Add(field.Name, notification.Value);
+                            if(writerMessageCount % writerState.KeyFrameCount.Value == 0 || 
+                                (notification.Value.ServerTimestamp > monitoredItem.LastPublishTimestamp))
+                            {
+                                message.Payload.Add(field.Name, notification.Value);
+                                monitoredItem.LastPublishTimestamp = notification.Value.ServerTimestamp;
+                            }
                         }
 
                     }
@@ -329,6 +339,9 @@ namespace PublisherDataSource
                             }
                         }
                     }
+
+                    dicWriterSentMessages[writerState.DataSetWriterId.Value]++;
+
                 }
                 #endregion
 
@@ -339,7 +352,7 @@ namespace PublisherDataSource
                     var source = dataset.PubSubEventNotifier.Value;
                     var monitoredEventTypeOp = dataset.Filter.Value.Elements.FirstOrDefault(x => x.FilterOperator == FilterOperator.OfType).FilterOperands[0].Body as LiteralOperand;
                     var monitoredEventType = monitoredEventTypeOp.Value.Value as NodeId;
-                    EventMonitoredItem monitoredItem = LstMonitoredItems.Where(x => x.AttributeId == Attributes.EventNotifier).Cast<EventMonitoredItem>().FirstOrDefault(x => x.ResolvedNodeId == source && x.EventType == monitoredEventType);
+                    PubSubEventMonitoredItem monitoredItem = LstMonitoredItems.Where(x => x.AttributeId == Attributes.EventNotifier).Cast<PubSubEventMonitoredItem>().FirstOrDefault(x => x.ResolvedNodeId == source && x.EventType == monitoredEventType);
 
                     if (monitoredItem != null)
                     {
@@ -350,15 +363,20 @@ namespace PublisherDataSource
                         {
                             // check the type of event.
                             NodeId eventTypeId = CommonFunctions.FindEventType(monitoredItem, notification);
-
+                            DateTime eventTime = CommonFunctions.FindEventTime(monitoredItem, notification);
                             if (eventTypeId != null && eventTypeId.Equals(monitoredItem.EventType))
                             {
-                                for (int ii = 0; ii < count; ii++)
+                                //Publish the event only if it is new
+                                if(eventTime > monitoredItem.LastPublishTimestamp)
                                 {
-                                    var fieldName = dataset.DataSetMetaData.Value.Fields[ii].Name;
-                                    var fieldBrowseName = dataset.SelectedFields.Value[ii].BrowsePath[0];
-                                    var fieldValue = notification.EventFields[ii];
-                                    message.Payload.Add(fieldName, new DataValue(fieldValue));
+                                    for (int ii = 0; ii < count; ii++)
+                                    {
+                                        var fieldName = dataset.DataSetMetaData.Value.Fields[ii].Name;
+                                        var fieldBrowseName = dataset.SelectedFields.Value[ii].BrowsePath[0];
+                                        var fieldValue = notification.EventFields[ii];
+                                        message.Payload.Add(fieldName, new DataValue(fieldValue));
+                                    }
+                                    monitoredItem.LastPublishTimestamp = eventTime;
                                 }
                             }
 
@@ -664,7 +682,6 @@ namespace PublisherDataSource
             m_TransportdataSource.SendData(data, Settings);
             Settings = null;
         }
-
         #endregion
     }
 

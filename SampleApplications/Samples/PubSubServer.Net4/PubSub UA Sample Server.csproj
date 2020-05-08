@@ -154,26 +154,9 @@
       <Project>{6c449a1e-244e-4515-9949-a7e22012537c}</Project>
       <Name>Opc.Ua.Server</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ClientControls.Net4\UA Client Controls.csproj">
-      <Project>{a247d2ee-14fc-463d-a9ba-6cff1ef22b7a}</Project>
-      <Name>UA Client Controls</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Controls.Net4\UA Sample Controls.csproj">
-      <Project>{92AE819B-4938-4502-AC32-67063F9893CD}</Project>
-      <Name>UA Sample Controls</Name>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\Opc.Ua.Sample\Opc.Ua.Sample.csproj">
-      <Project>{bcb915b6-b5c3-45bc-9c8b-f43008df0c14}</Project>
-      <Name>Opc.Ua.Sample</Name>
-    </ProjectReference>
     <ProjectReference Include="..\PubSub Configuration Tool\PubSubBase\PubSubBase.csproj">
       <Project>{5FBB5D20-5D60-4B08-B077-15BF57005D99}</Project>
       <Name>PubSubBase</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ServerControls.Net4\UA Server Controls.csproj">
-      <Project>{80056988-44e7-4ef4-9f59-50bcf215cb03}</Project>
-      <Name>UA Server Controls</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

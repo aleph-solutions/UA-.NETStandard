@@ -8,12 +8,11 @@ using Opc.Ua;
 
 namespace Opc.Ua.Extensions
 {
-    public class EventMonitoredItem : MonitoredItem
+    public class PubSubEventMonitoredItem : PubSubMonitoredItem
     {
         public NodeId EventType
         {
-            get;set;
+            get; set;
         }
-
     }
 }

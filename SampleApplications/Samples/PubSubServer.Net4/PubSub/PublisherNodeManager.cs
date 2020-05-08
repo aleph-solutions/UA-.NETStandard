@@ -16,7 +16,6 @@
 
 using Opc.Ua.PubSub;
 using Opc.Ua.Server;
-
 using System;
 using System.Collections.Generic;
 using System.IO;

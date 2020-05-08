@@ -95,5 +95,20 @@ namespace PMI.PubSubUAAdapter.Configuration
             }
         }
         private int _samplingInterval = -1;
+
+        [DataMember]
+        public bool Optional
+        {
+            get
+            {
+                return _optional;
+            }
+            set
+            {
+                _optional = value;
+            }
+        }
+
+        private bool _optional = false;
     }
 }

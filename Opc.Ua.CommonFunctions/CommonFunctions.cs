@@ -181,6 +181,28 @@ namespace Opc.Ua.CommonFunctions
 
             return null;
         }
+
+        public static DateTime FindEventTime(MonitoredItem monitoredItem, EventFieldList notification)
+        {
+            EventFilter filter = monitoredItem.Status.Filter as EventFilter;
+
+            if (filter != null)
+            {
+                for (int ii = 0; ii < filter.SelectClauses.Count; ii++)
+                {
+                    SimpleAttributeOperand clause = filter.SelectClauses[ii];
+
+                    if (clause.BrowsePath.Count == 1 && clause.BrowsePath[0] == BrowseNames.Time)
+                    {
+                        return (DateTime)notification.EventFields[ii].Value;
+                    }
+                }
+            }
+
+            return new DateTime();
+        }
+
+
         #endregion
     }
 }

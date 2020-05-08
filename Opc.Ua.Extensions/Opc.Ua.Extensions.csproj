@@ -41,8 +41,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EventMonitoredItem.cs" />
+    <Compile Include="PubSubDataMonitoredItem.cs" />
+    <Compile Include="PubSubEventMonitoredItem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="PubSubMonitoredItem.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SampleApplications\SDK\Opc.Ua.Client\Opc.Ua.Client.csproj">

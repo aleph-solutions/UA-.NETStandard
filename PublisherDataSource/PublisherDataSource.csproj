@@ -59,10 +59,6 @@
       <Project>{3b4b6517-201d-4a18-b176-01bb5f6af6ce}</Project>
       <Name>Opc.Ua.Extensions</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SampleApplications\Samples\ClientControls.Net4\UA Client Controls.csproj">
-      <Project>{A247D2EE-14FC-463D-A9BA-6CFF1EF22B7A}</Project>
-      <Name>UA Client Controls</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SampleApplications\SDK\Opc.Ua.Client\Opc.Ua.Client.csproj">
       <Project>{15100583-bfef-431b-a1ea-1e5a843a39b1}</Project>
       <Name>Opc.Ua.Client</Name>

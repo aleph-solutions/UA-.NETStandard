@@ -154,8 +154,17 @@ namespace Opc.Ua.Sample.PubSub
             subscription.LifetimeCount = 1000;
             subscription.MaxNotificationsPerPublish = 10000;
 
-            m_session.AddSubscription(subscription);
-            subscription.Create();
+            try
+            {
+                m_session.AddSubscription(subscription);
+                subscription.Create();
+            }
+            catch(Exception ex)
+            {
+
+            }
+            //Console.WriteLine($"PubSubAdaptor CreateSubscrirption...Subscription Count: {m_session.SubscriptionCount}");
+           
             return subscription;
 
         }
@@ -287,7 +296,7 @@ namespace Opc.Ua.Sample.PubSub
             Dic_Subscription[publishedEventsState.NodeId] = subscription;
             SimpleAttributeOperand[] SimpleAttributeOperandArray = publishedEventsState.SelectedFields.Value as SimpleAttributeOperand[];
 
-            var monitoredItem = new EventMonitoredItem();
+            var monitoredItem = new PubSubEventMonitoredItem();
             monitoredItem.StartNodeId = publishedEventsState.PubSubEventNotifier.Value;
             monitoredItem.AttributeId = Attributes.EventNotifier;
             monitoredItem.SamplingInterval = 0;
@@ -316,39 +325,46 @@ namespace Opc.Ua.Sample.PubSub
 
         public void AddPublishedDataItems(PublishedDataItemsState publishedDataItemsState)
         {
-          Subscription subscription=  CreateSubscription("PublishedDataItems_"+ publishedDataItemsState.DisplayName.Text);
-            Dic_Subscription[publishedDataItemsState.NodeId] = subscription;
-            PublishedVariableDataType[] PublishedVariableDataTypearray = publishedDataItemsState.PublishedData.Value as PublishedVariableDataType[];
-            foreach (var ii in PublishedVariableDataTypearray)
+            try
             {
-                if (NodeId.IsNull(ii.PublishedVariable))
+                Subscription subscription = CreateSubscription("PublishedDataItems_" + publishedDataItemsState.DisplayName.Text);
+                Dic_Subscription[publishedDataItemsState.NodeId] = subscription;
+                PublishedVariableDataType[] PublishedVariableDataTypearray = publishedDataItemsState.PublishedData.Value as PublishedVariableDataType[];
+                foreach (var ii in PublishedVariableDataTypearray)
                 {
-                    continue;
-                }
-
-                var monitoredItem = new MonitoredItem()
-                {
-                    StartNodeId = ii.PublishedVariable,
-                    AttributeId = (ii.AttributeId == 0) ? Attributes.Value : ii.AttributeId,
-                    MonitoringMode = MonitoringMode.Reporting,
-                    SamplingInterval = (int)(ii.SamplingIntervalHint),
-                    DiscardOldest = true,
-                    QueueSize = 0,
-                    Handle = ii
-                };
-
-                if (ii.DeadbandType != (uint)DeadbandType.None)
-                {
-                    monitoredItem.Filter = new DataChangeFilter
+                    if (NodeId.IsNull(ii.PublishedVariable))
                     {
-                        DeadbandType = ii.DeadbandType,
-                        DeadbandValue = ii.DeadbandValue
+                        continue;
+                    }
+
+                    var monitoredItem = new PubSubDataMonitoredItem()
+                    {
+                        StartNodeId = ii.PublishedVariable,
+                        AttributeId = (ii.AttributeId == 0) ? Attributes.Value : ii.AttributeId,
+                        MonitoringMode = MonitoringMode.Reporting,
+                        SamplingInterval = (int)(ii.SamplingIntervalHint),
+                        DiscardOldest = true,
+                        QueueSize = 0,
+                        Handle = ii
                     };
+
+                    if (ii.DeadbandType != (uint)DeadbandType.None)
+                    {
+                        monitoredItem.Filter = new DataChangeFilter
+                        {
+                            DeadbandType = ii.DeadbandType,
+                            DeadbandValue = ii.DeadbandValue
+                        };
+                    }
+                    subscription.AddItem(monitoredItem);
+                    LstMonitoredItems.Add(monitoredItem);
                 }
-                subscription.AddItem(monitoredItem);
-                LstMonitoredItems.Add(monitoredItem);
+                subscription.ApplyChanges();
             }
-            subscription.ApplyChanges();
+            catch (Exception ex)
+            {
+                Console.WriteLine($"PubSubAdaptor AddPublisherDataItems...Exception: {ex}");
+            }
         }
         public void RemovePublishedDataItems(PublishedDataItemsState publishedDataItemsState)
         {

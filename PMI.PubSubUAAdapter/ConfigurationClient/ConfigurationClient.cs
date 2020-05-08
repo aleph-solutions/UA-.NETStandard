@@ -229,6 +229,7 @@ namespace PMI.PubSubUAAdapter.Configuration
                     ResourceUri = String.Empty,
                     TransportSetting = 1,
                     DataSetWriterId = Convert.ToUInt16(_writers == null ? 1 : _writers.Count + 1),
+                    KeyFrameCount = 10
                 };
 
 

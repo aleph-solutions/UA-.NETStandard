@@ -23,9 +23,7 @@ using Opc.Ua;
 using Opc.Ua.Client;
 using Opc.Ua.Configuration;
 using System.Security.Cryptography.X509Certificates;
-using System.Windows;
 using System.ComponentModel;
-//using Opc.Ua.Client.Controls;
 
 using PubSubBase.Definitions;
 using System.Collections.ObjectModel;
@@ -2249,7 +2247,7 @@ namespace ClientAdaptor
             }
             catch (Exception exp)
             {
-                MessageBox.Show(exp.Message, "OPC PubSub Configuration Tool", MessageBoxButton.OK, MessageBoxImage.Error);
+                //MessageBox.Show(exp.Message, "OPC PubSub Configuration Tool", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -2591,6 +2589,7 @@ namespace ClientAdaptor
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"ClientAdaptor AddPublishedDataSet...{ex}");
                 Utils.Trace(ex, "OPCUAClientAdaptor.AddPublishedDataSet API" + ex.Message);
             }
             return _PublishedDataSetBase;

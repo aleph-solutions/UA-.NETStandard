@@ -16,10 +16,8 @@
 
 using Opc.Ua;
 using Opc.Ua.Client;
-//using Opc.Ua.Sample.Controls;
 using PubSubBase.Definitions;
 using System;
-using System.Runtime;
 
 namespace ClientAdaptor
 {
