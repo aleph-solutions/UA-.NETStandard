@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "PMI.PubSubOpcUaServer": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "BROKER_IP": "40.91.255.161",
+        "BROKER_PORT": "1883"
+      }
+    }
+  }
+}

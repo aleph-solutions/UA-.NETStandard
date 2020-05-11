@@ -25,4 +25,13 @@
     <ProjectReference Include="..\UDPTransportDataSource\UDPTransportDataSource.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Opc.Ua.SampleServer.Config.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="OPCUAClient_PubSubConfig.Config.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

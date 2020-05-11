@@ -24,10 +24,23 @@ namespace PMI.PubSubUAAdapter.Configuration
 
         public ConfigurationBuilder(Opc.Ua.Client.Session browseSession, IServerInternal pubSubServer)
         {
-            _browseSession = browseSession;
-            _configurationClient = new ConfigurationClient(pubSubServer);
-            _configurationClient.InitializeClient();
-            _configurationClient.InitializeMQTTConnection("MQTT", "40.91.255.161:1883", out _mqttConnection);
+            var brokerIp = Environment.GetEnvironmentVariable("BROKER_IP");
+            var brokerPort = Environment.GetEnvironmentVariable("BROKER_PORT");
+
+            //Read the environmental variables
+            if (brokerIp != null && brokerPort != null)
+            {
+                _browseSession = browseSession;
+                _configurationClient = new ConfigurationClient(pubSubServer);
+                _configurationClient.InitializeClient();
+                _configurationClient.InitializeMQTTConnection("MQTT", $"{brokerIp}:{brokerPort}", out _mqttConnection);
+            }
+            else
+            {
+                throw new Exception("ConfigurationBuilder error...broker IP address or port are not correctly set");
+            }
+
+            
         }
 
         private void CertificateValidator_CertificateValidation(CertificateValidator sender, CertificateValidationEventArgs e)
@@ -36,6 +49,9 @@ namespace PMI.PubSubUAAdapter.Configuration
         }
 
         #region PubSub Configuration Methods
+        /// <summary>
+        /// Starts the configuration process of the PubSub module
+        /// </summary>
         public void Start()
         {
             //Initialize the encodable types in order to be correctly serialized in the json
@@ -126,9 +142,14 @@ namespace PMI.PubSubUAAdapter.Configuration
 
         }
 
-
+        /// <summary>
+        /// Configure the PubSub items for the specified machine module
+        /// </summary>
+        /// <param name="machineModuleId">The NodeId of the Machine Module</param>
+        /// <param name="machineName">The name of the machine module</param>
         public void ConfigureMachineModule(NodeId machineModuleId, string machineName)
         {
+            //Search the nodeIds of the objects folders
             var defectSensorsFolderId = GetChildId(machineModuleId, "DefectDetectionSensors");
             var materialBuffersFolderId = GetChildId(machineModuleId, "MaterialBuffers");
             var materialLoadingPointsFolderId = GetChildId(machineModuleId, "MaterialLoadingPoints");
@@ -177,17 +198,21 @@ namespace PMI.PubSubUAAdapter.Configuration
             var specificationId = GetChildId(machineModuleId, TMCGroup.TMC.BrowseNames.Specification);
             subObjects.Add(specificationId);
 
+            //Add a writer group for the events
             _configurationClient.AddWriterGroup(_mqttConnection, $"{machineName}.Events", $"{_topicPrefix}{machineName}/Events", out DataSetWriterGroup writerGroupEvents);
             _configurationClient.EnableWriterGroup(writerGroupEvents.Name);
 
             foreach (var subObjId in subObjects)
             {
+                //Get the configuration for the events of this object
                 var eventsConfiguration = GetEventsConfigurations(subObjId);
 
                 foreach (var conf in eventsConfiguration)
                 {
+                    //Check if the configuration of this event for this object has to be included
                     if (ObjectIncluded(conf, subObjId))
                     {
+                        //Prepare the list of event fields from the configuration
                         var eventFields = InitializeEventItemList();
                         LoadEventFieldsList(eventFields, conf);
 
@@ -202,6 +227,9 @@ namespace PMI.PubSubUAAdapter.Configuration
 
         }
 
+        /// <summary>
+        /// Add the structured types to let the JsonEncoder serialize them
+        /// </summary>
         private void InitializeEncodableTypes()
         {
             EncodeableFactory.GlobalFactory.AddEncodeableType(typeof(TMCGroup.TMC.DataSetListType));
@@ -224,6 +252,11 @@ namespace PMI.PubSubUAAdapter.Configuration
         }
 
 
+        /// <summary>
+        /// Configure the pub sub items for the defect sensors in the folder
+        /// </summary>
+        /// <param name="folderId">The nodeId of the folder</param>
+        /// <param name="machineName">The name of the machine module</param>
         private void ConfigureDefectSensors(NodeId folderId, string machineName)
         {
             //Prepare the Writer group
@@ -242,6 +275,11 @@ namespace PMI.PubSubUAAdapter.Configuration
             }
         }
 
+        /// <summary>
+        /// Configure the pub sub items for the material storage buffers in the folder
+        /// </summary>
+        /// <param name="folderId">The nodeId of the folder</param>
+        /// <param name="machineName">The name of the machine module</param>
         private void ConfigureMaterialStorageBuffers(NodeId folderId, string machineName)
         {
             //Prepare the Writer group
@@ -279,6 +317,11 @@ namespace PMI.PubSubUAAdapter.Configuration
 
         }
 
+        /// <summary>
+        /// Configure the pub sub items for the material loading points in the folder
+        /// </summary>
+        /// <param name="folderId">The nodeId of the folder</param>
+        /// <param name="machineName">The name of the machine module</param>
         private void ConfigureMaterialLoadingPoints(NodeId folderId, string machineName)
         {
 
@@ -314,6 +357,11 @@ namespace PMI.PubSubUAAdapter.Configuration
             }
         }
 
+        /// <summary>
+        /// Configure the pub sub items for the material outputs in the folder
+        /// </summary>
+        /// <param name="folderId">The nodeId of the folder</param>
+        /// <param name="machineName">The name of the machine module</param>
         private void ConfigureMaterialOutputs(NodeId folderId, string machineName)
         {
             //Prepare the Writer group
@@ -349,6 +397,11 @@ namespace PMI.PubSubUAAdapter.Configuration
             }
         }
 
+        /// <summary>
+        /// Configure the pub sub items for the material rejection traps in the folder
+        /// </summary>
+        /// <param name="folderId">The nodeId of the folder</param>
+        /// <param name="machineName">The name of the machine module</param>
         private void ConfigureMaterialRejectionTraps(NodeId folderId, string machineName)
         {
             //Prepare the Writer group
@@ -385,7 +438,11 @@ namespace PMI.PubSubUAAdapter.Configuration
             }
         }
 
-
+        /// <summary>
+        /// Configure the pub sub items for the process control loops in the folder
+        /// </summary>
+        /// <param name="folderId">The nodeId of the folder</param>
+        /// <param name="machineName">The name of the machine module</param>
         private void ConfigureProcessControlLoops(NodeId folderId, string machineName)
         {
             //Prepare the Writer group
@@ -422,6 +479,11 @@ namespace PMI.PubSubUAAdapter.Configuration
             }
         }
 
+        /// <summary>
+        /// Configure the pub sub items for the process items in the folder
+        /// </summary>
+        /// <param name="folderId">The nodeId of the folder</param>
+        /// <param name="machineName">The name of the machine module</param>
         private void ConfigureProcessItems(NodeId folderId, string machineName)
         {
             try
@@ -470,9 +532,17 @@ namespace PMI.PubSubUAAdapter.Configuration
         #region Private Methods
 
         #region Data Items
+        /// <summary>
+        /// Initialize the list of items of the published dataset
+        /// </summary>
+        /// <param name="objectId">The nodeId of the object</param>
+        /// <param name="objectTypeId">The nodeId of the type definition of the object</param>
+        /// <returns></returns>
         private List<DataSetFieldConfiguration> InitializeItemList(NodeId objectId, NodeId objectTypeId)
         {
             var fieldList = new List<DataSetFieldConfiguration>();
+
+            //Load the Base configuration
             var jsonConfig = LoadJsonDataConfiguration("Base");
 
             foreach (var field in jsonConfig.Fields)
@@ -508,12 +578,17 @@ namespace PMI.PubSubUAAdapter.Configuration
             return fieldList;
         }
 
+        /// <summary>
+        /// Load the published dataset items from the configuration
+        /// </summary>
+        /// <param name="itemList">The item list to fill</param>
+        /// <param name="configuration">The configuration of the published dataset</param>
+        /// <param name="objectNodeId">The node id of the object </param>
+        /// <returns></returns>
         private bool LoadItemList(List<DataSetFieldConfiguration> itemList, PubSubObjectDataConfiguration configuration, NodeId objectNodeId)
         {
             var objectIncluded = true;
 
-            //Load the parent type item list
-            //if (configuration.ParentType != null) LoadItemList(itemList, configuration.ParentType, objectNodeId);
             if (configuration != null)
             {
                 if (configuration.ExcludedNodes != null)
@@ -527,6 +602,9 @@ namespace PMI.PubSubUAAdapter.Configuration
                     else return false;
                 }
 
+                //Load the parent type item list
+                if (configuration.ParentType != null) LoadItemList(itemList, configuration.ParentType, objectNodeId);
+
                 var subObjectReferences = new Dictionary<string, List<ReferenceDescription>>();
                 var subNodes = Browse(objectNodeId);
 
@@ -536,8 +614,11 @@ namespace PMI.PubSubUAAdapter.Configuration
                     {
                         var fieldName = field.FieldName;
                         NodeId fieldId = null;
+
+                        //If the field contains a dot, the variable is a child of a child node 
                         if (field.FieldName.Split('.').Length == 2)
                         {
+                            //The first part of the field name is the name of the child node
                             var subObjectName = field.FieldName.Split('.')[0];
                             var subObjectId = subNodes.FirstOrDefault(x => x.BrowseName.Name == subObjectName).NodeId;
 
@@ -589,6 +670,13 @@ namespace PMI.PubSubUAAdapter.Configuration
             return objectIncluded;
         }
 
+        /// <summary>
+        /// Load in the item list all the fields of a complex variable
+        /// </summary>
+        /// <param name="itemList">The item list to fill</param>
+        /// <param name="variableTypeName">The name of the variable type definition</param>
+        /// <param name="variableNodeId">The nodeId of the variable</param>
+        /// <param name="variableName">The name of the variable</param>
         private void LoadComplexVariableItemList(List<DataSetFieldConfiguration> itemList, string variableTypeName, NodeId variableNodeId, string variableName)
         {
             try
@@ -652,6 +740,11 @@ namespace PMI.PubSubUAAdapter.Configuration
             return LoadItemList(itemList, jsonConfig, objectNodeId);
         }
 
+        /// <summary>
+        /// Load the published data configuration from the a json file
+        /// </summary>
+        /// <param name="typeName">The name of the type definition if the object</param>
+        /// <returns></returns>
         private PubSubObjectDataConfiguration LoadJsonDataConfiguration(string typeName)
         {
             var jsonFilename = $@"AppData/Configuration.{typeName}.json";
@@ -664,6 +757,10 @@ namespace PMI.PubSubUAAdapter.Configuration
         #endregion
 
         #region Events
+        /// <summary>
+        /// Initialize the event fields list 
+        /// </summary>
+        /// <returns></returns>
         private List<DataSetEventFieldConfiguration> InitializeEventItemList()
         {
             var fields = new List<DataSetEventFieldConfiguration>()
@@ -679,6 +776,11 @@ namespace PMI.PubSubUAAdapter.Configuration
             return fields;
         }
 
+        /// <summary>
+        /// Load the event field list from the configuration
+        /// </summary>
+        /// <param name="fieldsList">The event field list to fill</param>
+        /// <param name="configuration">The configuration of the event type</param>
         private void LoadEventFieldsList(List<DataSetEventFieldConfiguration> fieldsList, PubSubEventConfiguration configuration)
         {
             foreach (var field in configuration.Fields)
@@ -694,6 +796,11 @@ namespace PMI.PubSubUAAdapter.Configuration
             }
         }
 
+        /// <summary>
+        /// Retrive the configuration for the event of the specified object
+        /// </summary>
+        /// <param name="objectNodeId">The object nodeId</param>
+        /// <returns></returns>
         private List<PubSubEventConfiguration> GetEventsConfigurations(NodeId objectNodeId)
         {
             var ret = new List<PubSubEventConfiguration>();
@@ -715,6 +822,12 @@ namespace PMI.PubSubUAAdapter.Configuration
             return ret;
         }
 
+
+        /// <summary>
+        /// Get the pubsub configuration for an event
+        /// </summary>
+        /// <param name="eventTypeReference">The reference description of the event node</param>
+        /// <returns></returns>
         private PubSubEventConfiguration GetEventConfiguration(ReferenceDescription eventTypeReference)
         {
             //Try to get the configuration from file
@@ -752,6 +865,12 @@ namespace PMI.PubSubUAAdapter.Configuration
 
         }
 
+        /// <summary>
+        /// Retrieve the nested event fields
+        /// </summary>
+        /// <param name="fieldsList">The event field list to fill</param>
+        /// <param name="parentFieldId">The nodeId of the parent of the field</param>
+        /// <param name="browsePath">The browse path of the field</param>
         private void GetEventsSubFields(List<PubSubEventFieldConfiguration> fieldsList, NodeId parentFieldId, QualifiedNameCollection browsePath)
         {
             var childrenVar = Browse(parentFieldId, (uint)NodeClass.Variable);
@@ -765,6 +884,11 @@ namespace PMI.PubSubUAAdapter.Configuration
             }
         }
 
+        /// <summary>
+        /// Retrieve the event fields of the super type of the event
+        /// </summary>
+        /// <param name="fieldsList">The event field list to fill</param>
+        /// <param name="subTypeId">The child event type</param>
         private void GetEventSuperTypeFields(List<PubSubEventFieldConfiguration> fieldsList, NodeId subTypeId)
         {
             var superTypeId = CommonFunctions.GetSuperTypeId(_browseSession, subTypeId);
@@ -784,6 +908,11 @@ namespace PMI.PubSubUAAdapter.Configuration
             }
         }
 
+        /// <summary>
+        /// Load the event pubsub configuration
+        /// </summary>
+        /// <param name="typeName">The name of the event type</param>
+        /// <returns></returns>
         private PubSubEventConfiguration LoadJsonEventConfiguration(string typeName)
         {
             var jsonFilename = $@"AppData/Configuration.{typeName}.json";
@@ -792,9 +921,14 @@ namespace PMI.PubSubUAAdapter.Configuration
                 return JsonConvert.DeserializeObject<PubSubEventConfiguration>(File.ReadAllText(jsonFilename));
             }
             else return null;
-            //else throw new FileNotFoundException($"JSON file {jsonFilename} not found.");
         }
 
+        /// <summary>
+        /// Check if the specified object shall be configured in the pub sub
+        /// </summary>
+        /// <param name="configuration">The configuration for the event type</param>
+        /// <param name="objectId">The nodeId of the object that generates the event</param>
+        /// <returns></returns>
         private bool ObjectIncluded(PubSubEventConfiguration configuration, NodeId objectId)
         {
             if(configuration.ExcludedNodes != null)
@@ -810,6 +944,13 @@ namespace PMI.PubSubUAAdapter.Configuration
             return true;
         }
 
+        /// <summary>
+        /// Configure the pub sub items for an event generated by an object
+        /// </summary>
+        /// <param name="machineName">The name of the machine module</param>
+        /// <param name="objectName">The name of the object that generates the event</param>
+        /// <param name="objectId">The nodeId of the object</param>
+        /// <param name="writerGroup">The writer group in which add the new writer</param>
         public void ConfigureObjectEvents(string machineName, string objectName, NodeId objectId, DataSetWriterGroup writerGroup)
         {
             var eventsConfiguration = GetEventsConfigurations(objectId);
@@ -831,6 +972,13 @@ namespace PMI.PubSubUAAdapter.Configuration
 
         }
 
+        /// <summary>
+        /// Configure the pub sub items for an event generated by an object
+        /// </summary>
+        /// <param name="machineName">The name of the machine module</param>
+        /// <param name="objectName">The name of the object that generates the event</param>
+        /// <param name="objectTypeName">The name of the object type</param>
+        /// <param name="objectId">The nodeId of the object</param>
         public void ConfigureObjectEvents(string machineName, string objectName, string objectTypeName, NodeId objectId)
         {
             _configurationClient.AddWriterGroup(_mqttConnection, $"{machineName}.{objectTypeName}s.Events", $"{_topicPrefix}{machineName}/{objectTypeName}s/Events", out DataSetWriterGroup writerGroupEvents);
@@ -875,8 +1023,4 @@ namespace PMI.PubSubUAAdapter.Configuration
         }
         #endregion
     }
-
-
-
-
 }
