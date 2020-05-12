@@ -9,8 +9,14 @@ namespace PMI.PubSubUAAdapter.Configuration
 {
     public class DataSetEventFieldConfiguration
     {
+        /// <summary>
+        /// The alias name of the field in the dataset
+        /// </summary>
         public string Name { get; set; }
 
+        /// <summary>
+        /// The browsepath of the event field
+        /// </summary>
         public QualifiedNameCollection BrowsePath { get; set; }
 
         public DataSetEventFieldConfiguration() { }

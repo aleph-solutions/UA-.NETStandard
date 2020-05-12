@@ -11,19 +11,34 @@ namespace PMI.PubSubUAAdapter.Configuration
     [DataContract]
     public class PubSubEventConfiguration
     {
+        /// <summary>
+        /// The nodeId of the event type
+        /// </summary>
         [DataMember]
         public NodeId EventTypeId { get; set; }
 
+        /// <summary>
+        /// The name of the eventype
+        /// </summary>
         [DataMember]
         public string EventTypeName { get; set; }
 
+        /// <summary>
+        /// The list of fields
+        /// </summary>
         [DataMember]
         public IEnumerable<PubSubEventFieldConfiguration> Fields { get; set; }
 
+        /// <summary>
+        /// List of NodeIDs of the objects that generates this event that shall be included in the pub sub configuration
+        /// </summary>
         [DataMember]
         public IEnumerable<NodeId> IncludedNodes { get; set; }
-        
-         [DataMember]
+
+        /// <summary>
+        /// List of NodeIDs of the objects that generates this event that shall not be included in the pub sub configuration
+        /// </summary>
+        [DataMember]
         public IEnumerable<NodeId> ExcludedNodes { get; set; }
 
     }
@@ -31,6 +46,9 @@ namespace PMI.PubSubUAAdapter.Configuration
     [DataContract]
     public class PubSubEventFieldConfiguration
     {
+        /// <summary>
+        /// The alias name of the event field
+        /// </summary>
         [DataMember]
         public string AliasName 
         { 
@@ -55,6 +73,9 @@ namespace PMI.PubSubUAAdapter.Configuration
         }
         private string _aliasName;
 
+        /// <summary>
+        /// The browsepath of the event field as string
+        /// </summary>
         [DataMember]
         public string BrowsePathString { 
             get 
@@ -78,6 +99,9 @@ namespace PMI.PubSubUAAdapter.Configuration
         }
         private string _browsePathString;
 
+        /// <summary>
+        /// The browsepath of the event field
+        /// </summary>
         public QualifiedNameCollection BrowsePath
         {
             get
@@ -107,6 +131,9 @@ namespace PMI.PubSubUAAdapter.Configuration
         }
         private QualifiedNameCollection _browsePath;
 
+        /// <summary>
+        /// Define if the field shall be included in the dataset
+        /// </summary>
         [DataMember]
         public bool Enabled
         {

@@ -28,12 +28,16 @@ namespace PMI.PubSubUAAdapter.Configuration
             _pubSubServer = pubSubServer;
         }
 
+        /// <summary>
+        /// Initializes the configuration client
+        /// </summary>
         public void InitializeClient()
         {
             try
             {
                 m_clientAdaptor = new ClientAdaptor.OPCUAClientAdaptor();
 
+                //Select the endpoint to connect to the server
                 var selectedEndpoint = CoreClientUtils.SelectEndpoint(_pubSubServer.EndpointAddresses.First().ToString(), false);
                 var endpointConfiguration = EndpointConfiguration.Create(m_clientAdaptor.Configuration);
                 var endpoint = new ConfiguredEndpoint(null, selectedEndpoint, endpointConfiguration);
@@ -43,11 +47,6 @@ namespace PMI.PubSubUAAdapter.Configuration
                 _pubSubSession = session;
 
                 m_clientAdaptor.BrowserNodeControl = new ClientAdaptor.BrowseNodeControl(session);
-
-                //if (session != null)
-                //{
-                //    StartSample();
-                //}
             }
             catch(Exception ex)
             {
@@ -125,6 +124,12 @@ namespace PMI.PubSubUAAdapter.Configuration
             return groupId;
         }
 
+        /// <summary>
+        /// Add a published data set
+        /// </summary>
+        /// <param name="itemList">The list of fields of the dataset</param>
+        /// <param name="datasetName">The name of the Published Dataset</param>
+        /// <param name="publishedDataSet">The output Dataset</param>
         public void AddPublishedDataSet(List<DataSetFieldConfiguration> itemList, string datasetName, out PublishedDataSetBase publishedDataSet)
         {
             Console.WriteLine($"ConfigurationClient AddPublishedDataSet {datasetName}...");
@@ -151,8 +156,6 @@ namespace PMI.PubSubUAAdapter.Configuration
                     _datasets.Add(publishedDataSet);
                 }
                 Console.WriteLine($"ConfigurationClient AddPublishedDataSet {datasetName}...completed");
-
-                //m_clientAdaptor.AddExtensionField(publishedDataSet, "Test", 123);
             }
             catch (Exception ex)
             {
@@ -161,6 +164,14 @@ namespace PMI.PubSubUAAdapter.Configuration
             }
         }
 
+        /// <summary>
+        /// Add a Published Dataset for an event 
+        /// </summary>
+        /// <param name="eventFields">The event's fields to be published</param>
+        /// <param name="eventTypeId">The event type nodeId</param>
+        /// <param name="datasetName">The name of the Dataset</param>
+        /// <param name="eventNotifier">The nodeId of the object that generates the event</param>
+        /// <param name="publishedDataSet">The output Dataset</param>
         public void AddPublishedDataSetEvent(List<DataSetEventFieldConfiguration> eventFields, NodeId eventTypeId, string datasetName, NodeId eventNotifier, out PublishedDataSetBase publishedDataSet)
         {
             Console.WriteLine($"ConfigurationClient AddPublishedDataSetEvent {datasetName}...");
@@ -187,6 +198,7 @@ namespace PMI.PubSubUAAdapter.Configuration
                 Console.WriteLine($"ConfigurationClient AddPublishedDataSetEvent {datasetName}...Exception: {ex}");
             }
         }
+
         /// <summary>
         /// Adds a DataSetWriter
         /// </summary>
@@ -228,8 +240,8 @@ namespace PMI.PubSubUAAdapter.Configuration
                     QueueName = queueName,
                     ResourceUri = String.Empty,
                     TransportSetting = 1,
-                    DataSetWriterId = Convert.ToUInt16(_writers == null ? 1 : _writers.Count + 1),
-                    KeyFrameCount = 10
+                    DataSetWriterId = Convert.ToUInt16(_writers == null ? 1 : _writers.Count + 1), //Unique id of the writer
+                    KeyFrameCount = 10 //Send a keyframe every 10 messages
                 };
 
 
@@ -287,6 +299,10 @@ namespace PMI.PubSubUAAdapter.Configuration
             EnableWriter(writer);
         }
 
+        /// <summary>
+        /// Enables a writer
+        /// </summary>
+        /// <param name="writer">The definition of the writer to enable</param>
         public void EnableWriter(DataSetWriterDefinition writer)
         {
             if (writer != null)
@@ -304,6 +320,9 @@ namespace PMI.PubSubUAAdapter.Configuration
             }
         }
 
+        /// <summary>
+        /// Enables all the writers
+        /// </summary>
         public void EnableAllWriters()
         {
             foreach(var writer in _writers)
@@ -312,6 +331,13 @@ namespace PMI.PubSubUAAdapter.Configuration
             }
         }
 
+        /// <summary>
+        /// Add an extension field to the Dataset
+        /// </summary>
+        /// <param name="publishedDataSet">The Published Dataset to be extended</param>
+        /// <param name="fieldName">The name of the field to add</param>
+        /// <param name="fieldValue">The static value of the field</param>
+        /// <returns>The NodeId of the node of the extended field in the address space</returns>
         public NodeId AddExtensionField(PublishedDataSetBase publishedDataSet, string fieldName, object fieldValue)
         {
             return m_clientAdaptor.AddExtensionField(publishedDataSet, fieldName, fieldValue);
