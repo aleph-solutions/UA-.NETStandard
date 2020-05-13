@@ -329,15 +329,18 @@ namespace Opc.Ua.Sample.PubSub
         }
         public void OnServerStarted()
         {
-            string address = string.Empty;
-            foreach (var endpoint in Server.EndpointAddresses)
-            {
-                address = endpoint.ToString();
-                break;
-            }
+            //Retriece opcua server URL from the env var
+            var serverUrl = Environment.GetEnvironmentVariable("OPCUA_SERVER_URL");
+            if (serverUrl == null) throw new ArgumentNullException("Environmental variable OPCUA_SERVER_URL is null"); 
+
+            //string address = string.Empty;
+            //foreach (var endpoint in Server.EndpointAddresses)
+            //{
+            //    address = endpoint.ToString();
+            //    break;
+            //}
             ApplicationStartSettings settings = new ApplicationStartSettings();
-            //settings.EndpointUrl = address;// "opc.tcp://localhost:48011/UA/PubSubSampleServer";
-            settings.EndpointUrl = "opc.tcp://localhost:48030";// "opc.tcp://localhost:48011/UA/PubSubSampleServer";
+            settings.EndpointUrl = serverUrl;
             m_PubSubAdaptor.Start(settings).Wait();
 
             var configurationBuilder = new ConfigurationBuilder(m_PubSubAdaptor.Session, Server);

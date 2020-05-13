@@ -4,6 +4,7 @@ using M2Mqtt;
 using M2Mqtt.Messages;
 using System.Text;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 
 namespace MQTTTransportDataSource
 {
@@ -47,21 +48,59 @@ namespace MQTTTransportDataSource
                 // string BrokerHostName = "test.mosquitto.org";
                 System.Net.IPAddress IPAddress;
                 bool isvalidIP = System.Net.IPAddress.TryParse(Address, out IPAddress);
-                Console.WriteLine($"MQTTTransportDataSource...Initialize...Address: {Address} IPAddress: {IPAddress}");
                 if (isvalidIP)
                 {
-                    client = new MqttClient(IPAddress);
+                    Address = IPAddress.ToString();
                 }
-                else
+
+                var brokerSecurityStr = Environment.GetEnvironmentVariable("BROKER_SECURITY");
+                var brokerSecurity = BrokerSecurity.NoSecurity;
+                if(brokerSecurityStr != null)
                 {
-                    client = new MqttClient(Address);
+                    var index = Convert.ToInt32(brokerSecurityStr);
+                    brokerSecurity = (BrokerSecurity)index;
                 }
+
+                if(brokerSecurity == BrokerSecurity.Certificate)
+                {
+                    Console.WriteLine("MQTTDataSource Initialize...Certificate Security");
+                    var clientCertificatePath = Environment.GetEnvironmentVariable("MQTT_CLIENT_CERT");
+                    var clientCACertificatePath = Environment.GetEnvironmentVariable("MQTT_CLIENT_CA_CERT");
+
+                    Console.WriteLine($"MQTTDataSource Initialize...Certificate Security...ClientCert path: {clientCertificatePath} ClientCACert path: {clientCACertificatePath}");
+                    var clientCert = new X509Certificate2(clientCertificatePath);
+                    var clientCACert = new X509Certificate2(clientCACertificatePath);
+
+                    client = new MqttClient(Address, 8883, true, clientCert, clientCACert, MqttSslProtocols.TLSv1_2);
+                }
+                else client = new MqttClient(Address);
+
+
 
                 client.MqttMsgPublishReceived += Client_MqttMsgPublishReceived;
                 client.MqttMsgPublished += Client_MqttMsgPublished;
                 client.MqttMsgSubscribed += Client_MqttMsgSubscribed;
                 Console.WriteLine($"MQTTTransportDataSource...Initialize...Connecting");
-                client.Connect(Guid.NewGuid().ToString(), "aleph", "A13phQ");
+
+                if(brokerSecurity == BrokerSecurity.UserPassword)
+                {
+                    var username = Environment.GetEnvironmentVariable("BROKER_USERNAME");
+                    var password = Environment.GetEnvironmentVariable("BROKER_PASSWORD");
+
+                    if (username != null && password != null)
+                    {
+                        client.Connect(Guid.NewGuid().ToString(), username, password);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"MQTTDataSource Initialize...Username ({username}) or Password ({password}) are null");
+                    }
+                }
+                else
+                {
+                    client.Connect(Guid.NewGuid().ToString());
+                }
+
                 Console.WriteLine($"MQTTTransportDataSource...Initialize...Connected");
                 return true;
             }
@@ -108,4 +147,6 @@ namespace MQTTTransportDataSource
 
         #endregion
     }
+
+    public enum BrokerSecurity { NoSecurity, UserPassword, Certificate}
 }
