@@ -53,6 +53,12 @@ namespace MQTTTransportDataSource
                     Address = IPAddress.ToString();
                 }
 
+                var port = 1883;
+                if(addressarray.Length > 1)
+                {
+                    port = Convert.ToInt32(addressarray[1]);
+                }
+
                 var brokerSecurityStr = Environment.GetEnvironmentVariable("BROKER_SECURITY");
                 var brokerSecurity = BrokerSecurity.NoSecurity;
                 if(brokerSecurityStr != null)
@@ -71,9 +77,9 @@ namespace MQTTTransportDataSource
                     var clientCert = new X509Certificate2(clientCertificatePath);
                     var clientCACert = new X509Certificate2(clientCACertificatePath);
 
-                    client = new MqttClient(Address, 8883, true, clientCert, clientCACert, MqttSslProtocols.TLSv1_2);
+                    client = new MqttClient(Address, port, true, clientCert, clientCACert, MqttSslProtocols.TLSv1_2);
                 }
-                else client = new MqttClient(Address);
+                else client = new MqttClient(Address, port, false, null, null, MqttSslProtocols.None);
 
 
 

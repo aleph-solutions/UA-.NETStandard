@@ -39,6 +39,12 @@
     <None Update="app.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="AppData\Certs\cert.crt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="AppData\Certs\cert_ca.crt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="AppData\Configuration.Base.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
