@@ -1,0 +1,68 @@
+{
+  "EventTypeId": { "Identifier": "ns=3;i=1024" },
+  "EventTypeName": "DowntimeLogType",
+  "Fields": [
+    {
+      "AliasName": "Duration",
+      "BrowsePathString": "3:Duration",
+      "Enabled": true
+    },
+    {
+      "AliasName": "RootCause_s",
+      "BrowsePathString": "3:RootCause_s",
+      "Enabled": true
+    },
+    {
+      "AliasName": "StopReason_s",
+      "BrowsePathString": "3:StopReason_s",
+      "Enabled": true
+    },
+    {
+      "AliasName": "EventId",
+      "BrowsePathString": "EventId",
+      "Enabled": true
+    },
+    {
+      "AliasName": "EventType",
+      "BrowsePathString": "EventType",
+      "Enabled": true
+    },
+    {
+      "AliasName": "SourceNode",
+      "BrowsePathString": "SourceNode",
+      "Enabled": true
+    },
+    {
+      "AliasName": "SourceName",
+      "BrowsePathString": "SourceName",
+      "Enabled": true
+    },
+    {
+      "AliasName": "Time",
+      "BrowsePathString": "Time",
+      "Enabled": true
+    },
+    {
+      "AliasName": "ReceiveTime",
+      "BrowsePathString": "ReceiveTime",
+      "Enabled": true
+    },
+    {
+      "AliasName": "LocalTime",
+      "BrowsePathString": "LocalTime",
+      "Enabled": true
+    },
+    {
+      "AliasName": "Message",
+      "BrowsePathString": "Message",
+      "Enabled": true
+    },
+    {
+      "AliasName": "Severity",
+      "BrowsePathString": "Severity",
+      "Enabled": true
+    }
+  ],
+  "IncludedNodes": null,
+  "ExcludedNodes": null
+}
