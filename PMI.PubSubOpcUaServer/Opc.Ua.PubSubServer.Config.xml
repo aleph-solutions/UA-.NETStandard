@@ -4,8 +4,8 @@
   xmlns="http://opcfoundation.org/UA/SDK/Configuration.xsd"
   schemaLocation="./Schema/ApplicationConfiguration.xsd"
 >
-  <ApplicationName>PubSub UA Sample Server</ApplicationName>
-  <ApplicationUri>urn:localhost:OPCFoundation:PubSubSampleServer</ApplicationUri>
+  <ApplicationName>PubSub OPCUA Server</ApplicationName>
+  <ApplicationUri>urn:localhost:PMI:PubSubOpcUaServer</ApplicationUri>
   <ProductUri>http://opcfoundation.org/UA/SampleServer</ProductUri>
   <ApplicationType>Server_0</ApplicationType>
   
@@ -14,26 +14,26 @@
     <!-- Where the application instance certificate is stored (MachineDefault) -->
     <ApplicationCertificate>
       <StoreType>Directory</StoreType>
-      <StorePath>%CommonApplicationData%\OPC Foundation\CertificateStores\MachineDefault</StorePath>
-      <SubjectName>CN=PubSub UA Sample Server, C=US, S=Arizona, O=OPC Foundation, DC=localhost</SubjectName>
+      <StorePath>%CommonApplicationData%\PMI\PubSubOpcUaServer\CertificateStores\MachineDefault</StorePath>
+      <SubjectName>CN=PubSub OPCUA Server, C=CH, S=Neuchatel, O=PMI, DC=localhost</SubjectName>
     </ApplicationCertificate>
 
     <!-- Where the issuer certificate are stored (certificate authorities) -->
     <TrustedIssuerCertificates>
       <StoreType>Directory</StoreType>
-      <StorePath>%CommonApplicationData%\OPC Foundation\CertificateStores\UA Certificate Authorities</StorePath>
+      <StorePath>%CommonApplicationData%\PMI\PubSubOpcUaServer\CertificateStores\UA Certificate Authorities</StorePath>
     </TrustedIssuerCertificates>
     
     <!-- Where the trust list is stored (UA Applications) -->
     <TrustedPeerCertificates>
       <StoreType>Directory</StoreType>
-      <StorePath>%CommonApplicationData%\OPC Foundation\CertificateStores\TrustedCertificates</StorePath>
+      <StorePath>%CommonApplicationData%\PMI\PubSubOpcUaServer\CertificateStores\TrustedCertificates</StorePath>
     </TrustedPeerCertificates>
     
     <!-- The directory used to store invalid certficates for later review by the administrator. -->
     <RejectedCertificateStore>
       <StoreType>Directory</StoreType>
-      <StorePath>%CommonApplicationData%\OPC Foundation\CertificateStores\RejectedCertificates</StorePath>
+      <StorePath>%CommonApplicationData%\PMI\PubSubOpcUaServer\CertificateStores\RejectedCertificates</StorePath>
     </RejectedCertificateStore>
 
   </SecurityConfiguration>
@@ -54,7 +54,7 @@
   
   <ServerConfiguration>
     <BaseAddresses>
-      <ua:String>opc.tcp://localhost:48012/UA/PubSubSampleServer</ua:String>
+      <ua:String>opc.tcp://localhost:48012/PMI/PubSubOpcUaServer</ua:String>
     </BaseAddresses>
 
     <!-- 
@@ -68,11 +68,7 @@
     are left out the client make refuse to connect because it has no way to know if the 
     alternate domain was authorized by the server administrator.
     -->
-    <!--
-    <AlternateBaseAddresses>
-      <ua:String>http://mycompany.com:40000/UA/SampleServer</ua:String>
-    </AlternateBaseAddresses>
-    -->
+
 
     <SecurityPolicies>
       <ServerSecurityPolicy>
@@ -199,7 +195,7 @@
   </Extensions>
 
   <TraceConfiguration>
-    <OutputFilePath>%CommonApplicationData%\OPC Foundation\Logs\Opc.Ua.SampleServer.log.txt</OutputFilePath>
+    <OutputFilePath>%CommonApplicationData%\PMI\PubSubOpcUaServer\Logs\PMI.PubSubOpaUaServer.log.txt</OutputFilePath>
     <DeleteOnLoad>true</DeleteOnLoad>
     <!-- Show Only Errors -->
     <!-- <TraceMasks>1</TraceMasks> -->

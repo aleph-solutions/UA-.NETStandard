@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AMQPTransportDataSource\AMQPTransportDataSource.csproj" />
-    <ProjectReference Include="..\ClientAdaptor.NonInteractive\ClientAdaptor.csproj" />
+    <ProjectReference Include="..\ClientAdaptor.NonInteractive\ClientAdaptor.NonInteractive.csproj" />
     <ProjectReference Include="..\DataSource\DataSource.csproj" />
     <ProjectReference Include="..\MQTTTransportDataSource\MQTTTransportDataSource.csproj" />
     <ProjectReference Include="..\Opc.Ua.CommonFunctions\Opc.Ua.CommonFunctions.csproj" />
@@ -78,7 +78,7 @@
     <None Update="AppData\Configuration.ProcessItem.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Opc.Ua.PubSubServer.Config.xml">
+    <None Update="Opc.Ua.SampleServer.Config.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="OPCUAClient_PubSubConfig.Config.xml">
