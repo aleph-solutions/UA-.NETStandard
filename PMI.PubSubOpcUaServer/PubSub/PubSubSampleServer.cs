@@ -138,9 +138,9 @@ namespace Opc.Ua.Sample
         {
             ServerProperties properties = new ServerProperties();
 
-            properties.ManufacturerName = "OPC Foundation";
-            properties.ProductName      = "OPC UA PubSub SDK Samples";
-            properties.ProductUri       = "http://opcfoundation.org/UA/Samples/v1.0";
+            properties.ManufacturerName = "PMI";
+            properties.ProductName      = "PubSub OPCUA Server";
+            properties.ProductUri       = "http://pmi.org/PubSubOpcUaServer";
             properties.SoftwareVersion  = Utils.GetAssemblySoftwareVersion();
             properties.BuildNumber      = Utils.GetAssemblyBuildNumber();
             properties.BuildDate        = Utils.GetAssemblyTimestamp();

@@ -6,7 +6,7 @@
 >
   <ApplicationName>PubSub OPCUA Server</ApplicationName>
   <ApplicationUri>urn:localhost:PMI:PubSubOpcUaServer</ApplicationUri>
-  <ProductUri>http://opcfoundation.org/UA/SampleServer</ProductUri>
+  <ProductUri>http://pmi.org/PubSubOpcUaServer</ProductUri>
   <ApplicationType>Server_0</ApplicationType>
   
   <SecurityConfiguration>

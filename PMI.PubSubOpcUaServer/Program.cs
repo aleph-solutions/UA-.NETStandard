@@ -42,9 +42,9 @@ namespace Opc.Ua.Sample
         static void Main()
         {
             ApplicationInstance application = new ApplicationInstance();
-            application.ApplicationName = "PubSub UA Sample Server";
+            application.ApplicationName = "PubSub OPCUA Server";
             application.ApplicationType   = ApplicationType.Server;
-            application.ConfigSectionName = "Opc.Ua.SampleServer";
+            application.ConfigSectionName = "Opc.Ua.PubSubServer";
             
             try
             {
