@@ -66,30 +66,30 @@ namespace ClientAdaptor
 
         #region Public methods
 
-        /// <summary>
-        /// Method to browse the selected node.
-        /// </summary>
-        /// <param name="node">selected node</param>
-        /// <returns></returns>
-        public bool Browse(ref TreeViewNode node)
-        {
-            //Fetch references.
-            ReferenceDescriptionCollection references;
-            try
-            {
-                if (!node.IsRoot) references = m_browser.Browse(node.Id);
-                else  references = m_browser.Browse(m_rootId);
+        ///// <summary>
+        ///// Method to browse the selected node.
+        ///// </summary>
+        ///// <param name="node">selected node</param>
+        ///// <returns></returns>
+        //public bool Browse(ref TreeViewNode node)
+        //{
+        //    //Fetch references.
+        //    ReferenceDescriptionCollection references;
+        //    try
+        //    {
+        //        if (!node.IsRoot) references = m_browser.Browse(node.Id);
+        //        else  references = m_browser.Browse(m_rootId);
 
-                //Add nodes to tree
-                AddReferences(ref node,  references);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Utils.Trace(ex, "BrowseNodeControl.Browse API" + ex.Message);
-            }
-            return false;
-        }
+        //        //Add nodes to tree
+        //        AddReferences(ref node,  references);
+        //        return true;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Utils.Trace(ex, "BrowseNodeControl.Browse API" + ex.Message);
+        //    }
+        //    return false;
+        //}
 
         ///// <summary>
         ///// Initialize browser.
@@ -171,52 +171,52 @@ namespace ClientAdaptor
         /// <summary>
         /// Metod to add reference 
         /// </summary>
-        private void AddReferences(ref TreeViewNode parent, ReferenceDescriptionCollection references)
-        {
-            if (references.Count != 0)
-                foreach (var reference in references)
-                {
-                    if (!m_showReferences)
-                    {
-                        var exists = false;
-                        if (parent != null)
-                            foreach (var existingChild in parent.Children)
-                            {
-                                var existingReference = existingChild.Reference;
-                                if (existingReference != null &&
-                                    existingReference.NodeId == reference.NodeId) //ToDO: Need to convert to nodeId
-                                {
-                                    exists = true;
-                                    break;
-                                }
-                            }
+        //private void AddReferences(ref TreeViewNode parent, ReferenceDescriptionCollection references)
+        //{
+        //    if (references.Count != 0)
+        //        foreach (var reference in references)
+        //        {
+        //            if (!m_showReferences)
+        //            {
+        //                var exists = false;
+        //                if (parent != null)
+        //                    foreach (var existingChild in parent.Children)
+        //                    {
+        //                        var existingReference = existingChild.Reference;
+        //                        if (existingReference != null &&
+        //                            existingReference.NodeId == reference.NodeId) //ToDO: Need to convert to nodeId
+        //                        {
+        //                            exists = true;
+        //                            break;
+        //                        }
+        //                    }
 
-                        if (exists) continue;
-                    }
+        //                if (exists) continue;
+        //            }
 
-                    if (m_showReferences) FindReferenceTypeContainer(parent, reference);
-                    var treeViewNode = new TreeViewNode
-                    {
-                        Header = GetTargetText(reference),
-                        Id = reference.NodeId.ToString()
-                    };
-                    treeViewNode.Reference.BrowseName = reference.BrowseName.Name;
-                    treeViewNode.Reference.IsForward = reference.IsForward;
-                    treeViewNode.Reference.NodeId = reference.NodeId.ToString();
-                    treeViewNode.Reference.NodeClass = reference.NodeClass.ToString();
-                    treeViewNode.Reference.DisplayName = reference.DisplayName.ToString();
-                    treeViewNode.Reference.TypeDefinition = reference.TypeDefinition.ToString();
-                    treeViewNode.ParentId = parent.Id;
+        //            if (m_showReferences) FindReferenceTypeContainer(parent, reference);
+        //            var treeViewNode = new TreeViewNode
+        //            {
+        //                Header = GetTargetText(reference),
+        //                Id = reference.NodeId.ToString()
+        //            };
+        //            treeViewNode.Reference.BrowseName = reference.BrowseName.Name;
+        //            treeViewNode.Reference.IsForward = reference.IsForward;
+        //            treeViewNode.Reference.NodeId = reference.NodeId.ToString();
+        //            treeViewNode.Reference.NodeClass = reference.NodeClass.ToString();
+        //            treeViewNode.Reference.DisplayName = reference.DisplayName.ToString();
+        //            treeViewNode.Reference.TypeDefinition = reference.TypeDefinition.ToString();
+        //            treeViewNode.ParentId = parent.Id;
 
-                    if (parent != null) parent.Children.Add(treeViewNode);
+        //            if (parent != null) parent.Children.Add(treeViewNode);
 
-                    if (!reference.NodeId.IsAbsolute)
-                    {
-                        Browse(ref treeViewNode);
-                    }
+        //            if (!reference.NodeId.IsAbsolute)
+        //            {
+        //                Browse(ref treeViewNode);
+        //            }
 
-                }
-        }
+        //        }
+        //}
 
         /// <summary>
         /// Method to get name of selected node.
@@ -239,26 +239,26 @@ namespace ClientAdaptor
         /// </summary>
         /// <param name="parent"> parent node</param>
         /// <param name="reference"> current reference info</param>
-        private void FindReferenceTypeContainer(TreeViewNode parent, ReferenceDescription reference)
-        {
-            if (parent == null) return;
+        //private void FindReferenceTypeContainer(TreeViewNode parent, ReferenceDescription reference)
+        //{
+        //    if (parent == null) return;
 
-            var typeNode = m_browser.Session.NodeCache.Find(reference.ReferenceTypeId) as ReferenceTypeNode;
-            foreach (var child in parent.Children)
-                if (typeNode != null && typeNode.NodeId == child.Reference.NodeId) //ToDO: covert to nodeId 
-                {
-                    if (typeNode.InverseName == null) return;
+        //    var typeNode = m_browser.Session.NodeCache.Find(reference.ReferenceTypeId) as ReferenceTypeNode;
+        //    foreach (var child in parent.Children)
+        //        if (typeNode != null && typeNode.NodeId == child.Reference.NodeId) //ToDO: covert to nodeId 
+        //        {
+        //            if (typeNode.InverseName == null) return;
 
-                    if (reference.IsForward)
-                    {
-                        if (child.Reference.DisplayName == typeNode.DisplayName.Text) return;
-                    }
-                    else
-                    {
-                        if (child.Reference.DisplayName == typeNode.InverseName.Text) return;
-                    }
-                }
-        }
+        //            if (reference.IsForward)
+        //            {
+        //                if (child.Reference.DisplayName == typeNode.DisplayName.Text) return;
+        //            }
+        //            else
+        //            {
+        //                if (child.Reference.DisplayName == typeNode.InverseName.Text) return;
+        //            }
+        //        }
+        //}
 
         #endregion
     }

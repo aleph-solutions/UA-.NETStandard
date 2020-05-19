@@ -36,7 +36,7 @@ namespace ClientAdaptor
     /// <summary>
     /// adaptor between UI and Client
     /// </summary>
-    public class OPCUAClientAdaptor : IOPCUAClientAdaptor, INotifyPropertyChanged
+    public class OPCUAClientAdaptor : INotifyPropertyChanged
     {
         #region Private Fields
         private int m_reconnectPeriod = 10;
@@ -1891,10 +1891,10 @@ namespace ClientAdaptor
         /// <summary>
         /// Rebrowse the selected node in the tree.
         /// </summary>
-        public void Rebrowse(ref TreeViewNode node)
-        {
-            BrowserNodeControl.Browse(ref node);
-        }
+        //public void Rebrowse(ref TreeViewNode node)
+        //{
+        //    BrowserNodeControl.Browse(ref node);
+        //}
 
         /// <summary>
         /// Creates configures endpoint
@@ -2943,12 +2943,6 @@ namespace ClientAdaptor
         {
             throw new NotImplementedException();
         }
-
-        public Session Connect(string endpointUrl, out string errorMessage, out TreeViewNode node)
-        {
-            throw new NotImplementedException();
-        }
-
 
         #endregion
     }
