@@ -1,5 +1,4 @@
 {
-  "Id": 123,
   "PublishInterval": 1000,  //ms
   "ParentType": "Device",
   "Fields": [

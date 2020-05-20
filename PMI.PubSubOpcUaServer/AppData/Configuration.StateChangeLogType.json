@@ -1,1 +1,63 @@
-{"EventTypeId":{"Identifier":"ns=3;i=1021"},"EventTypeName":"StateChangeLogType","Fields":[{"AliasName":"NewState","BrowsePathString":"3:NewState","Enabled":true},{"AliasName":"OldState","BrowsePathString":"3:OldState","Enabled":true},{"AliasName":"EventId","BrowsePathString":"EventId","Enabled":true},{"AliasName":"EventType","BrowsePathString":"EventType","Enabled":true},{"AliasName":"SourceNode","BrowsePathString":"SourceNode","Enabled":true},{"AliasName":"SourceName","BrowsePathString":"SourceName","Enabled":true},{"AliasName":"Time","BrowsePathString":"Time","Enabled":true},{"AliasName":"ReceiveTime","BrowsePathString":"ReceiveTime","Enabled":true},{"AliasName":"LocalTime","BrowsePathString":"LocalTime","Enabled":true},{"AliasName":"Message","BrowsePathString":"Message","Enabled":true},{"AliasName":"Severity","BrowsePathString":"Severity","Enabled":true}],"IncludedNodes":null,"ExcludedNodes":null}
+{
+  "EventTypeId": { "Identifier": "ns=3;i=1021" },
+  "EventTypeName": "StateChangeLogType",
+  "Fields": [
+    {
+      "AliasName": "NewState",
+      "BrowsePathString": "3:NewState",
+      "Enabled": true
+    },
+    {
+      "AliasName": "OldState",
+      "BrowsePathString": "3:OldState",
+      "Enabled": true
+    },
+    {
+      "AliasName": "EventId",
+      "BrowsePathString": "EventId",
+      "Enabled": true
+    },
+    {
+      "AliasName": "EventType",
+      "BrowsePathString": "EventType",
+      "Enabled": true
+    },
+    {
+      "AliasName": "SourceNode",
+      "BrowsePathString": "SourceNode",
+      "Enabled": true
+    },
+    {
+      "AliasName": "SourceName",
+      "BrowsePathString": "SourceName",
+      "Enabled": true
+    },
+    {
+      "AliasName": "Time",
+      "BrowsePathString": "Time",
+      "Enabled": true
+    },
+    {
+      "AliasName": "ReceiveTime",
+      "BrowsePathString": "ReceiveTime",
+      "Enabled": true
+    },
+    {
+      "AliasName": "LocalTime",
+      "BrowsePathString": "LocalTime",
+      "Enabled": true
+    },
+    {
+      "AliasName": "Message",
+      "BrowsePathString": "Message",
+      "Enabled": true
+    },
+    {
+      "AliasName": "Severity",
+      "BrowsePathString": "Severity",
+      "Enabled": true
+    }
+  ],
+  "IncludedNodes": null,
+  "ExcludedNodes": null
+}

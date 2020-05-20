@@ -1,1 +1,98 @@
-{"EventTypeId":{"Identifier":"ns=4;i=1017"},"EventTypeName":"PMI_NewPresentedMaterialLogType","Fields":[{"AliasName":"MaterialAttributes","BrowsePathString":"4:MaterialAttributes","Enabled":true},{"AliasName":"MaterialLotAttributes","BrowsePathString":"4:MaterialLotAttributes","Enabled":true},{"AliasName":"PresentedMaterialLot","BrowsePathString":"3:PresentedMaterialLot","Enabled":true},{"AliasName":"PresentedMaterialLot/DisplayFormat","BrowsePathString":"3:PresentedMaterialLot/3:DisplayFormat","Enabled":true},{"AliasName":"PresentedMaterialLot/EngineeringUnits","BrowsePathString":"3:PresentedMaterialLot/EngineeringUnits","Enabled":true},{"AliasName":"PresentedMaterialLot/Material","BrowsePathString":"3:PresentedMaterialLot/3:Material","Enabled":true},{"AliasName":"PresentedMaterialLot/QuantityInLUoM","BrowsePathString":"3:PresentedMaterialLot/3:QuantityInLUoM","Enabled":true},{"AliasName":"PresentedMaterialLot/QuantityInLUoM/DisplayFormat","BrowsePathString":"3:PresentedMaterialLot/3:QuantityInLUoM/3:DisplayFormat","Enabled":true},{"AliasName":"PresentedMaterialLot/QuantityInLUoM/EngineeringUnits","BrowsePathString":"3:PresentedMaterialLot/3:QuantityInLUoM/EngineeringUnits","Enabled":true},{"AliasName":"EventId","BrowsePathString":"EventId","Enabled":true},{"AliasName":"EventType","BrowsePathString":"EventType","Enabled":true},{"AliasName":"SourceNode","BrowsePathString":"SourceNode","Enabled":true},{"AliasName":"SourceName","BrowsePathString":"SourceName","Enabled":true},{"AliasName":"Time","BrowsePathString":"Time","Enabled":true},{"AliasName":"ReceiveTime","BrowsePathString":"ReceiveTime","Enabled":true},{"AliasName":"LocalTime","BrowsePathString":"LocalTime","Enabled":true},{"AliasName":"Message","BrowsePathString":"Message","Enabled":true},{"AliasName":"Severity","BrowsePathString":"Severity","Enabled":true}],"IncludedNodes":null,"ExcludedNodes":null}
+{
+  "EventTypeId": { "Identifier": "ns=4;i=1017" },
+  "EventTypeName": "PMI_NewPresentedMaterialLogType",
+  "Fields": [
+    {
+      "AliasName": "MaterialAttributes",
+      "BrowsePathString": "4:MaterialAttributes",
+      "Enabled": true
+    },
+    {
+      "AliasName": "MaterialLotAttributes",
+      "BrowsePathString": "4:MaterialLotAttributes",
+      "Enabled": true
+    },
+    {
+      "AliasName": "PresentedMaterialLot",
+      "BrowsePathString": "3:PresentedMaterialLot",
+      "Enabled": true
+    },
+    {
+      "AliasName": "PresentedMaterialLot/DisplayFormat",
+      "BrowsePathString": "3:PresentedMaterialLot/3:DisplayFormat",
+      "Enabled": true
+    },
+    {
+      "AliasName": "PresentedMaterialLot/EngineeringUnits",
+      "BrowsePathString": "3:PresentedMaterialLot/EngineeringUnits",
+      "Enabled": true
+    },
+    {
+      "AliasName": "PresentedMaterialLot/Material",
+      "BrowsePathString": "3:PresentedMaterialLot/3:Material",
+      "Enabled": true
+    },
+    {
+      "AliasName": "PresentedMaterialLot/QuantityInLUoM",
+      "BrowsePathString": "3:PresentedMaterialLot/3:QuantityInLUoM",
+      "Enabled": true
+    },
+    {
+      "AliasName": "PresentedMaterialLot/QuantityInLUoM/DisplayFormat",
+      "BrowsePathString": "3:PresentedMaterialLot/3:QuantityInLUoM/3:DisplayFormat",
+      "Enabled": true
+    },
+    {
+      "AliasName": "PresentedMaterialLot/QuantityInLUoM/EngineeringUnits",
+      "BrowsePathString": "3:PresentedMaterialLot/3:QuantityInLUoM/EngineeringUnits",
+      "Enabled": true
+    },
+    {
+      "AliasName": "EventId",
+      "BrowsePathString": "EventId",
+      "Enabled": true
+    },
+    {
+      "AliasName": "EventType",
+      "BrowsePathString": "EventType",
+      "Enabled": true
+    },
+    {
+      "AliasName": "SourceNode",
+      "BrowsePathString": "SourceNode",
+      "Enabled": true
+    },
+    {
+      "AliasName": "SourceName",
+      "BrowsePathString": "SourceName",
+      "Enabled": true
+    },
+    {
+      "AliasName": "Time",
+      "BrowsePathString": "Time",
+      "Enabled": true
+    },
+    {
+      "AliasName": "ReceiveTime",
+      "BrowsePathString": "ReceiveTime",
+      "Enabled": true
+    },
+    {
+      "AliasName": "LocalTime",
+      "BrowsePathString": "LocalTime",
+      "Enabled": true
+    },
+    {
+      "AliasName": "Message",
+      "BrowsePathString": "Message",
+      "Enabled": true
+    },
+    {
+      "AliasName": "Severity",
+      "BrowsePathString": "Severity",
+      "Enabled": true
+    }
+  ],
+  "IncludedNodes": null,
+  "ExcludedNodes": null
+}

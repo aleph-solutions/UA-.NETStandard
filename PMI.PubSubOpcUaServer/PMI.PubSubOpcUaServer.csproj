@@ -17,20 +17,20 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AMQPTransportDataSource\AMQPTransportDataSource.csproj" />
-    <ProjectReference Include="..\ClientAdaptor.NonInteractive\ClientAdaptor.csproj" />
+    <ProjectReference Include="..\ClientAdaptor\ClientAdaptor.csproj" />
     <ProjectReference Include="..\DataSource\DataSource.csproj" />
     <ProjectReference Include="..\MQTTTransportDataSource\MQTTTransportDataSource.csproj" />
     <ProjectReference Include="..\Opc.Ua.CommonFunctions\Opc.Ua.CommonFunctions.csproj" />
     <ProjectReference Include="..\Opc.Ua.Extensions\Opc.Ua.Extensions.csproj" />
     <ProjectReference Include="..\Opc.Ua.Publisher\Opc.Ua.Publisher.csproj" />
+    <ProjectReference Include="..\Opc.Ua.Sample\Opc.Ua.Sample.csproj" />
     <ProjectReference Include="..\Opc.Ua.Subscriber\Opc.Ua.Subscriber.csproj" />
     <ProjectReference Include="..\PublisherDataSource\PublisherDataSource.csproj" />
-    <ProjectReference Include="..\SampleApplications\Samples\Opc.Ua.Sample\Opc.Ua.Sample.csproj" />
-    <ProjectReference Include="..\SampleApplications\Samples\PubSub Configuration Tool\PubSubBase\PubSubBase.csproj" />
-    <ProjectReference Include="..\SampleApplications\SDK\Opc.Ua.Client\Opc.Ua.Client.csproj" />
-    <ProjectReference Include="..\SampleApplications\SDK\Opc.Ua.Configuration\Opc.Ua.Configuration.csproj" />
-    <ProjectReference Include="..\SampleApplications\SDK\Opc.Ua.Server\Opc.Ua.Server.csproj" />
+    <ProjectReference Include="..\PubSubBase\PubSubBase.csproj" />
+    <ProjectReference Include="..\Stack\Opc.Ua.Client\Opc.Ua.Client.csproj" />
+    <ProjectReference Include="..\Stack\Opc.Ua.Configuration\Opc.Ua.Configuration.csproj" />
     <ProjectReference Include="..\Stack\Opc.Ua.Core\Opc.Ua.Core.csproj" />
+    <ProjectReference Include="..\Stack\Opc.Ua.Server\Opc.Ua.Server.csproj" />
     <ProjectReference Include="..\SubscriberDataSource\SubscriberDataSource.csproj" />
     <ProjectReference Include="..\UDPTransportDataSource\UDPTransportDataSource.csproj" />
   </ItemGroup>

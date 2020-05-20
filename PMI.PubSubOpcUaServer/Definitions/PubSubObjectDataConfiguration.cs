@@ -12,9 +12,6 @@ namespace PMI.PubSubUAAdapter.Configuration
     public class PubSubObjectDataConfiguration
     {
         [DataMember]
-        public string Id { get; set; }
-
-        [DataMember]
         public int PublishInterval { get; set; }
 
         /// <summary>

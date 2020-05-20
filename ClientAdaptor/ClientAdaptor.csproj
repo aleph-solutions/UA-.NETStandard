@@ -5,16 +5,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="JsonNetworkMessage.cs" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DataSource\DataSource.csproj" />
     <ProjectReference Include="..\Opc.Ua.CommonFunctions\Opc.Ua.CommonFunctions.csproj" />
-    <ProjectReference Include="..\Opc.Ua.Extensions\Opc.Ua.Extensions.csproj" />
     <ProjectReference Include="..\PubSubBase\PubSubBase.csproj" />
+    <ProjectReference Include="..\Stack\Opc.Ua.Client\Opc.Ua.Client.csproj" />
     <ProjectReference Include="..\Stack\Opc.Ua.Configuration\Opc.Ua.Configuration.csproj" />
     <ProjectReference Include="..\Stack\Opc.Ua.Core\Opc.Ua.Core.csproj" />
+    <ProjectReference Include="..\Stack\Opc.Ua.Server\Opc.Ua.Server.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
 
 

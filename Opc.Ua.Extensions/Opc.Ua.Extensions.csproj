@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SampleApplications\SDK\Opc.Ua.Client\Opc.Ua.Client.csproj" />
+    <ProjectReference Include="..\Stack\Opc.Ua.Client\Opc.Ua.Client.csproj" />
     <ProjectReference Include="..\Stack\Opc.Ua.Core\Opc.Ua.Core.csproj" />
   </ItemGroup>
 
