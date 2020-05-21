@@ -13,11 +13,10 @@ namespace PMIE.PubSubOpcUaServer.Configuration
 {
     public class ConfigurationClient
     {
-        private InternalPubSubUaClient m_clientAdaptor;
+        private InternalPubSubUaClient _internalClient;
         private Opc.Ua.Client.Session _pubSubSession;
         private IServerInternal _pubSubServer;
 
-        private Connection _mqttConnection;
         private List<PublishedDataSetBase> _datasets;
         private List<DataSetWriterGroup> _writerGroups;
         private List<DataSetWriterDefinition> _writers;
@@ -34,18 +33,21 @@ namespace PMIE.PubSubOpcUaServer.Configuration
         {
             try
             {
-                m_clientAdaptor = new InternalPubSubUaClient();
+                _internalClient = new InternalPubSubUaClient();
 
+                //TODO: [ALEPH] move session creation into InternalPubSubUaClient
                 //Select the endpoint to connect to the server
                 var selectedEndpoint = CoreClientUtils.SelectEndpoint(_pubSubServer.EndpointAddresses.First().ToString(), false);
-                var endpointConfiguration = EndpointConfiguration.Create(m_clientAdaptor.Configuration);
+                var endpointConfiguration = EndpointConfiguration.Create(_internalClient.Configuration);
                 var endpoint = new ConfiguredEndpoint(null, selectedEndpoint, endpointConfiguration);
 
-                var session = Opc.Ua.Client.Session.Create(m_clientAdaptor.Configuration, endpoint, false, "ConfigurationClient", 60000, new UserIdentity(new AnonymousIdentityToken()), null).Result;
-                m_clientAdaptor.Session = session;
+                var session = Opc.Ua.Client.Session.Create(_internalClient.Configuration, endpoint, false, "ConfigurationClient", 60000, new UserIdentity(new AnonymousIdentityToken()), null).Result;
+                _internalClient.Session = session;
+
+                //TODO: [ALEPH] _pubSubSession is not needed, use m_clientAdaptor.Session instead
                 _pubSubSession = session;
 
-                m_clientAdaptor.BrowserNodeControl = new BrowseNodeControl(session);
+                _internalClient.BrowserNodeControl = new BrowseNodeControl(session);
             }
             catch (Exception ex)
             {
@@ -76,7 +78,7 @@ namespace PMIE.PubSubOpcUaServer.Configuration
                 PublisherId = "RTCRGF40"
             };
 
-            var connectionRes = m_clientAdaptor.AddConnection(mqttConnection, out NodeId connectionNodeId);
+            var connectionRes = _internalClient.AddConnection(mqttConnection, out NodeId connectionNodeId);
             Console.WriteLine($"Added connection. Result: {connectionRes}, Connection NodeId: {connectionNodeId}");
             mqttConnection.ConnectionNodeId = connectionNodeId;
             return connectionNodeId;
@@ -110,7 +112,7 @@ namespace PMIE.PubSubOpcUaServer.Configuration
                 SecurityGroupId = "0",
             };
 
-            var resGroup = m_clientAdaptor.AddWriterGroup(datasetWriterGroup, out NodeId groupId);
+            var resGroup = _internalClient.AddWriterGroup(datasetWriterGroup, out NodeId groupId);
             Console.WriteLine($"Added writer group {datasetWriterGroup.Name}. Result: {resGroup}, Group NodeId: {groupId}");
             datasetWriterGroup.GroupId = groupId;
 
@@ -147,7 +149,7 @@ namespace PMIE.PubSubOpcUaServer.Configuration
                     });
                 }
 
-                publishedDataSet = m_clientAdaptor.AddPublishedDataSet(datasetName, datasetItems);
+                publishedDataSet = _internalClient.AddPublishedDataSet(datasetName, datasetItems);
 
                 if (publishedDataSet != null)
                 {
@@ -189,7 +191,7 @@ namespace PMIE.PubSubOpcUaServer.Configuration
                 ContentFilter whereClause = new ContentFilter();
                 ContentFilterElement typeClause = whereClause.Push(FilterOperator.OfType, eventTypeId);
 
-                publishedDataSet = m_clientAdaptor.AddPublishedDataSetEvents(datasetName, eventNotifier, eventTypeId, selectedFields, whereClause);
+                publishedDataSet = _internalClient.AddPublishedDataSetEvents(datasetName, eventNotifier, eventTypeId, selectedFields, whereClause);
             }
             catch (Exception ex)
             {
@@ -222,7 +224,7 @@ namespace PMIE.PubSubOpcUaServer.Configuration
         /// <returns></returns>
         public NodeId AddWriter(DataSetWriterGroup parent, string writerName, string datasetName, string queueName, uint keyframeCount, out DataSetWriterDefinition writer)
         {
-            var datasetId = CommonFunctions.GetChildId(m_clientAdaptor.Session, new NodeId(17371), datasetName);
+            var datasetId = CommonFunctions.GetChildId(_internalClient.Session, new NodeId(17371), datasetName);
             if (datasetId != null)
             {
                 writer = new DataSetWriterDefinition()
@@ -244,7 +246,7 @@ namespace PMIE.PubSubOpcUaServer.Configuration
                 };
 
 
-                var res = m_clientAdaptor.AddDataSetWriter(parent.GroupId, writer, out NodeId writerNodeId, out int revisedKeyframeCount);
+                var res = _internalClient.AddDataSetWriter(parent.GroupId, writer, out NodeId writerNodeId, out int revisedKeyframeCount);
                 Console.WriteLine($"Added writer {writer.Name}. Result: {res}, Writer NodeId: {writerNodeId}");
                 writer.WriterNodeId = writerNodeId;
 
@@ -280,7 +282,7 @@ namespace PMIE.PubSubOpcUaServer.Configuration
 
                 //search for the methodId
                 var methodId = CommonFunctions.GetChildId(_pubSubSession, statusId, "Enable");
-                m_clientAdaptor.EnablePubSubState(new MonitorNode()
+                _internalClient.EnablePubSubState(new MonitorNode()
                 {
                     ParentNodeId = statusId,
                     EnableNodeId = methodId
@@ -312,7 +314,7 @@ namespace PMIE.PubSubOpcUaServer.Configuration
 
                 //search for the methodId
                 var methodId = CommonFunctions.GetChildId(_pubSubSession, statusId, "Enable");
-                m_clientAdaptor.EnablePubSubState(new MonitorNode()
+                _internalClient.EnablePubSubState(new MonitorNode()
                 {
                     ParentNodeId = statusId,
                     EnableNodeId = methodId
@@ -340,7 +342,7 @@ namespace PMIE.PubSubOpcUaServer.Configuration
         /// <returns>The NodeId of the node of the extended field in the address space</returns>
         public NodeId AddExtensionField(PublishedDataSetBase publishedDataSet, string fieldName, object fieldValue)
         {
-            return m_clientAdaptor.AddExtensionField(publishedDataSet, fieldName, fieldValue);
+            return _internalClient.AddExtensionField(publishedDataSet, fieldName, fieldValue);
         }
     }
 }

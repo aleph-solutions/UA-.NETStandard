@@ -10,7 +10,7 @@ namespace Opc.Ua.PubSub
     {
         MqttClient client;
         string m_Format = "json";
-        
+
         string[] Topics = new string[1] { "Test" };
 
         #region Private Methods
@@ -52,20 +52,20 @@ namespace Opc.Ua.PubSub
                 }
 
                 var port = 1883;
-                if(addressarray.Length > 1)
+                if (addressarray.Length > 1)
                 {
                     port = Convert.ToInt32(addressarray[1]);
                 }
 
                 var brokerSecurityStr = Environment.GetEnvironmentVariable("BROKER_SECURITY");
                 var brokerSecurity = BrokerSecurity.NoSecurity;
-                if(brokerSecurityStr != null)
+                if (brokerSecurityStr != null)
                 {
                     var index = Convert.ToInt32(brokerSecurityStr);
                     brokerSecurity = (BrokerSecurity)index;
                 }
 
-                if(brokerSecurity == BrokerSecurity.Certificate)
+                if (brokerSecurity == BrokerSecurity.Certificate)
                 {
                     Console.WriteLine("MQTTDataSource Initialize...Certificate Security");
                     var clientCertificatePath = Environment.GetEnvironmentVariable("MQTT_CLIENT_CERT");
@@ -86,18 +86,19 @@ namespace Opc.Ua.PubSub
                 client.MqttMsgSubscribed += Client_MqttMsgSubscribed;
                 Console.WriteLine($"MQTTTransportDataSource...Initialize...Connecting");
 
-                if(brokerSecurity == BrokerSecurity.UserPassword)
+                if (brokerSecurity == BrokerSecurity.UserPassword)
                 {
                     var username = Environment.GetEnvironmentVariable("BROKER_USERNAME");
-                    var password = Environment.GetEnvironmentVariable("BROKER_PASSWORD");
+                    var cryptedPassword = Environment.GetEnvironmentVariable("BROKER_PASSWORD");
 
-                    if (username != null && password != null)
+                    if (username != null && cryptedPassword != null)
                     {
+                        var password = AesOperation.DecryptString($"{Address}_{username}", cryptedPassword);
                         client.Connect(Guid.NewGuid().ToString(), username, password);
                     }
                     else
                     {
-                        Console.WriteLine($"MQTTDataSource Initialize...Username ({username}) or Password ({password}) are null");
+                        Console.WriteLine($"MQTTDataSource Initialize...Username or Password");
                     }
                 }
                 else
@@ -135,11 +136,11 @@ namespace Opc.Ua.PubSub
                 client.Publish(topic, data, MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE, true);
                 return true;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return false;
             }
-           
+
         }
 
         public override bool ReceiveData(string queueName)
@@ -152,5 +153,5 @@ namespace Opc.Ua.PubSub
         #endregion
     }
 
-    public enum BrokerSecurity { NoSecurity, UserPassword, Certificate}
+    public enum BrokerSecurity { NoSecurity, UserPassword, Certificate }
 }

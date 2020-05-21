@@ -29,13 +29,13 @@ using System.Threading.Tasks;
 
 namespace PMIE.PubSubOpcUaServer.PubSub
 {
-
     /// <summary>
     /// A node manager for a server that exposes several variables.
     /// </summary>
     public class PublisherNodeManager : CustomNodeManager2
     {
         X509Certificate2 certificate;
+
         #region Constructors
         /// <summary>
         /// Initializes the node manager.
@@ -104,10 +104,6 @@ namespace PMIE.PubSubOpcUaServer.PubSub
             }
         }
         #endregion
-
-
-
-
 
         /// <summary>
         /// Loads a node set from a file or resource and addes them to the set of predefined nodes.
@@ -332,7 +328,7 @@ namespace PMIE.PubSubOpcUaServer.PubSub
         {
             //Retriece opcua server URL from the env var
             var serverUrl = Environment.GetEnvironmentVariable("OPCUA_SERVER_URL");
-            if (serverUrl == null) throw new ArgumentNullException("Environmental variable OPCUA_SERVER_URL is null"); 
+            if (serverUrl == null) throw new ArgumentNullException("Environmental variable OPCUA_SERVER_URL is null");
 
             //string address = string.Empty;
             //foreach (var endpoint in Server.EndpointAddresses)
@@ -340,13 +336,30 @@ namespace PMIE.PubSubOpcUaServer.PubSub
             //    address = endpoint.ToString();
             //    break;
             //}
-            ApplicationStartSettings settings = new ApplicationStartSettings();
-            settings.EndpointUrl = serverUrl;
-            m_PubSubAdaptor.Start(settings).Wait();
 
-            var configurationBuilder = new ConfigurationBuilder(m_PubSubAdaptor.Session, Server);
-            var tConfigurationClient = Task.Run(() => configurationBuilder.Start());
+            var tConfigurationClient = Task.Run(async () =>
+            {
+                ApplicationStartSettings settings = new ApplicationStartSettings();
+                settings.EndpointUrl = serverUrl;
+                bool connected = false;
+                do
+                {
+                    try
+                    {
+                        await m_PubSubAdaptor.Start(settings);
+                        connected = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        await Task.Delay(5000);
+                    }
+                } while (!connected);
+
+                var configurationBuilder = new ConfigurationBuilder(m_PubSubAdaptor.Session, Server);
+                configurationBuilder.Start();
+            });
         }
+
         #region Handlers
 
         #region PublishedEvents Handlers
@@ -393,7 +406,7 @@ namespace PMIE.PubSubOpcUaServer.PubSub
             _AddPublishedEventsMethodState.DataSetMetaData.Value = _DataSetMetaDataType;
             _DataSetMetaDataType.Fields = new FieldMetaDataCollection();
             int i = 0;
-            foreach(SimpleAttributeOperand PublishedField in selectedFields)
+            foreach (SimpleAttributeOperand PublishedField in selectedFields)
             {
                 FieldMetaData metaData = new FieldMetaData();
                 metaData.Name = fieldNameAliases[i];
@@ -424,8 +437,8 @@ namespace PMIE.PubSubOpcUaServer.PubSub
             _AddPublishedEventsMethodState.ExtensionFields.AddExtensionField = new AddExtensionFieldMethodState(_AddPublishedEventsMethodState.ExtensionFields);
             _AddPublishedEventsMethodState.ExtensionFields.AddExtensionField.Create(context, new NodeId(_AddPublishedEventsMethodState.ExtensionFields.NodeId.Identifier + ".AddExtensionField", 2), new QualifiedName("AddExtensionField"), new LocalizedText("AddExtensionField"), false);
             _AddPublishedEventsMethodState.ExtensionFields.AddExtensionField.OnCall = AddExtensionFieldMethodStateMethodCallHandler;
-            
-            
+
+
             method.Parent.AddChild(_AddPublishedEventsMethodState);
             AddPredefinedNode(context, _AddPublishedEventsMethodState);
             m_PubSubAdaptor.AddPublishedEvents(_AddPublishedEventsMethodState);
@@ -435,7 +448,6 @@ namespace PMIE.PubSubOpcUaServer.PubSub
 
         #region PublishedDataSet Handlers
 
-
         ServiceResult RemovePublishedDataSetMethodStateMethodCallHandler(ISystemContext context, MethodState method, NodeId objectId, NodeId dataSetNodeId)
         {
             PublishedDataItemsState _PublishedDataItemsState = FindPredefinedNode(dataSetNodeId, typeof(NodeState)) as PublishedDataItemsState;
@@ -443,6 +455,7 @@ namespace PMIE.PubSubOpcUaServer.PubSub
             method.Parent.RemoveChild(_PublishedDataItemsState);
             return ServiceResult.Good;
         }
+
         ServiceResult AddPublishedDataItemsMethodStateMethodCallHandler(
         ISystemContext context,
         MethodState method,
@@ -552,9 +565,8 @@ namespace PMIE.PubSubOpcUaServer.PubSub
             return ServiceResult.Good;
         }
 
-
-
         #endregion
+
         #region Connection Handlers
         ServiceResult AddConnectionMethodStateMethodCallHandler(ISystemContext context, MethodState method, NodeId objectId, PubSubConnectionDataType configuration, ref NodeId connectionId)
         {
@@ -677,6 +689,7 @@ namespace PMIE.PubSubOpcUaServer.PubSub
         }
 
         #endregion
+
         #region Enable_Disable Handler
 
 
@@ -795,6 +808,7 @@ namespace PMIE.PubSubOpcUaServer.PubSub
             }
         }
         #endregion
+
         #region Group Handlers
         #region Reader Group Handlers
         ServiceResult PubSubConnectionAddReaderGroupGroupMethodStateMethodCallHandler(ISystemContext context, MethodState method, NodeId objectId, ReaderGroupDataType configuration, ref NodeId groupId)
@@ -1271,8 +1285,8 @@ namespace PMIE.PubSubOpcUaServer.PubSub
                     if (state.DisplayName.Text == configuration.DataSetName)
                     {
                         _WriterState.AddReference(ReferenceTypeIds.DataSetToWriter, true, state.NodeId);
-                        if(state is PublishedDataItemsState) _WriterState.Handle = state as PublishedDataItemsState;
-                        else if(state is PublishedEventsState) _WriterState.Handle = state as PublishedEventsState;
+                        if (state is PublishedDataItemsState) _WriterState.Handle = state as PublishedDataItemsState;
+                        else if (state is PublishedEventsState) _WriterState.Handle = state as PublishedEventsState;
                         break;
                     }
                     //    
