@@ -55,9 +55,9 @@ The username used for authenticating when BROKER_SECURITY is 1
 
 The password used for authenticating when BROKER_SECURITY is 1.
 Password must be encrypted using AES_128_CBC and 'ipaddress_username' as key.
+https://encode-decode.com/aes-128-cbc-encrypt-online/
 
 > ENV MQTT_CLIENT_CERT AppData/Certs/cert.crt
 > ENV MQTT_CLIENT_CA_CERT AppData/Certs/cert.crt
 
-Certificates used for authenticating when BROKER_SECURITY is 2 
-
+Certificates used for authenticating when BROKER_SECURITY is 2
