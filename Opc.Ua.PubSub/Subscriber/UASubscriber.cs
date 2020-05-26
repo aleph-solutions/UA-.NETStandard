@@ -1,0 +1,55 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
+
+namespace Opc.Ua.PubSub.Subscriber
+{
+    public class UASubscriber : IUASubscriber
+    {
+        X509Certificate2 m_servercertificate;
+        public UASubscriber(X509Certificate2 servercertificate)
+        {
+            m_servercertificate = servercertificate;
+        }
+        Dictionary<NodeId, IUASubscriberDataSource> DicUASubscriberDataSource = new Dictionary<NodeId, IUASubscriberDataSource>();
+        public void AddConnection(PubSubConnectionState pubSubConnectionState, IDataSource dataSource)
+        {
+            Console.WriteLine($"UASubscriber...Add connection");
+            IUASubscriberDataSource m_UASubscriberDataSource = null;
+            m_UASubscriberDataSource = new UASubscriberDataSource(m_servercertificate);
+            DicUASubscriberDataSource[pubSubConnectionState.NodeId] = m_UASubscriberDataSource;
+            m_UASubscriberDataSource.Initialize(pubSubConnectionState, dataSource);
+            Console.WriteLine($"UASubscriber...Add connection...completed");
+        }
+
+        public void AddDataSetReader(DataSetReaderState dataSetReaderState,Opc.Ua.Core.SubscriberDelegate subscriberDelegate)
+        {
+            IUASubscriberDataSource m_UASubscriberDataSource = DicUASubscriberDataSource[(dataSetReaderState.Parent as BaseInstanceState).Parent.NodeId];
+            m_UASubscriberDataSource.AddDataSetReader(dataSetReaderState, subscriberDelegate);
+        }
+         
+
+        public void RemoveConnection(PubSubConnectionState pubSubConnectionState)
+        {
+            IUASubscriberDataSource m_UASubscriberDataSource = DicUASubscriberDataSource[pubSubConnectionState.NodeId];
+            m_UASubscriberDataSource.StopSubscribing();
+            DicUASubscriberDataSource.Remove(pubSubConnectionState.NodeId);
+        }
+
+        public void RemoveDataSetReader(DataSetReaderState dataSetReaderState)
+        {
+            IUASubscriberDataSource m_UAPublisherDataSource = DicUASubscriberDataSource[(dataSetReaderState.Parent as BaseInstanceState).Parent.NodeId];
+            m_UAPublisherDataSource.RemoveDataSetReader(dataSetReaderState);
+        }
+        public void CreateTargetVariables(NodeId connectionStateNodeId,NodeId readerStateNodeId, FieldTargetDataType[] fieldTargetDataTypes)
+        {
+            IUASubscriberDataSource m_UAPublisherDataSource = DicUASubscriberDataSource[connectionStateNodeId];
+            m_UAPublisherDataSource.CreateTargetVariables(connectionStateNodeId,readerStateNodeId, fieldTargetDataTypes);
+        }
+        public void RemoveFieldTargetDataType(NodeId readerStateNodeId)
+        {
+            IUASubscriberDataSource m_UAPublisherDataSource = DicUASubscriberDataSource[readerStateNodeId];
+            m_UAPublisherDataSource.RemoveFieldTargetDataType(readerStateNodeId);
+        }
+    }
+}
