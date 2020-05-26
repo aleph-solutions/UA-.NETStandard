@@ -341,6 +341,7 @@ namespace Opc.Ua.Sample.PubSub
             //}
             ApplicationStartSettings settings = new ApplicationStartSettings();
             settings.EndpointUrl = serverUrl;
+            settings.Timeout = 10000;
             m_PubSubAdaptor.Start(settings).Wait();
 
             var configurationBuilder = new ConfigurationBuilder(m_PubSubAdaptor.Session, Server);
