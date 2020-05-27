@@ -62,7 +62,7 @@ namespace PMIE.PubSubOpcUaServer.PubSub
             while (!endpointFound)
             {
                 var selectedEndpoint = CoreClientUtils.SelectEndpoint(settings.EndpointUrl, false, settings.Timeout);
-                if(selectedEndpoint?.EndpointUrl != null) endpointFound 
+                if (selectedEndpoint?.EndpointUrl != null) endpointFound = true;
                 var endpointConfiguration = EndpointConfiguration.Create(m_configuration);
                 endpoint = new ConfiguredEndpoint(null, selectedEndpoint, endpointConfiguration);
             }

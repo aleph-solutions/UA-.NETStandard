@@ -3,6 +3,7 @@ using M2Mqtt;
 using M2Mqtt.Messages;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
+using System.Net.Security;
 
 namespace Opc.Ua.PubSub
 {
@@ -68,14 +69,14 @@ namespace Opc.Ua.PubSub
                 if (brokerSecurity == BrokerSecurity.Certificate)
                 {
                     Console.WriteLine("MQTTDataSource Initialize...Certificate Security");
-                    var clientCertificatePath = Environment.GetEnvironmentVariable("MQTT_CLIENT_CERT");
-                    var clientCACertificatePath = Environment.GetEnvironmentVariable("MQTT_CLIENT_CA_CERT");
+                    //var clientCertificatePath = Environment.GetEnvironmentVariable("MQTT_CLIENT_CERT");
+                    var caCertificatePath = Environment.GetEnvironmentVariable("MQTT_CLIENT_CA_CERT");
 
-                    Console.WriteLine($"MQTTDataSource Initialize...Certificate Security...ClientCert path: {clientCertificatePath} ClientCACert path: {clientCACertificatePath}");
-                    var clientCert = new X509Certificate2(clientCertificatePath);
-                    var clientCACert = new X509Certificate2(clientCACertificatePath);
+                    //Console.WriteLine($"MQTTDataSource Initialize...Certificate Security...ClientCert path: {clientCertificatePath} ClientCACert path: {clientCACertificatePath}");
+                    //var clientCert = new X509Certificate2(clientCertificatePath);
+                    var caCert = new X509Certificate(caCertificatePath);
 
-                    client = new MqttClient(Address, port, true, clientCert, clientCACert, MqttSslProtocols.TLSv1_2);
+                    client = new MqttClient(Address, port, true, null, caCert, MqttSslProtocols.TLSv1_2, Client_RemoteCertificateValidationCallback);
                 }
                 else client = new MqttClient(Address, port, false, null, null, MqttSslProtocols.None);
 
@@ -147,6 +148,12 @@ namespace Opc.Ua.PubSub
         {
             Topics[0] = queueName;
             client.Subscribe(Topics, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
+            return true;
+        }
+
+        bool Client_RemoteCertificateValidationCallback(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+            // logic for validation here
             return true;
         }
 
