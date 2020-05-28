@@ -32,11 +32,15 @@ using Opc.Ua.Configuration;
 using System.Threading.Tasks;
 using PMIE.PubSubOpcUaServer.PubSub;
 using Opc.Ua;
+using System.Threading;
 
 namespace PMIE.PubSubOpcUaServer
 {
     static class Program
     {
+        // AutoResetEvent to signal when to exit the application.
+        private static readonly AutoResetEvent waitHandle = new AutoResetEvent(false);
+
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
@@ -50,24 +54,31 @@ namespace PMIE.PubSubOpcUaServer
 
             try
             {
-                Task<ApplicationConfiguration> task = application.LoadApplicationConfiguration(false);
-                task.Wait();
+                application.LoadApplicationConfiguration(false).Wait();
 
                 // check the application certificate.
-                Task<bool> task2 = application.CheckApplicationInstanceCertificate(false, 0);
-                task2.Wait();
-                bool certOK = task2.Result;
+                bool certOK = application.CheckApplicationInstanceCertificate(false, 0).Result;
                 if (!certOK)
                 {
                     throw new Exception("Application instance certificate invalid!");
                 }
 
                 // start the server.
-                Task task3 = application.Start(new PubSubServer());
-                task3.Wait();
+                application.Start(new PubSubServer()).Wait();
+                Console.WriteLine("Press <Control+C> to exit the program.");
 
-                Console.Write("Press <Enter> to exit... ");
-                while (Console.ReadKey().Key != ConsoleKey.Enter) { }
+                // Handle Control+C or Control+Break
+                Console.CancelKeyPress += (o, e) =>
+                {
+                    Console.WriteLine("Exit");
+
+                    // Allow the manin thread to continue and exit...
+                    e.Cancel = true;
+                    waitHandle.Set();
+                };
+
+                // Wait
+                waitHandle.WaitOne();
             }
             catch (Exception e)
             {
