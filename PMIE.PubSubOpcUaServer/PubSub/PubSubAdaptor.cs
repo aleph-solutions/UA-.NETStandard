@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PMIE.PubSubOpcUaServer.PubSub
@@ -55,14 +56,30 @@ namespace PMIE.PubSubOpcUaServer.PubSub
         }
         public async Task Start(ApplicationStartSettings settings)
         {
+            var endpointFound = false;
+            ConfiguredEndpoint endpoint = new ConfiguredEndpoint();
             m_configuration = await CreateApplicationConfiguration(settings);
-            var selectedEndpoint = CoreClientUtils.SelectEndpoint(settings.EndpointUrl, false, settings.Timeout);
-            var endpointConfiguration = EndpointConfiguration.Create(m_configuration);
-            var endpoint = new ConfiguredEndpoint(null, selectedEndpoint, endpointConfiguration);
+            while (!endpointFound)
+            {
+                var selectedEndpoint = CoreClientUtils.SelectEndpoint(settings.EndpointUrl, false, settings.Timeout);
+                if (selectedEndpoint?.EndpointUrl != null) endpointFound = true;
+                var endpointConfiguration = EndpointConfiguration.Create(m_configuration);
+                endpoint = new ConfiguredEndpoint(null, selectedEndpoint, endpointConfiguration);
+            }
+            
 
             m_configuration.CertificateValidator.CertificateValidation += CertificateValidator_CertificateValidation;
 
-            m_session = await Session.Create(m_configuration, endpoint, false, "OPC UA PubSub Publisher " + new Random().Next(), 60000, new UserIdentity(new AnonymousIdentityToken()), null);
+            var connected = false;
+            while (!connected)
+            {
+                m_session = await Session.Create(m_configuration, endpoint, false, "OPC UA Sample Publisher " + new Random().Next(), 10000, new UserIdentity(new AnonymousIdentityToken()), null);
+                connected = m_session.Connected;
+                if (!connected) {
+                    Console.WriteLine($"PubSubAdaptor Start...Connection to server {endpoint.EndpointUrl} failed...Retry in 5s");
+                    Thread.Sleep(5000); 
+                }
+            }
 
 
         }

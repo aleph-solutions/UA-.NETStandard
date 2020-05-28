@@ -44,6 +44,9 @@
     <None Update="AppData\Certs\cert_ca.crt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="AppData\Certs\mq-broker-iiot-mtb-prod.ca.pem">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="AppData\Configuration.Base.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

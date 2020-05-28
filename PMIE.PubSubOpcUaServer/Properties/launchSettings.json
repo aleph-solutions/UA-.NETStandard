@@ -5,13 +5,13 @@
       "environmentVariables": {
         "MQTT_CLIENT_CERT": "AppData\\Certs\\cert.crt",
         "BROKER_USERNAME": "aleph",
+        "KEYFRAMECOUNT": "1",
         "OPCUA_SERVER_URL": "opc.tcp://localhost:48030",
-        "BROKER_IP": "40.91.255.161",
-        "BROKER_PORT": "1883",
-        "BROKER_PASSWORD": "niSEQ55ywO3ubLMu2UthHg==", //"A13phQ",
-        "BROKER_SECURITY": "1",
-        "MQTT_CLIENT_CA_CERT": "AppData\\Certs\\cert_ca.crt",
-        "KEYFRAMECOUNT": "1"
+        "BROKER_IP": "mq-broker-iiot-mtb-prd.prd.paas.pmiapps.biz",
+        "BROKER_PORT": "443",
+        "BROKER_PASSWORD": "niSEQ55ywO3ubLMu2UthHg==",
+        "BROKER_SECURITY": "2",
+        "MQTT_CLIENT_CA_CERT": "AppData\\Certs\\mq-broker-iiot-mtb-prod.ca.pem"
       }
     }
   }

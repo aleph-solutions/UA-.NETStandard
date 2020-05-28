@@ -336,6 +336,10 @@ namespace PMIE.PubSubOpcUaServer.PubSub
             //    address = endpoint.ToString();
             //    break;
             //}
+            ApplicationStartSettings settings = new ApplicationStartSettings();
+            settings.EndpointUrl = serverUrl;
+            settings.Timeout = 10000;
+            m_PubSubAdaptor.Start(settings).Wait();
 
             var tConfigurationClient = Task.Run(async () =>
             {
