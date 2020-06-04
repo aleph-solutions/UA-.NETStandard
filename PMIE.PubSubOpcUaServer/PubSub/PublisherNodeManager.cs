@@ -15,6 +15,7 @@
 */
 
 //using Opc.Ua.PubSub;
+using Microsoft.Extensions.Logging;
 using Opc.Ua;
 using Opc.Ua.Server;
 using PMIE.PubSubOpcUaServer.Configuration;
@@ -35,14 +36,19 @@ namespace PMIE.PubSubOpcUaServer.PubSub
     public class PublisherNodeManager : CustomNodeManager2
     {
         X509Certificate2 certificate;
+        ILoggerFactory _loggerFactory;
+        ILogger<PublisherNodeManager> _logger;
 
         #region Constructors
         /// <summary>
         /// Initializes the node manager.
         /// </summary>
-        public PublisherNodeManager(IServerInternal server, ApplicationConfiguration configuration)
+        public PublisherNodeManager(IServerInternal server, ApplicationConfiguration configuration, ILoggerFactory loggerFactory)
         : base(server)
         {
+            _loggerFactory = loggerFactory;
+            _logger = loggerFactory.CreateLogger<PublisherNodeManager>();
+
             SystemContext.NodeIdFactory = this;
             List<string> namespaceUris = new List<string>();
             namespaceUris.Add(Namespaces.OpcUa);
@@ -54,7 +60,7 @@ namespace PMIE.PubSubOpcUaServer.PubSub
             m_namespaceIndex = 0;
             m_lastUsedId = 0;
             certificate = configuration.SecurityConfiguration.ApplicationCertificate.Certificate;
-            m_PubSubAdaptor = new PubSubAdaptor(certificate);
+            m_PubSubAdaptor = new PubSubAdaptor(certificate, _loggerFactory);
             m_subscriberDelegate = new Opc.Ua.Core.SubscriberDelegate(AssignSusbribedDataValue);
         }
         #endregion
@@ -328,6 +334,8 @@ namespace PMIE.PubSubOpcUaServer.PubSub
         {
             //Retriece opcua server URL from the env var
             var serverUrl = Environment.GetEnvironmentVariable("OPCUA_SERVER_URL");
+            _logger.LogDebug($"OnServerStarted...Env var OPCUA_SERVER_URL: {serverUrl}");
+
             if (serverUrl == null) throw new ArgumentNullException("Environmental variable OPCUA_SERVER_URL is null");
 
             //string address = string.Empty;
@@ -359,7 +367,8 @@ namespace PMIE.PubSubOpcUaServer.PubSub
                     }
                 } while (!connected);
 
-                var configurationBuilder = new ConfigurationBuilder(m_PubSubAdaptor.Session, Server);
+                _logger.LogDebug($"OnServerStarted...OPCUA server {serverUrl} connected");
+                var configurationBuilder = new ConfigurationBuilder(m_PubSubAdaptor.Session, Server, _loggerFactory);
                 configurationBuilder.Start();
             });
         }
@@ -574,7 +583,7 @@ namespace PMIE.PubSubOpcUaServer.PubSub
         #region Connection Handlers
         ServiceResult AddConnectionMethodStateMethodCallHandler(ISystemContext context, MethodState method, NodeId objectId, PubSubConnectionDataType configuration, ref NodeId connectionId)
         {
-            Console.WriteLine($"PublisherNodeManager...Add Connection");
+            _logger.LogInformation($"PublisherNodeManager...Add Connection");
             PubSubConnectionState existedChild = method.Parent.FindChild(context, new QualifiedName(configuration.Name, 2)) as PubSubConnectionState;
             if (existedChild != null)
             {

@@ -7,7 +7,7 @@
         "BROKER_ENABLE_TLS": "false",
         "BROKER_USERNAME": "aleph",
         "KEYFRAMECOUNT": "1",
-        "OPCUA_SERVER_URL": "opc.tcp://192.168.1.92:48030",
+        "OPCUA_SERVER_URL": "opc.tcp://localhost:48030",
         "BROKER_IP": "40.91.255.161",
         "BROKER_PORT": "1883",
         "BROKER_AUTH": "1",

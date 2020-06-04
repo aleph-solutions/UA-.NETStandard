@@ -16,6 +16,7 @@
 
 #define CUSTOM_NODE_MANAGER
 
+using Microsoft.Extensions.Logging;
 using Opc.Ua;
 using Opc.Ua.Server;
 using System.Collections.Generic;
@@ -30,6 +31,14 @@ namespace PMIE.PubSubOpcUaServer.PubSub
     public partial class PubSubServer : StandardServer
     {
         PublisherNodeManager _PublisherNodeManager;
+        ILoggerFactory _loggerFactory;
+        ILogger<PubSubServer> _logger;
+
+        public PubSubServer(ILoggerFactory loggerFactory)
+        {
+            _loggerFactory = loggerFactory;
+            _logger = loggerFactory.CreateLogger<PubSubServer>();
+        }
 
         /// <summary>
         /// Initializes the server before it starts up.
@@ -40,7 +49,7 @@ namespace PMIE.PubSubOpcUaServer.PubSub
         /// </remarks>
         protected override void OnServerStarting(ApplicationConfiguration configuration)
         {
-            Utils.Trace("The server is starting.");
+            _logger.LogDebug("The server is starting.");
 
             base.OnServerStarting(configuration);
 
@@ -55,9 +64,7 @@ namespace PMIE.PubSubOpcUaServer.PubSub
         protected override void OnServerStarted(IServerInternal server)
         {
             base.OnServerStarted(server);
-
-
-
+            
             // request notifications when the user identity is changed. all valid users are accepted by default.
             server.SessionManager.ImpersonateUser += new ImpersonateEventHandler(SessionManager_ImpersonateUser);
             if (_PublisherNodeManager != null)
@@ -84,7 +91,7 @@ namespace PMIE.PubSubOpcUaServer.PubSub
         /// </remarks>
         protected override void OnServerStopping()
         {
-            Debug.WriteLine("The Server is stopping.");
+            _logger.LogDebug("The Server is stopping.");
 
             base.OnServerStopping();
 
@@ -109,12 +116,12 @@ namespace PMIE.PubSubOpcUaServer.PubSub
         /// </remarks>
         protected override MasterNodeManager CreateMasterNodeManager(IServerInternal server, ApplicationConfiguration configuration)
         {
-            Debug.WriteLine("Creating the Node Managers.");
+            _logger.LogDebug("Creating the Node Managers.");
 
             List<INodeManager> nodeManagers = new List<INodeManager>();
 
             // create the custom node managers.
-            _PublisherNodeManager = new PublisherNodeManager(server, configuration);
+            _PublisherNodeManager = new PublisherNodeManager(server, configuration, _loggerFactory);
             nodeManagers.Add(_PublisherNodeManager);
 
             // create master node manager.
@@ -157,7 +164,7 @@ namespace PMIE.PubSubOpcUaServer.PubSub
         /// </remarks>
         protected override void OnNodeManagerStarted(IServerInternal server)
         {
-            Debug.WriteLine("The NodeManagers have started.");
+            _logger.LogDebug("The NodeManagers have started.");
 
             // allow base class processing to happen first.
             base.OnNodeManagerStarted(server);

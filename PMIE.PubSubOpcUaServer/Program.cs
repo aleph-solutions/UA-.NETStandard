@@ -33,6 +33,7 @@ using System.Threading.Tasks;
 using PMIE.PubSubOpcUaServer.PubSub;
 using Opc.Ua;
 using System.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace PMIE.PubSubOpcUaServer
 {
@@ -47,6 +48,14 @@ namespace PMIE.PubSubOpcUaServer
         [STAThread]
         static void Main()
         {
+            var loggerFactory = LoggerFactory.Create(builder =>
+            {
+                builder.AddConsole();
+                //builder.AddMqtt();
+                builder.SetMinimumLevel(LogLevel.Trace);
+            });
+            var logger = loggerFactory.CreateLogger("Program");
+
             ApplicationInstance application = new ApplicationInstance();
             application.ApplicationName = "PubSub OPCUA Server";
             application.ApplicationType = ApplicationType.Server;
@@ -64,7 +73,7 @@ namespace PMIE.PubSubOpcUaServer
                 }
 
                 // start the server.
-                application.Start(new PubSubServer()).Wait();
+                application.Start(new PubSubServer(loggerFactory)).Wait();
                 Console.WriteLine("Press <Control+C> to exit the program.");
 
                 // Handle Control+C or Control+Break
@@ -82,7 +91,7 @@ namespace PMIE.PubSubOpcUaServer
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Exception thrown: {e}");
+                logger.LogCritical($"Exception thrown: {e}");
             }
         }
     }

@@ -1,4 +1,5 @@
-﻿using Opc.Ua;
+﻿using Microsoft.Extensions.Logging;
+using Opc.Ua;
 using Opc.Ua.Client;
 using Opc.Ua.PubSub;
 using Opc.Ua.PubSub.Definitions;
@@ -31,6 +32,8 @@ namespace PMIE.PubSubOpcUaServer.PubSub
         private List<MonitoredItem> LstMonitoredItems = new List<MonitoredItem>();
         private Session m_session;
         X509Certificate2 m_Servercertificate;
+        ILoggerFactory _loggerFactory;
+        ILogger<PubSubAdaptor> _logger;
 
         public ApplicationConfiguration Configuration
         {
@@ -47,12 +50,14 @@ namespace PMIE.PubSubOpcUaServer.PubSub
             }
         }
 
-        public PubSubAdaptor(X509Certificate2 certificate)
+        public PubSubAdaptor(X509Certificate2 certificate, ILoggerFactory loggerfactory)
         {
+            _loggerFactory = loggerfactory;
+            _logger = loggerfactory.CreateLogger<PubSubAdaptor>();
+            
             DicUAPublisherSubscriber = new Dictionary<NodeId, PublishSubscribeMap>();
             Dic_Subscription = new Dictionary<NodeId, Subscription>();
             m_Servercertificate = certificate;
-
         }
         public async Task Start(ApplicationStartSettings settings)
         {
@@ -73,10 +78,10 @@ namespace PMIE.PubSubOpcUaServer.PubSub
             var connected = false;
             while (!connected)
             {
-                m_session = await Session.Create(m_configuration, endpoint, false, "OPC UA Sample Publisher " + new Random().Next(), 10000, new UserIdentity(new AnonymousIdentityToken()), null);
+                m_session = await Session.Create(m_configuration, endpoint, false, "OPC UA PubSub Adaptor " + new Random().Next(), 10000, new UserIdentity(new AnonymousIdentityToken()), null);
                 connected = m_session.Connected;
                 if (!connected) {
-                    Console.WriteLine($"PubSubAdaptor Start...Connection to server {endpoint.EndpointUrl} failed...Retry in 5s");
+                    _logger.LogInformation($"PubSubAdaptor Start...Connection to server {endpoint.EndpointUrl} failed...Retry in 5s");
                     Thread.Sleep(5000); 
                 }
             }
@@ -175,12 +180,10 @@ namespace PMIE.PubSubOpcUaServer.PubSub
             }
             catch(Exception ex)
             {
-
+                _logger.LogError($"PubSubAdaptor...CreateSubscription (Name: {name})...Exception: {ex}");
             }
-            //Console.WriteLine($"PubSubAdaptor CreateSubscrirption...Subscription Count: {m_session.SubscriptionCount}");
            
             return subscription;
-
         }
         
         public void AddDataSetWriter(DataSetWriterState dataSetWriterState)
@@ -226,7 +229,7 @@ namespace PMIE.PubSubOpcUaServer.PubSub
         }
         public void AddConnection(PubSubConnectionState pubSubConnectionState)
         {
-            Console.WriteLine($"PubSubServer...Add Connection...");
+            _logger.LogInformation($"PubSubServer...Add Connection...");
             PublishSubscribeMap _PublishSubscribeMap = new PublishSubscribeMap(m_Servercertificate);
 
             DicUAPublisherSubscriber[pubSubConnectionState.NodeId] = _PublishSubscribeMap;
@@ -249,19 +252,19 @@ namespace PMIE.PubSubOpcUaServer.PubSub
             }
             else if(pubSubConnectionState.TransportSettings is BrokerConnectionTransportState)
             {
-                Console.WriteLine($"PubSubServer...Add Connection...Broker transport type");
+                _logger.LogDebug($"PubSubServer...Add Connection...Broker transport");
 
                 string address = (pubSubConnectionState.Address as NetworkAddressUrlState).Url.Value;
                 if (Convert.ToString(pubSubConnectionState.TransportProfileUri.Value).ToLower().Contains("mqtt"))
                 {
-                    Console.WriteLine($"PubSubServer...Add Connection...MQTT transport");
+                    _logger.LogDebug($"PubSubServer...Add Connection...MQTT transport");
 
-                    MQTTDataSource mQTTtDataSource = new MQTTDataSource();
-                    Console.WriteLine($"PubSubServer...Add Connection...MQTT transport...TransportProfileUri: {pubSubConnectionState.TransportProfileUri.Value}");
+                    MQTTDataSource mQTTtDataSource = new MQTTDataSource(_loggerFactory);
+                    _logger.LogDebug($"PubSubServer...Add Connection...MQTT transport...TransportProfileUri: {pubSubConnectionState.TransportProfileUri.Value}");
                     string format = Convert.ToString(pubSubConnectionState.TransportProfileUri.Value).ToLower().Contains("uadp") ? "uadp" : "json";
-                    Console.WriteLine($"PubSubServer...Add Connection...MQTT transport...Format: {format}");
-                    
-                    Console.WriteLine($"PubSubServer...Add Connection...MQTT transport...mQTTtDataSource: {mQTTtDataSource}");
+                    _logger.LogDebug($"PubSubServer...Add Connection...MQTT transport...Format: {format}");
+
+                    _logger.LogDebug($"PubSubServer...Add Connection...MQTT transport...mQTTtDataSource: {mQTTtDataSource}");
                     bool isInitalized = false;
                     try
                     {
@@ -269,17 +272,17 @@ namespace PMIE.PubSubOpcUaServer.PubSub
                     }
                     catch (Exception ex) 
                     {
-                        Console.WriteLine($"PubSubServer...Add Connection...MQTT transport...Initialiazing data source...Exception: {ex}");
+                        _logger.LogError($"PubSubServer...Add Connection...MQTT transport...Initialiazing data source...Exception: {ex}");
                     }
 
                     if (isInitalized)
                     {
-                        Console.WriteLine($"PubSubServer...Add Connection...MQTT broker operational");
+                        _logger.LogInformation($"PubSubServer...Add Connection...MQTT broker operational");
                         pubSubConnectionState.Status.State.Value = PubSubState.Operational;
                     }
                     else
                     {
-                        Console.WriteLine($"PubSubServer...Add Connection...MQTT broker error");
+                        _logger.LogError($"PubSubServer...Add Connection...MQTT broker error");
                         pubSubConnectionState.Status.State.Value = PubSubState.Error;
                     }
                     dataSource = mQTTtDataSource;
@@ -377,7 +380,7 @@ namespace PMIE.PubSubOpcUaServer.PubSub
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"PubSubAdaptor AddPublisherDataItems...Exception: {ex}");
+                _logger.LogError($"PubSubAdaptor AddPublisherDataItems...Exception: {ex}");
             }
         }
         public void RemovePublishedDataItems(PublishedDataItemsState publishedDataItemsState)

@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Opc.Ua;
 using Opc.Ua.PubSub;
 using Opc.Ua.PubSub.Definitions;
@@ -17,19 +18,32 @@ namespace PMIE.PubSubOpcUaServer.Configuration
         Connection _mqttConnection;
         string _topicPrefix;
         string _pathPrefix = "DeviceSet";
+        ILoggerFactory _loggerFactory;
+        ILogger<ConfigurationBuilder> _logger;
 
-        public ConfigurationBuilder(Opc.Ua.Client.Session browseSession, IServerInternal pubSubServer)
+        public ConfigurationBuilder(Opc.Ua.Client.Session browseSession, IServerInternal pubSubServer, ILoggerFactory loggerFactory)
         {
+            _loggerFactory = loggerFactory;
+            _logger = loggerFactory.CreateLogger<ConfigurationBuilder>();
+
             var brokerIp = Environment.GetEnvironmentVariable("BROKER_IP");
+            _logger.LogDebug($"Configuration Builder...EnvVar BROKER_IP: {brokerIp}");
             var brokerPort = Environment.GetEnvironmentVariable("BROKER_PORT");
+            _logger.LogDebug($"Configuration Builder...EnvVar BROKER_PORT: {brokerPort}");
+            var publisherId = Environment.GetEnvironmentVariable("PUBLISHER_ID");
+            _logger.LogDebug($"Configuration Builder...EnvVar PUBLISHER_ID: {publisherId}");
+            if (String.IsNullOrEmpty(publisherId))
+            {
+                publisherId = "PMI.Publisher";
+            }
 
             //Read the environmental variables
             if (brokerIp != null && brokerPort != null)
             {
                 _browseSession = browseSession;
-                _configurationClient = new ConfigurationClient(pubSubServer);
+                _configurationClient = new ConfigurationClient(pubSubServer, _loggerFactory);
                 _configurationClient.InitializeClient();
-                _configurationClient.InitializeMQTTConnection("MQTT", $"{brokerIp}:{brokerPort}", out _mqttConnection);
+                _configurationClient.InitializeMQTTConnection("MQTT", $"{brokerIp}:{brokerPort}", publisherId, out _mqttConnection);
             }
             else
             {
@@ -78,7 +92,7 @@ namespace PMIE.PubSubOpcUaServer.Configuration
             }
             else
             {
-                Console.WriteLine("ConfigurationBuilder Start...DeviceSet object not found");
+                _logger.LogError("ConfigurationBuilder Start...DeviceSet object not found");
             }
             _configurationClient.EnableAllWriters();
         }
@@ -456,7 +470,6 @@ namespace PMIE.PubSubOpcUaServer.Configuration
             var references = Browse(folderId);
             foreach (var objItem in references.Where(x => x.NodeClass == NodeClass.Object))
             {
-                Console.WriteLine($"Configuring processControlLoop {objItem.BrowseName.Name}");
                 var typeId = GetTypeDefinition(objItem.NodeId);
                 if (typeId.Equals(ExpandedNodeId.ToNodeId(PMI.TMCPlus.ObjectTypeIds.PMI_ProcessControlLoopType, _browseSession.NamespaceUris)))
                 {
@@ -527,7 +540,7 @@ namespace PMIE.PubSubOpcUaServer.Configuration
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"ConfigurationBuilder ConfigureProcessItems...Error: {ex}");
+                _logger.LogError($"ConfigurationBuilder ConfigureProcessItems...Error: {ex}");
             }
         }
         #endregion
@@ -665,7 +678,7 @@ namespace PMIE.PubSubOpcUaServer.Configuration
                             }
                         }
 
-                        if (fieldId == null) Console.WriteLine($"NodeId for the field {fieldName} of object with nodId {objectNodeId} not found");
+                        if (fieldId == null) _logger.LogInformation($"NodeId for the field {fieldName} of object with nodId {objectNodeId} not found");
                     }
                 }
             }
@@ -697,7 +710,6 @@ namespace PMIE.PubSubOpcUaServer.Configuration
                         if (field.Enabled)
                         {
                             var fieldName = $"{variableName}.{field.FieldName}";
-                            Console.WriteLine($"Field: {fieldName}");
 
                             if (field.FieldName.Split('.').Length == 2)
                             {
@@ -733,7 +745,7 @@ namespace PMIE.PubSubOpcUaServer.Configuration
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"ConfigurationBuilder LoadComplexVariableItemList...Error loading configuration. Type: {variableTypeName}; Variable name: {variableName}; Exception: {ex}");
+                _logger.LogError($"ConfigurationBuilder LoadComplexVariableItemList...Error loading configuration. Type: {variableTypeName}; Variable name: {variableName}; Exception: {ex}");
             }
 
         }
@@ -820,7 +832,7 @@ namespace PMIE.PubSubOpcUaServer.Configuration
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"ConfigurationBulder GetEventsConfigurations...Exception thrown: {ex}");
+                _logger.LogError($"ConfigurationBulder GetEventsConfigurations...Exception thrown: {ex}");
             }
 
             return ret;
@@ -862,7 +874,7 @@ namespace PMIE.PubSubOpcUaServer.Configuration
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"ConfigurationBuilder GetEventConfiguration...Unable to write the configuration file. Excpetion: {ex}");
+                _logger.LogError($"ConfigurationBuilder GetEventConfiguration...Unable to write the configuration file. Excpetion: {ex}");
             }
 
             return ret;

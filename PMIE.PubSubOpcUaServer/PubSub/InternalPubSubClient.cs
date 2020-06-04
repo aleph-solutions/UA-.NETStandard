@@ -26,6 +26,7 @@ using System.Collections.ObjectModel;
 using Opc.Ua.PubSub;
 using System.Configuration;
 using Opc.Ua.PubSub.Definitions;
+using Microsoft.Extensions.Logging;
 
 namespace PMIE.PubSubOpcUaServer.PubSub
 {
@@ -46,7 +47,8 @@ namespace PMIE.PubSubOpcUaServer.PubSub
         bool m_refreshOnReconnection = false;
         bool m_activateTabsonReConnection = false;
         string m_serverStatus = String.Empty;
-
+        ILoggerFactory _loggerFactory;
+        ILogger<InternalPubSubUaClient> _logger;
         #endregion
 
         #region Public Properties
@@ -121,8 +123,10 @@ namespace PMIE.PubSubOpcUaServer.PubSub
         /// <summary>
         /// Defining instance of Client adaptor
         /// </summary>
-        public InternalPubSubUaClient()
+        public InternalPubSubUaClient(ILoggerFactory loggerFactory)
         {
+            _loggerFactory = loggerFactory;
+            _logger = loggerFactory.CreateLogger<InternalPubSubUaClient>();
             Constants.Initialize();
             LoadApplicationInstance();
         }
@@ -220,6 +224,7 @@ namespace PMIE.PubSubOpcUaServer.PubSub
             catch (Exception e)
             {
                 errorMessage = e.Message;
+                _logger.LogError($"InternalPubSubClient AddConnection...Error: {e}");
             }
             return errorMessage;
         }
@@ -1491,6 +1496,7 @@ namespace PMIE.PubSubOpcUaServer.PubSub
                 }
                 catch (Exception ex)
                 {
+                    _logger.LogError($"InternalPubSubClient AddWriterGroup...Error: {ex}");
                     errorMessage = ex.Message;
                 }
             }
@@ -1771,7 +1777,7 @@ namespace PMIE.PubSubOpcUaServer.PubSub
             catch (Exception ex)
             {
                 errorMessage = ex.Message;
-
+                _logger.LogError($"InternalPubSubClient AddDataSetWriter...Error: {ex}");
             }
             return errorMessage;
 
@@ -2582,8 +2588,7 @@ namespace PMIE.PubSubOpcUaServer.PubSub
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"ClientAdaptor AddPublishedDataSet...{ex}");
-                Utils.Trace(ex, "OPCUAClientAdaptor.AddPublishedDataSet API" + ex.Message);
+                _logger.LogError($"ClientAdaptor AddPublishedDataSet...Exception: {ex}");
             }
             return _PublishedDataSetBase;
         }
@@ -2617,7 +2622,7 @@ namespace PMIE.PubSubOpcUaServer.PubSub
             }
             catch (Exception ex)
             {
-                Utils.Trace(ex, "OPCUAClientAdaptor.AddPublishedDataSetEvents API" + ex.Message);
+                _logger.LogError($"ClientAdaptor AddPublishedDataSetEvents...Exception: {ex}");
             }
             return _PublishedDataSetBase;
         }

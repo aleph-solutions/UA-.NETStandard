@@ -1,4 +1,5 @@
-﻿using Opc.Ua;
+﻿using Microsoft.Extensions.Logging;
+using Opc.Ua;
 using Opc.Ua.Client;
 using Opc.Ua.PubSub;
 using Opc.Ua.PubSub.Definitions;
@@ -20,9 +21,13 @@ namespace PMIE.PubSubOpcUaServer.Configuration
         private List<PublishedDataSetBase> _datasets;
         private List<DataSetWriterGroup> _writerGroups;
         private List<DataSetWriterDefinition> _writers;
+        private ILoggerFactory _loggerFactory;
+        private ILogger<ConfigurationClient> _logger;
 
-        public ConfigurationClient(IServerInternal pubSubServer)
+        public ConfigurationClient(IServerInternal pubSubServer, ILoggerFactory loggerFactory)
         {
+            _loggerFactory = loggerFactory;
+            _logger = _loggerFactory.CreateLogger<ConfigurationClient>();
             _pubSubServer = pubSubServer;
         }
 
@@ -33,7 +38,7 @@ namespace PMIE.PubSubOpcUaServer.Configuration
         {
             try
             {
-                _internalClient = new InternalPubSubUaClient();
+                _internalClient = new InternalPubSubUaClient(_loggerFactory);
 
                 //TODO: [ALEPH] move session creation into InternalPubSubUaClient
                 //Select the endpoint to connect to the server
@@ -51,7 +56,7 @@ namespace PMIE.PubSubOpcUaServer.Configuration
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"ConfigurationClient...Initialize...Exception: {ex}");
+                _logger.LogError($"ConfigurationClient...Initialize...Exception: {ex}");
             }
         }
 
@@ -62,7 +67,7 @@ namespace PMIE.PubSubOpcUaServer.Configuration
         /// <param name="brokerAddress">The address of the MQTT broker</param>
         /// <param name="mqttConnection">The instance of the MQTT connection</param>
         /// <returns>The nodeId of the connection node</returns>
-        public NodeId InitializeMQTTConnection(string connectionName, string brokerAddress, out Connection mqttConnection)
+        public NodeId InitializeMQTTConnection(string connectionName, string brokerAddress, string publisherId, out Connection mqttConnection)
         {
             mqttConnection = new Connection()
             {
@@ -75,11 +80,16 @@ namespace PMIE.PubSubOpcUaServer.Configuration
                 Children = new System.Collections.ObjectModel.ObservableCollection<PubSubConfiguationBase>(),
                 AuthenticationProfileUri = String.Empty,
                 ResourceUri = String.Empty,
-                PublisherId = "RTCRGF40"
+                PublisherId = publisherId
             };
 
             var connectionRes = _internalClient.AddConnection(mqttConnection, out NodeId connectionNodeId);
-            Console.WriteLine($"Added connection. Result: {connectionRes}, Connection NodeId: {connectionNodeId}");
+            if (!String.IsNullOrEmpty(connectionRes))
+            {
+                _logger.LogError("ConfigurationClient InitializeMQTTConnection...Error during the connection with the broker");
+                return null;
+            }
+            _logger.LogInformation($"Added connection. Connection NodeId: {connectionNodeId}");
             mqttConnection.ConnectionNodeId = connectionNodeId;
             return connectionNodeId;
         }
@@ -113,7 +123,12 @@ namespace PMIE.PubSubOpcUaServer.Configuration
             };
 
             var resGroup = _internalClient.AddWriterGroup(datasetWriterGroup, out NodeId groupId);
-            Console.WriteLine($"Added writer group {datasetWriterGroup.Name}. Result: {resGroup}, Group NodeId: {groupId}");
+            if (!String.IsNullOrEmpty(resGroup))
+            {
+                _logger.LogError($"ConfigurationClient AddWriterGroup...An error occured adding the group {datasetWriterGroup.Name}");
+                return null;
+            }
+            _logger.LogInformation($"Added writer group {datasetWriterGroup.Name}. Group NodeId: {groupId}");
             datasetWriterGroup.GroupId = groupId;
 
             if (groupId != null)
@@ -133,7 +148,7 @@ namespace PMIE.PubSubOpcUaServer.Configuration
         /// <param name="publishedDataSet">The output Dataset</param>
         public void AddPublishedDataSet(List<DataSetFieldConfiguration> itemList, string datasetName, out PublishedDataSetBase publishedDataSet)
         {
-            Console.WriteLine($"ConfigurationClient AddPublishedDataSet {datasetName}...");
+            _logger.LogDebug($"ConfigurationClient AddPublishedDataSet {datasetName}...");
             try
             {
                 var datasetItems = new ObservableCollection<PublishedDataSetItemDefinition>();
@@ -156,12 +171,12 @@ namespace PMIE.PubSubOpcUaServer.Configuration
                     if (_datasets == null) _datasets = new List<PublishedDataSetBase>();
                     _datasets.Add(publishedDataSet);
                 }
-                Console.WriteLine($"ConfigurationClient AddPublishedDataSet {datasetName}...completed");
+                _logger.LogInformation($"ConfigurationClient AddPublishedDataSet {datasetName}...completed");
             }
             catch (Exception ex)
             {
                 publishedDataSet = null;
-                Console.WriteLine($"ConfigurationClient AddPublishedDataSet {datasetName}...Exception: {ex}");
+                _logger.LogError($"ConfigurationClient AddPublishedDataSet {datasetName}...Exception: {ex}");
             }
         }
 
@@ -175,7 +190,7 @@ namespace PMIE.PubSubOpcUaServer.Configuration
         /// <param name="publishedDataSet">The output Dataset</param>
         public void AddPublishedDataSetEvent(List<DataSetEventFieldConfiguration> eventFields, NodeId eventTypeId, string datasetName, NodeId eventNotifier, out PublishedDataSetBase publishedDataSet)
         {
-            Console.WriteLine($"ConfigurationClient AddPublishedDataSetEvent {datasetName}...");
+            _logger.LogDebug($"ConfigurationClient AddPublishedDataSetEvent {datasetName}...");
             try
             {
                 var selectedFields = new ObservableCollection<PublishedEventSet>();
@@ -192,11 +207,12 @@ namespace PMIE.PubSubOpcUaServer.Configuration
                 ContentFilterElement typeClause = whereClause.Push(FilterOperator.OfType, eventTypeId);
 
                 publishedDataSet = _internalClient.AddPublishedDataSetEvents(datasetName, eventNotifier, eventTypeId, selectedFields, whereClause);
+                _logger.LogInformation($"ConfigurationClient AddPublishedDataSetEvent {datasetName}...completed");
             }
             catch (Exception ex)
             {
                 publishedDataSet = null;
-                Console.WriteLine($"ConfigurationClient AddPublishedDataSetEvent {datasetName}...Exception: {ex}");
+                _logger.LogError($"ConfigurationClient AddPublishedDataSetEvent {datasetName}...Exception: {ex}");
             }
         }
 
@@ -247,7 +263,12 @@ namespace PMIE.PubSubOpcUaServer.Configuration
 
 
                 var res = _internalClient.AddDataSetWriter(parent.GroupId, writer, out NodeId writerNodeId, out int revisedKeyframeCount);
-                Console.WriteLine($"Added writer {writer.Name}. Result: {res}, Writer NodeId: {writerNodeId}");
+                if (!String.IsNullOrEmpty(res))
+                {
+                    _logger.LogError($"ConfigurationClient AddWriter...An error occured adding the writer {writerName}");
+                    return null;
+                }
+                _logger.LogInformation($"Added writer {writer.Name}. Writer NodeId: {writerNodeId}");
                 writer.WriterNodeId = writerNodeId;
 
                 if (writerNodeId != null)
@@ -260,7 +281,7 @@ namespace PMIE.PubSubOpcUaServer.Configuration
             }
             else
             {
-                Console.WriteLine($"ConfigurationClient AddWriter...Dataset {datasetName} does not exist");
+                _logger.LogError($"ConfigurationClient AddWriter...Dataset {datasetName} does not exist");
 
                 writer = null;
                 return null;

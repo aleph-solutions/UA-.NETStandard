@@ -4,6 +4,7 @@ using M2Mqtt.Messages;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Net.Security;
+using Microsoft.Extensions.Logging;
 
 namespace Opc.Ua.PubSub
 {
@@ -13,7 +14,14 @@ namespace Opc.Ua.PubSub
         string m_Format = "json";
 
         string[] Topics = new string[1] { "Test" };
+        ILoggerFactory _loggerFactory;
+        ILogger<MQTTDataSource> _logger;
 
+        public MQTTDataSource(ILoggerFactory loggerFactory)
+        {
+            _loggerFactory = loggerFactory;
+            _logger = loggerFactory.CreateLogger<MQTTDataSource>();
+        }
         #region Private Methods
 
         private void Client_MqttMsgSubscribed(object sender, MqttMsgSubscribedEventArgs e)
@@ -32,7 +40,7 @@ namespace Opc.Ua.PubSub
 
         public bool Initialize(string format, string address)
         {
-            Console.WriteLine($"MQTTTransportDataSource...Initialize...");
+            _logger.LogDebug($"MQTTTransportDataSource...Initialize...");
             try
             {
                 m_Format = format;
@@ -58,10 +66,10 @@ namespace Opc.Ua.PubSub
                     port = Convert.ToInt32(addressarray[1]);
                 }
 
-                Console.WriteLine($"MQTTDataSource...Initialize...Broker address: {Address} Port: {port}");
+                _logger.LogDebug($"MQTTDataSource...Initialize...Broker address: {Address} Port: {port}");
 
                 var brokerAuthStr = Environment.GetEnvironmentVariable("BROKER_AUTH");
-                Console.WriteLine($"MQTTDataSource...Initialize...Broker authentication: {brokerAuthStr} ");
+                _logger.LogDebug($"MQTTDataSource...Initialize...Broker authentication: {brokerAuthStr} ");
 
                 var brokerAuth = BrokerSecurity.NoSecurity;
                 if (brokerAuthStr != null)
@@ -81,12 +89,13 @@ namespace Opc.Ua.PubSub
                     catch
                     {
                         //Unable to convert the string to boolean
+                        _logger.LogWarning("MQTTDataSource...Initialize...BROKER_ENABLE_TLS env var has not a valid boolean value");
                     }
                 }
 
                 if (brokerAuth == BrokerSecurity.Certificate)
                 {
-                    Console.WriteLine("MQTTDataSource Initialize...Certificate Security");
+                    _logger.LogDebug("MQTTDataSource Initialize...Certificate Security");
                     //var clientCertificatePath = Environment.GetEnvironmentVariable("MQTT_CLIENT_CERT");
                     var caCertificatePath = Environment.GetEnvironmentVariable("MQTT_CLIENT_CA_CERT");
 
@@ -98,7 +107,7 @@ namespace Opc.Ua.PubSub
                 }
                 else if (enableTls)
                 {
-                    Console.WriteLine("MQTTDataSource Initialize...TLS enabled");
+                    _logger.LogDebug("MQTTDataSource Initialize...TLS enabled");
                     client = new MqttClient(Address, port, false, null, null, MqttSslProtocols.TLSv1_2, Client_RemoteCertificateValidationCallback);
                 }
                 else client = new MqttClient(Address, port, false, null, null, MqttSslProtocols.None);
@@ -108,25 +117,24 @@ namespace Opc.Ua.PubSub
                 client.MqttMsgPublishReceived += Client_MqttMsgPublishReceived;
                 client.MqttMsgPublished += Client_MqttMsgPublished;
                 client.MqttMsgSubscribed += Client_MqttMsgSubscribed;
-                Console.WriteLine($"MQTTTransportDataSource...Initialize...Connecting");
+                _logger.LogInformation($"MQTTTransportDataSource...Initialize...Connecting");
 
                 if (brokerAuth == BrokerSecurity.UserPassword)
                 {
                     var username = Environment.GetEnvironmentVariable("BROKER_USERNAME");
                     var cryptedPassword = Environment.GetEnvironmentVariable("BROKER_PASSWORD");
 
-                    Console.WriteLine($"MQTTDataSource...Initialize...Broker user: {username} cryptedPassword: {cryptedPassword}");
+                    _logger.LogDebug($"MQTTDataSource...Initialize...Broker user: {username} cryptedPassword: {cryptedPassword}");
 
                     if (username != null && cryptedPassword != null)
                     {
                         var password = AesOperation.DecryptString($"{Address}_{username}", cryptedPassword);
-                        Console.WriteLine($"MQTTDataSource...Initialize...Broker password: {password}");
-
                         client.Connect(Guid.NewGuid().ToString(), username, password);
                     }
                     else
                     {
-                        Console.WriteLine($"MQTTDataSource Initialize...Username or Password");
+                        _logger.LogWarning($"MQTTDataSource Initialize...Username and/or Password are null");
+                        return false;
                     }
                 }
                 else
@@ -136,18 +144,18 @@ namespace Opc.Ua.PubSub
 
                 if (!client.IsConnected)
                 {
-                    Console.WriteLine("MQTTTransportDataSource...MQTT CLIENT IS NOT CONNECTED!");
+                    _logger.LogError("MQTTTransportDataSource...MQTT CLIENT IS NOT CONNECTED!");
                     return false;
                 }
                 else
                 {
-                    Console.WriteLine($"MQTTTransportDataSource...Initialize...Connected");
+                    _logger.LogInformation($"MQTTTransportDataSource...Initialize...Connected");
                     return true;
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error connecting to the broker: {ex}");
+                _logger.LogError($"Error connecting to the broker: {ex}");
                 return false;
             }
         }
@@ -175,7 +183,7 @@ namespace Opc.Ua.PubSub
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"MQTTTransportDataSource...SendData..Error: {ex}");
+                _logger.LogError($"MQTTTransportDataSource...SendData..Error: {ex}");
                 return false;
             }
 
