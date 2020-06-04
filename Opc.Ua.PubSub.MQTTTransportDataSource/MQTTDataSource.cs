@@ -58,15 +58,33 @@ namespace Opc.Ua.PubSub
                     port = Convert.ToInt32(addressarray[1]);
                 }
 
-                var brokerSecurityStr = Environment.GetEnvironmentVariable("BROKER_SECURITY");
-                var brokerSecurity = BrokerSecurity.NoSecurity;
-                if (brokerSecurityStr != null)
+                Console.WriteLine($"MQTTDataSource...Initialize...Broker address: {Address} Port: {port}");
+
+                var brokerAuthStr = Environment.GetEnvironmentVariable("BROKER_AUTH");
+                Console.WriteLine($"MQTTDataSource...Initialize...Broker authentication: {brokerAuthStr} ");
+
+                var brokerAuth = BrokerSecurity.NoSecurity;
+                if (brokerAuthStr != null)
                 {
-                    var index = Convert.ToInt32(brokerSecurityStr);
-                    brokerSecurity = (BrokerSecurity)index;
+                    var index = Convert.ToInt32(brokerAuthStr);
+                    brokerAuth = (BrokerSecurity)index;
                 }
 
-                if (brokerSecurity == BrokerSecurity.Certificate)
+                var enableTlsVar = Environment.GetEnvironmentVariable("BROKER_ENABLE_TLS");
+                var enableTls = false;
+                if (!String.IsNullOrEmpty(enableTlsVar))
+                {
+                    try
+                    {
+                        enableTls = Convert.ToBoolean(enableTlsVar);
+                    }
+                    catch
+                    {
+                        //Unable to convert the string to boolean
+                    }
+                }
+
+                if (brokerAuth == BrokerSecurity.Certificate)
                 {
                     Console.WriteLine("MQTTDataSource Initialize...Certificate Security");
                     //var clientCertificatePath = Environment.GetEnvironmentVariable("MQTT_CLIENT_CERT");
@@ -78,6 +96,11 @@ namespace Opc.Ua.PubSub
 
                     client = new MqttClient(Address, port, true, null, caCert, MqttSslProtocols.TLSv1_2, Client_RemoteCertificateValidationCallback);
                 }
+                else if (enableTls)
+                {
+                    Console.WriteLine("MQTTDataSource Initialize...TLS enabled");
+                    client = new MqttClient(Address, port, false, null, null, MqttSslProtocols.TLSv1_2, Client_RemoteCertificateValidationCallback);
+                }
                 else client = new MqttClient(Address, port, false, null, null, MqttSslProtocols.None);
 
 
@@ -87,14 +110,18 @@ namespace Opc.Ua.PubSub
                 client.MqttMsgSubscribed += Client_MqttMsgSubscribed;
                 Console.WriteLine($"MQTTTransportDataSource...Initialize...Connecting");
 
-                if (brokerSecurity == BrokerSecurity.UserPassword)
+                if (brokerAuth == BrokerSecurity.UserPassword)
                 {
                     var username = Environment.GetEnvironmentVariable("BROKER_USERNAME");
                     var cryptedPassword = Environment.GetEnvironmentVariable("BROKER_PASSWORD");
 
+                    Console.WriteLine($"MQTTDataSource...Initialize...Broker user: {username} cryptedPassword: {cryptedPassword}");
+
                     if (username != null && cryptedPassword != null)
                     {
                         var password = AesOperation.DecryptString($"{Address}_{username}", cryptedPassword);
+                        Console.WriteLine($"MQTTDataSource...Initialize...Broker password: {password}");
+
                         client.Connect(Guid.NewGuid().ToString(), username, password);
                     }
                     else
@@ -107,11 +134,20 @@ namespace Opc.Ua.PubSub
                     client.Connect(Guid.NewGuid().ToString());
                 }
 
-                Console.WriteLine($"MQTTTransportDataSource...Initialize...Connected");
-                return true;
+                if (!client.IsConnected)
+                {
+                    Console.WriteLine("MQTTTransportDataSource...MQTT CLIENT IS NOT CONNECTED!");
+                    return false;
+                }
+                else
+                {
+                    Console.WriteLine($"MQTTTransportDataSource...Initialize...Connected");
+                    return true;
+                }
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error connecting to the broker: {ex}");
                 return false;
             }
         }
@@ -139,6 +175,7 @@ namespace Opc.Ua.PubSub
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"MQTTTransportDataSource...SendData..Error: {ex}");
                 return false;
             }
 
