@@ -26,12 +26,23 @@ namespace PMIE.PubSubOpcUaServer.Configuration
             _loggerFactory = loggerFactory;
             _logger = loggerFactory.CreateLogger<ConfigurationBuilder>();
 
+            var topicPrefix = Environment.GetEnvironmentVariable("TOPIC_PREFIX");
+            if (!String.IsNullOrEmpty(topicPrefix))
+            {
+                topicPrefix = topicPrefix.Trim();
+                _logger.LogDebug($"Configuration Builder...EnvVar TOPIC_PREFIX: {topicPrefix}");
+                if (topicPrefix.Last() != '/') topicPrefix += "/";
+                _topicPrefix = topicPrefix;
+            }
+
             var brokerIp = Environment.GetEnvironmentVariable("BROKER_IP");
             _logger.LogDebug($"Configuration Builder...EnvVar BROKER_IP: {brokerIp}");
             var brokerPort = Environment.GetEnvironmentVariable("BROKER_PORT");
             _logger.LogDebug($"Configuration Builder...EnvVar BROKER_PORT: {brokerPort}");
             var publisherId = Environment.GetEnvironmentVariable("PUBLISHER_ID");
             _logger.LogDebug($"Configuration Builder...EnvVar PUBLISHER_ID: {publisherId}");
+
+
             if (String.IsNullOrEmpty(publisherId))
             {
                 publisherId = "PMI.Publisher";

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Net.Security;
 using Microsoft.Extensions.Logging;
+using System.Threading;
 
 namespace Opc.Ua.PubSub
 {
@@ -119,39 +120,55 @@ namespace Opc.Ua.PubSub
                 client.MqttMsgSubscribed += Client_MqttMsgSubscribed;
                 _logger.LogInformation($"MQTTTransportDataSource...Initialize...Connecting");
 
-                if (brokerAuth == BrokerSecurity.UserPassword)
+                var connected = false;
+                do
                 {
-                    var username = Environment.GetEnvironmentVariable("BROKER_USERNAME");
-                    var cryptedPassword = Environment.GetEnvironmentVariable("BROKER_PASSWORD");
-
-                    _logger.LogDebug($"MQTTDataSource...Initialize...Broker user: {username} cryptedPassword: {cryptedPassword}");
-
-                    if (username != null && cryptedPassword != null)
+                    try
                     {
-                        var password = AesOperation.DecryptString($"{Address}_{username}", cryptedPassword);
-                        client.Connect(Guid.NewGuid().ToString(), username, password);
+                        if (brokerAuth == BrokerSecurity.UserPassword)
+                        {
+                            var username = Environment.GetEnvironmentVariable("BROKER_USERNAME");
+                            var cryptedPassword = Environment.GetEnvironmentVariable("BROKER_PASSWORD");
+
+                            _logger.LogDebug($"MQTTDataSource...Initialize...Broker user: {username} cryptedPassword: {cryptedPassword}");
+
+                            if (username != null && cryptedPassword != null)
+                            {
+                                var password = AesOperation.DecryptString($"{Address}_{username}", cryptedPassword);
+                                client.Connect(Guid.NewGuid().ToString(), username, password);
+                            }
+                            else
+                            {
+                                _logger.LogWarning($"MQTTDataSource Initialize...Username and/or Password are null");
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            client.Connect(Guid.NewGuid().ToString());
+                        }
+                    }
+                    catch(Exception ex)
+                    {
+                        _logger.LogError($"MQTTTransportDataSource...Error connecting to the broker. Exception: {ex}");
+                    }
+
+                    if (!client.IsConnected)
+                    {
+                        _logger.LogWarning("MQTTTransportDataSource...MQTT CLIENT IS NOT CONNECTED! Retry in 5s");
+                        Thread.Sleep(5000);
+                        //return false;
                     }
                     else
                     {
-                        _logger.LogWarning($"MQTTDataSource Initialize...Username and/or Password are null");
-                        return false;
+                        _logger.LogInformation($"MQTTTransportDataSource...Initialize...Connected");
+                        connected = true;
+                        //return true;
                     }
-                }
-                else
-                {
-                    client.Connect(Guid.NewGuid().ToString());
-                }
+                } while (!connected);
+                
 
-                if (!client.IsConnected)
-                {
-                    _logger.LogError("MQTTTransportDataSource...MQTT CLIENT IS NOT CONNECTED!");
-                    return false;
-                }
-                else
-                {
-                    _logger.LogInformation($"MQTTTransportDataSource...Initialize...Connected");
-                    return true;
-                }
+                
             }
             catch (Exception ex)
             {

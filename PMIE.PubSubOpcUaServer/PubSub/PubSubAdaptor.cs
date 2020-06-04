@@ -85,7 +85,7 @@ namespace PMIE.PubSubOpcUaServer.PubSub
                     Thread.Sleep(5000); 
                 }
             }
-
+            _logger.LogInformation($"PubSubAdaptor Start...Connection with server {endpoint.EndpointUrl} established");
 
         }
         private async Task<ApplicationConfiguration> CreateApplicationConfiguration(ApplicationStartSettings settings)

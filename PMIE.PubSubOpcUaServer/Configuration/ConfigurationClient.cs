@@ -48,7 +48,8 @@ namespace PMIE.PubSubOpcUaServer.Configuration
 
                 var session = Opc.Ua.Client.Session.Create(_internalClient.Configuration, endpoint, false, "ConfigurationClient", 60000, new UserIdentity(new AnonymousIdentityToken()), null).Result;
                 _internalClient.Session = session;
-
+                if (session.Connected) _logger.LogInformation($"ConfigurationClient...Initialize...Session to PubSub server connected (SessionName: {session.SessionName})");
+                else _logger.LogWarning($"ConfigurationClient...Initialize...Session to PubSub server is not connected");
                 //TODO: [ALEPH] _pubSubSession is not needed, use m_clientAdaptor.Session instead
                 _pubSubSession = session;
 

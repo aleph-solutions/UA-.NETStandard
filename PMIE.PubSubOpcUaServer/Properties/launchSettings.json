@@ -8,6 +8,7 @@
         "BROKER_USERNAME": "aleph",
         "KEYFRAMECOUNT": "1",
         "OPCUA_SERVER_URL": "opc.tcp://localhost:48030",
+        "TOPIC_PREFIX": "Bay46/ACC",
         "BROKER_IP": "40.91.255.161",
         "BROKER_PORT": "1883",
         "BROKER_AUTH": "1",

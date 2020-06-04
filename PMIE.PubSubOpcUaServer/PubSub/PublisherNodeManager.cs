@@ -363,6 +363,7 @@ namespace PMIE.PubSubOpcUaServer.PubSub
                     }
                     catch (Exception ex)
                     {
+                        _logger.LogWarning($"PublisherNodeManager OnServerStarted...Exception: {ex} ");
                         await Task.Delay(5000);
                     }
                 } while (!connected);
