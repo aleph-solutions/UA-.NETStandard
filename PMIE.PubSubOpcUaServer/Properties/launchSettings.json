@@ -11,6 +11,7 @@
         "TOPIC_PREFIX": "Bay46/ACC",
         "BROKER_IP": "40.91.255.161",
         "BROKER_PORT": "1883",
+        "MQTT_TOPIC_LOGS": "PubSub/Logs",
         "BROKER_AUTH": "1",
         "BROKER_PASSWORD": "niSEQ55ywO3ubLMu2UthHg==",
         "MQTT_CLIENT_CA_CERT": "AppData\\Certs\\mq-broker-iiot-mtb-prod.ca.pem"

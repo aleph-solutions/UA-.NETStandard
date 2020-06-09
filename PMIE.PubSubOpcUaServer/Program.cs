@@ -34,6 +34,7 @@ using PMIE.PubSubOpcUaServer.PubSub;
 using Opc.Ua;
 using System.Threading;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Mqtt;
 
 namespace PMIE.PubSubOpcUaServer
 {
@@ -51,7 +52,7 @@ namespace PMIE.PubSubOpcUaServer
             var loggerFactory = LoggerFactory.Create(builder =>
             {
                 builder.AddConsole();
-                //builder.AddMqtt();
+                builder.AddMqtt();
                 builder.SetMinimumLevel(LogLevel.Trace);
             });
             var logger = loggerFactory.CreateLogger("Program");

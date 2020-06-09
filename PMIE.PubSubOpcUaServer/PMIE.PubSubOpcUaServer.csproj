@@ -26,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.Logging.Mqtt\Microsoft.Extensions.Logging.Mqtt.csproj" />
     <ProjectReference Include="..\Opc.Ua.PubSub.AMQPTransportDataSource\Opc.Ua.PubSub.AMQPTransportDataSource.csproj" />
     <ProjectReference Include="..\Opc.Ua.PubSub.MQTTTransportDataSource\Opc.Ua.PubSub.MQTTTransportDataSource.csproj" />
     <ProjectReference Include="..\Opc.Ua.PubSub.UDPTransportDataSource\Opc.Ua.PubSub.UDPTransportDataSource.csproj" />

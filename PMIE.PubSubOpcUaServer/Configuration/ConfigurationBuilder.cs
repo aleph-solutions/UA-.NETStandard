@@ -54,7 +54,7 @@ namespace PMIE.PubSubOpcUaServer.Configuration
                 _browseSession = browseSession;
                 _configurationClient = new ConfigurationClient(pubSubServer, _loggerFactory);
                 _configurationClient.InitializeClient();
-                _configurationClient.InitializeMQTTConnection("MQTT", $"{brokerIp}:{brokerPort}", publisherId, out _mqttConnection);
+                var connetionNodeId = _configurationClient.InitializeMQTTConnection("MQTT", $"{brokerIp}:{brokerPort}", publisherId, out _mqttConnection);
             }
             else
             {
