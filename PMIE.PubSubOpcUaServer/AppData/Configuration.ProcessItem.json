@@ -5,6 +5,30 @@
       "FieldName": "AnalogMeasurement"
     },
     {
+      "FieldName": "AnalogMeasurement.Avg",
+      "BrowseName": "Avg"
+    },
+    {
+      "FieldName": "AnalogMeasurement.Min",
+      "BrowseName": "Min"
+    },
+    {
+      "FieldName": "AnalogMeasurement.Max",
+      "BrowseName": "Max"
+    },
+    {
+      "FieldName": "AnalogMeasurement.NumOfSamples",
+      "BrowseName": "NumOfSamples"
+    },
+    {
+      "FieldName": "AnalogMeasurement.Std",
+      "BrowseName": "Std"
+    },
+    {
+      "FieldName": "AnalogMeasurement.WindowDuration",
+      "BrowseName": "WindowDuration"
+    },
+    {
       "FieldName": "DisplayFormat"
     },
     {

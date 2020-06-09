@@ -166,7 +166,7 @@ namespace Opc.Ua.PubSub
                         //return true;
                     }
                 } while (!connected);
-                
+                return true;
 
                 
             }
